@@ -14,7 +14,7 @@
 
 | 文件 | 版本 | 狀態 | 說明 |
 |------|------|------|------|
-| `01_LLM_特性與Agentic_Coding知識體系.md` | 0.3 | 打磨中 | 知識文件：LLM 特性、能力邊界、工程原則 |
+| `01_LLM_特性與Agentic_Coding知識體系.md` | 0.4 | 打磨中 | 知識文件：LLM 特性、能力邊界、工程原則 |
 | `02_規格驅動_AI_Coding_方法論.md` | 0.0 | 空殼 | 操作手冊：混合架構、Quality Gate、Execution Checklist |
 
 ## 核心觀點
