@@ -26,7 +26,8 @@
    - `*QueryProcessor.java` → `backend-processor-query.md`
    - `*DropdownProcessor.java` → `backend-processor-dropdown.md`
    - `*GetByIdProcessor.java` → `backend-processor-getbyid.md`
-   - `*Query.vue` → `frontend-page.md`
+   - `*{CODE}.vue`（頁面）→ `frontend-page.md`
+   - `*ListSection.vue` → `frontend-list-section.md`
    - `*Service.ts` → `frontend-service.md`
    - `*Store.ts` → `frontend-store.md`
 3. 有匹配 → 以模板骨架開始，填入業務邏輯
