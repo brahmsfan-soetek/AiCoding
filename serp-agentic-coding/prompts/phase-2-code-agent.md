@@ -21,7 +21,11 @@
 2. 根據當前 Task 涉及的檔案類型，**只載入對應的 1-2 個模板檔案**：
    - `*Entity.java` → `backend-entity.md`
    - `*CreateProcessor.java` → `backend-processor-create.md`
+   - `*UpdateProcessor.java` → `backend-processor-update.md`
+   - `*DeleteProcessor.java` → `backend-processor-delete.md`
    - `*QueryProcessor.java` → `backend-processor-query.md`
+   - `*DropdownProcessor.java` → `backend-processor-dropdown.md`
+   - `*GetByIdProcessor.java` → `backend-processor-getbyid.md`
    - `*Query.vue` → `frontend-page.md`
    - `*Service.ts` → `frontend-service.md`
    - `*Store.ts` → `frontend-store.md`

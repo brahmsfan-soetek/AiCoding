@@ -30,12 +30,16 @@ conventions/
   code-patterns.md           代碼模式 + 禁止模式
   data-access.md             ORM 策略 + 回應格式 + 共用組件
 templates/
-  backend-entity.md          Panache Active Record + toMap
-  backend-processor-create.md  Create Processor 骨架
-  backend-processor-query.md   Query Processor 骨架（前端/後端分頁）
-  frontend-page.md           Vue 3 + Quasar + TablesComponent 頁面
-  frontend-service.md        API Service（export const 物件）
-  frontend-store.md          Pinia Setup API Store
+  backend-entity.md              Panache Active Record + toMap
+  backend-processor-create.md    Create Processor 骨架
+  backend-processor-update.md    Update Processor 骨架（含排除自身重複檢查）
+  backend-processor-delete.md    Delete Processor 骨架（最簡潔）
+  backend-processor-query.md     Query Processor 骨架（前端/後端分頁）
+  backend-processor-dropdown.md  Dropdown Processor 骨架（switch 分派 + items）
+  backend-processor-getbyid.md   GetById Processor 骨架（單筆 + lookup 顯示欄位）
+  frontend-page.md               Vue 3 + Quasar + TablesComponent 頁面
+  frontend-service.md            API Service（export const 物件）
+  frontend-store.md              Pinia Setup API Store
 examples/
   conflict-list-example.md   P0 產出格式範例（conflicts.md + sa_pending.md）
 references/
