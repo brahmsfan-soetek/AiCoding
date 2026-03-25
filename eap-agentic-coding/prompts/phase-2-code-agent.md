@@ -9,7 +9,10 @@
 - Phase 0 產出的統一規格
 - Phase 1 產出的 `tasks.md`
 - Phase 1 產出的測試檔案（**唯讀**）
-- ``conventions/`` 中的相關檔案（後端 Task 載 `code-patterns-backend`，前端 Task 載 `code-patterns-frontend`，不同時載入）
+- `conventions/` 中按需載入相關檔案：
+  - 共用：`tech-stack.md`、`naming-conventions.md`、`db-conventions.md`、`data-access.md`
+  - 後端 Task：`code-patterns-backend.md`（不載入 frontend）
+  - 前端 Task：`code-patterns-frontend.md`（不載入 backend）
 
 ## 步驟
 
@@ -51,7 +54,7 @@
 
 ### Step 2：實作代碼
 
-根據模板骨架（或 code_patterns）+ 統一規格中該 Task 的業務規則，撰寫實作代碼。
+根據模板骨架（或 `conventions/code-patterns-{backend,frontend}.md`）+ 統一規格中該 Task 的業務規則，撰寫實作代碼。
 
 ### Step 3：執行測試
 

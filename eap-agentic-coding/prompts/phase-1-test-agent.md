@@ -98,7 +98,7 @@ Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 ## 產出
 
 - `tasks.md` — 任務清單（含依賴關係和執行順序）
-- 測試檔案 — 按 ``conventions/`` 的 `test_framework` 規範放置
+- 測試檔案 — 按 `conventions/tech-stack.md` 的測試框架規範放置
 - `test_spec_map.md` — 測試案例 ↔ 規格條目的對應表
 
 ## STOP Gate
