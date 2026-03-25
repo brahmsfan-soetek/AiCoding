@@ -1,0 +1,18 @@
+{
+  "name": "soetek-agentic-coding-skills",
+  "owner": {
+    "name": "soetek"
+  },
+  "metadata": {
+    "description": "LLM 行為特性實證研究為基礎的 Claude Code Skills — 規格驅動、Agent 分離、交叉驗證",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "soetek-agentic-coding",
+      "source": "./",
+      "description": "規格驅動開發 Skills：多源規格交叉比對、Agent 分離實作、交叉驗證 QA",
+      "version": "1.0.0"
+    }
+  ]
+}

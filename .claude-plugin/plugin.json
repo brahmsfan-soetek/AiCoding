@@ -1,0 +1,12 @@
+{
+  "name": "soetek-agentic-coding",
+  "version": "1.0.0",
+  "description": "LLM 行為特性實證研究為基礎的 Claude Code Skills — 規格驅動、Agent 分離、交叉驗證",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./eap-agentic-coding",
+    "./serp-agentic-coding"
+  ]
+}
