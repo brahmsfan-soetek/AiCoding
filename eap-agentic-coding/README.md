@@ -5,7 +5,7 @@ eap 專案的規格驅動 AI 開發流程。以 11 項 LLM 行為特性實證研
 ## 流程概覽
 
 ```
-Phase 0  規格衝突檢查    DOCX ↔ HTML 矛盾消除，人工裁決
+Phase 0  規格衝突檢查    規格書 ↔ HTML ↔ DDL ↔ Logic 交叉比對，矛盾消除
   ↓
 Phase 1  任務拆解 + 測試  Test Agent：理解規格 → 拆為 <50 行任務 → 逐任務寫測試
   ↓
@@ -27,16 +27,22 @@ conventions/
   tech-stack.md              技術棧 + 測試框架
   naming-conventions.md      命名 + 目錄結構
   db-conventions.md          資料庫慣例
-  code-patterns.md           代碼模式 + 禁止模式
+  code-patterns-backend.md   後端代碼模式 + 禁止模式（§2 拆分，後端 Task 載入）
+  code-patterns-frontend.md  前端代碼模式 + 禁止模式（§2 拆分，前端 Task 載入）
   data-access.md             ORM 策略 + 回應格式 + 共用組件
 templates/
-  backend-entity.md              Entity 模板
-  backend-processor-create.md    Create Processor 骨架
-  backend-processor-update.md    Update Processor 骨架
-  backend-processor-delete.md    Delete Processor 骨架
-  backend-processor-query.md     Query Processor 骨架
-  backend-processor-dropdown.md  Dropdown Processor 骨架
-  backend-processor-getbyid.md   GetById Processor 骨架
+  backend-entity.md              Entity 模板（@Cacheable + Panache）
+  backend-processor-create.md    Create Processor（Thick/Thin 兩版）
+  backend-processor-update.md    Update Processor（部分更新模式）
+  backend-processor-delete.md    Delete Processor（批次刪除）
+  backend-processor-query.md     Query Processor（PaginationUtil 分頁）
+  backend-processor-dropdown.md  Dropdown / LOV（YAML 優先）
+  backend-processor-getbyid.md   GetById Processor（單筆查詢）
+  frontend-page.md               Page 模板（CRUD + Dialog 模式）
+  frontend-dialog.md             Dialog 組件（新增/編輯）
+  frontend-service.md            Service 模板（API 封裝）
+  frontend-store.md              Store 模板（Setup + Object 兩版）
+  frontend-types.md              Types 模板（Entity + Request + Response）
 examples/
   conflict-list-example.md   P0 產出格式範例（conflicts.md + sa_pending.md）
 references/
@@ -59,4 +65,4 @@ references/
 
 ## 技術棧
 
-<!-- TODO: 從 EAP 專案填入 -->
+eap（Quarkus 3.25.4 + Apache Camel 4.4.0 + Vue 3 + Quasar 2.14.2 + MSSQL）

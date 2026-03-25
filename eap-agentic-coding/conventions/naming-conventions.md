@@ -1,19 +1,41 @@
 # eap 命名慣例
 
 ## Backend
-
-<!-- TODO: 從 EAP 專案填入 — Package 命名、Class 命名（PascalCase 等）、Method 命名、Constants 命名、Processor @Named 規則、Route ID 規則、API URL 規則 -->
+- **Package**: `org.soetek.eap.{module-code}.{layer}`（如 `org.soetek.eap.au010.processor`）
+- **Class**: PascalCase — `{Entity}{Operation}Processor`、`{Entity}Entity`
+- **Method**: camelCase
+- **Constants**: UPPER_SNAKE_CASE
+- **Processor @Named**: `{camelCaseRouteName}Processor`（如 `auCalendarCreateProcessor`）
+- **Route ID**: @Named 去掉 Processor 後綴（如 `auCalendarCreate`）
+- **API URL**: `/api/{routeId}`（如 `/api/au010CalendarCreate`，模組前綴可選）
+- **Service**: `{ModuleCode}Service`（如 `Au012Service`）
 
 ## Frontend
-
-<!-- TODO: 從 EAP 專案填入 — 頁面命名、組件命名、Service 命名、Store 命名、Composables 命名、i18n key 規則 -->
+- **頁面**: `{MODULE_CODE}{Action}.vue`（如 `AU010Query.vue`）
+- **組件**: PascalCase Vue SFC（如 `CalendarHeader.vue`）
+- **Service**: `{moduleCode}Service.ts`，export const 物件模式（如 `au010Service`）
+- **Store**: `use{ModuleCode}Store.ts`，Pinia Setup API（如 `useAu010Store.ts`）
+- **Types**: `{moduleCode}Types.ts`（如 `au010Types.ts`）
+- **Composables**: `use{PascalCase}`
+- **i18n key**: `{moduleCode}.{camelCaseKey}`
 
 ## 目錄結構
 
 ### Backend
-
-<!-- TODO: 從 EAP 專案填入 — 後端 package/目錄結構（domain, processor, service, repository 等） -->
+```
+{module-code}/src/main/java/org/soetek/eap/{module-code}/
+  domain/       Entity（繼承 AuditableEapEntity）
+  processor/    Camel Processor（業務邏輯入口）
+  service/      Service（複雜跨 Entity 業務邏輯）
+```
 
 ### Frontend
-
-<!-- TODO: 從 EAP 專案填入 — 前端目錄結構（pages, components, stores, services, types, i18n 等） -->
+```
+src/pages/{module}/{moduleCode}/       頁面組件
+src/components/common/                 共用組件（SBtn, SInput 等）
+src/components/{module}/{moduleCode}/  業務組件
+src/stores/{module}/{moduleCode}/      Pinia stores
+src/services/{module}/{moduleCode}/    API 服務層
+src/types/{module}/                    TypeScript 型別
+src/i18n/zh-TW/{module}/              國際化
+```

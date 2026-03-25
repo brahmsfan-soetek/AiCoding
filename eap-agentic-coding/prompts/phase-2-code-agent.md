@@ -9,7 +9,7 @@
 - Phase 0 產出的統一規格
 - Phase 1 產出的 `tasks.md`
 - Phase 1 產出的測試檔案（**唯讀**）
-- ``conventions/`` 中的 `tech_stack`、`naming_conventions`、`db_conventions`、`code_patterns`、`code_templates`、`forbidden_patterns`
+- ``conventions/`` 中的相關檔案（後端 Task 載 `code-patterns-backend`，前端 Task 載 `code-patterns-frontend`，不同時載入）
 
 ## 步驟
 
@@ -17,21 +17,24 @@
 
 ### Step 0：模板匹配
 
-1. 讀取 `conventions/` 的 `code_templates` 區塊，取得模板目錄路徑
-2. 根據當前 Task 涉及的檔案類型，**只載入對應的 1-2 個模板檔案**：
+1. 根據當前 Task 涉及的檔案類型，從 `templates/` 目錄**只載入對應的 1-2 個模板檔案**：
    - `*Entity.java` → `backend-entity.md`
-   - `*CreateProcessor.java` → `backend-processor-create.md`
+   - `*CreateProcessor.java` → `backend-processor-create.md`（含 Thick/Thin 兩版）
    - `*UpdateProcessor.java` → `backend-processor-update.md`
    - `*DeleteProcessor.java` → `backend-processor-delete.md`
-   - `*QueryProcessor.java` → `backend-processor-query.md`
-   - `*DropdownProcessor.java` → `backend-processor-dropdown.md`
+   - `*QueryProcessor.java` → `backend-processor-query.md`（PaginationUtil 分頁）
+   - 下拉選單需求 → `backend-processor-dropdown.md`（LOV YAML 優先）
    - `*GetByIdProcessor.java` → `backend-processor-getbyid.md`
-   <!-- TODO: 前端模板待 EAP 排版風格確定後補充 -->
-3. 有匹配 → 以模板骨架開始，填入業務邏輯
-4. 無匹配 → 參考 `code_patterns`（backend / frontend 分區）的風格慣例
-5. **不可自行發明新的結構模式** (§5：防止模式發散)
-6. **不可一次載入所有模板** (§2 + §10：精簡 context，每個 Task 最多 1-2 個模板)
-7. 如有 `permission_framework` 定義 → 前端按鈕必須使用指定的權限組件
+   - `*Query.vue` / `*Page.vue` → `frontend-page.md`（CRUD + Dialog 模式）
+   - `*Dialog.vue` → `frontend-dialog.md`（新增/編輯 Dialog）
+   - `*Service.ts` → `frontend-service.md`（API 封裝）
+   - `*Store.ts` → `frontend-store.md`（Setup + Object 兩版）
+   - `*Types.ts` → `frontend-types.md`（Entity + Request + Response 型別）
+2. 有匹配 → 以模板骨架開始，填入業務邏輯
+3. 無匹配 → 參考 `conventions/code-patterns-backend.md`（後端 Task）或 `conventions/code-patterns-frontend.md`（前端 Task）
+4. **不可自行發明新的結構模式** (§5：防止模式發散)
+5. **不可一次載入所有模板** (§2 + §10：精簡 context，每個 Task 最多 1-2 個模板)
+6. 如有 `permission_framework` 定義 → 前端按鈕必須使用指定的權限組件
 
 ### Step 1：從源頭載入
 
@@ -68,7 +71,7 @@
 | **不確定的 API/依賴必須驗證存在性** | §6：19.7% 推薦套件不存在 |
 | **業務邏輯不確定時詢問而非假設** | §6：「暫不實作」比幻覺填補安全 |
 | **測試失敗時先 Wait 再修正** | §8：Wait 提示降低盲區率 89.3%。暫停 → 重讀規格 → 再修，避免在錯誤理解上疊加修正 |
-| **不可偏離 code_templates 定義的結構** | §5：一致性 > 優雅。模板中的問題記到 review_notes |
+| **不可偏離 `templates/` 模板定義的結構** | §5：一致性 > 優雅。模板中的問題記到 review_notes |
 
 ## 產出
 
@@ -100,5 +103,5 @@
 - 「測試太嚴格」99% 的情況是代碼有問題，不是測試有問題
 - 模板中的錯誤不要自己修 — 記到 review_notes.md，讓 P3 統一裁決
 - 每個 Task 結束後不要把 context 帶到下一個 Task — 從源頭重新載入
-- `forbidden_patterns` 中的做法即使能通過測試也絕對不用
+- `code-patterns-{backend,frontend}.md`「禁止模式」中的做法即使能通過測試也絕對不用
 - 驗證 import 的套件確實存在 — `npm ls` 或 `pip list` 確認

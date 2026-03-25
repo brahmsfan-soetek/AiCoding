@@ -9,7 +9,7 @@
 ## 輸入
 
 - Phase 0 產出的統一規格
-- ``conventions/`` 中的 `test_framework`、`naming_conventions`、`db_conventions`
+- `conventions/tech-stack.md`、`conventions/naming-conventions.md`、`conventions/db-conventions.md`
 
 ## 步驟
 
@@ -60,6 +60,22 @@ for each Task in 任務清單:
 ```
 
 > 逐任務循環而非批次：控制每次迭代的複雜度在模型有效規劃範圍內 (§11)，避免全部拆完後 context 膨脹 (§2)。
+
+### 前端 Task 的測試策略
+
+目前前端測試框架未配置（見 `conventions/tech-stack.md`）。前端 Task 的處理方式：
+
+| 情況 | 做法 |
+|------|------|
+| 前端 Task（Vue/TS） | 不寫單元測試，在 `tasks.md` 標記 `[人工測試]` |
+| 前端 Types（型別定義） | 確認 TypeScript 編譯通過即可 |
+| 前端與後端聯動的 Task | 後端部分寫測試，前端部分標記 `[人工測試]` |
+
+Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
+- TypeScript 型別是否完整（無 `any`）
+- 是否遵循三層架構（Page → Store → Service）
+- 是否使用正確的共用組件（SBtn, SInput 等）
+- i18n 和 permission-id 是否齊全
 
 ## 測試撰寫原則
 
