@@ -1,7 +1,5 @@
 # Backend: Entity 模板
 
-> 權威來源：`Docs/EAP_BACKEND_ARCHITECTURE.md` Entity 範例 + `Docs/AuditableEapEntity-Design.md`
-
 ## 範例代碼
 
 ```java
@@ -20,7 +18,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.soetek.eap.demo.domain.AuditableEapEntity;
+import org.soetek.eap.demo.domain.AuditableEapEntity; // ⚠️ 路徑以 eap 專案實際位置為準
 
 /**
  * {Entity 中文名稱} Entity

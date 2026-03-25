@@ -1,8 +1,9 @@
 ---
 name: agentic-coding
 description: >
-  eap 專案的規格驅動開發流程。多源規格輸入（規格書 + HTML + DDL + 邏輯文件），
-  test-first + agent 分離，Phase 0-3 執行。
+  當 eap 專案需要從規格書（含 HTML 畫面 + DDL + 邏輯文件）進行功能開發時觸發。
+  涵蓋規格衝突檢查、test-first 任務拆解、agent 分離實作、交叉驗證。
+  不適用於單檔修正、純重構、無規格書的探索式開發。
 ---
 
 # Agentic Coding — eap 專屬
@@ -75,9 +76,9 @@ Phase 3 → Review Agent             ← 交叉驗證
 
 ### 模型選擇
 
-所有 Phase 一律使用可用的最強模型。位置偏見差距過大 — Opus 76% vs Sonnet 18.5%（MRCR v2 @ 1M）(§3)，弱模型在長 context 下的檢索準確率不足以支撐任何 Phase 的品質要求。
+Phase 0/1/3 一律使用可用的最強模型——這些 Phase 的 context 較長且需要高品質推理，位置偏見差距過大：Opus 76% vs Sonnet 18.5%（MRCR v2 @ 1M）(§3)。
 
-> 如果成本是限制因素，Phase 2 的個別 Task（每個 <50 行、context 精簡載入）是最有可能降級模型的地方。但降級前須確認該模型在目標 context 長度下的檢索準確率足夠。
+> Phase 2 的個別 Task（每個 <50 行、context 精簡載入）context 遠小於 1M tokens，在短 context 下模型間差距顯著縮小（03-P4：昂貴模型用於規劃/編排，便宜模型用於離散小任務）。若成本是限制因素，Phase 2 是最適合降級的地方。但降級前須確認該模型在目標 context 長度下的檢索準確率足夠。
 
 ### 硬性規則
 
@@ -250,6 +251,30 @@ fi
 ### 啟用方式
 
 Phase 2 啟動時在 `settings.local.json` 中註冊上述兩個 hooks；Phase 2 結束後移除。可透過 `/agentic-coding` 的 on-demand hooks (02-P9) 自動管理生命週期。
+
+```jsonc
+// .claude/settings.local.json — Phase 2 啟動時寫入，結束時移除 hooks 區塊
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/block-test-edit.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/silent-test-pass.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ---
 

@@ -1,7 +1,5 @@
 # Frontend: Types 模板
 
-> 權威來源：`Docs/EAP_FRONTEND_ARCHITECTURE.md` + AU010/AU002 實際 types 檔案
-
 ## 範例代碼
 
 ```typescript

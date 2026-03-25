@@ -1,7 +1,5 @@
 # eap 資料庫慣例
 
-> 權威來源：`Docs/Multi-Database-Architecture.md` + `Docs/Schema-SQL-Best-Practices.md` + `Docs/AuditableEapEntity-Design.md`
-
 ## 基礎資訊
 
 - **資料庫**: Microsoft SQL Server 2019+

@@ -18,6 +18,16 @@
 
 ## 步驟
 
+### Step 0：輸入前處理
+
+若規格書為 DOCX 格式，先轉為 MD 再進行後續步驟（LLM 無法可靠讀取 DOCX — §6 自信填補風險）：
+
+```bash
+python docx2md.py {specPath}
+```
+
+轉換完成後更新 `.agentic/config.json` 中的 `specPath` 指向產出的 MD 檔案。
+
 ### Step 1：讀取所有來源
 
 列出每個來源的關鍵資訊：

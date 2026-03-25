@@ -1,7 +1,5 @@
 # Backend: Query Processor 模板
 
-> 權威來源：`Docs/BACKEND_PROCESSOR_SKILL_GUIDE.md` QueryProcessor 範例 + AU011/TM 實際代碼
-
 ## 標準版（後端分頁，使用 PaginationUtil）
 
 ```java

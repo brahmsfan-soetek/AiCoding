@@ -1,7 +1,5 @@
 # Backend: GetById Processor 模板
 
-> 權威來源：`Docs/BACKEND_PROCESSOR_SKILL_GUIDE.md` QueryProcessor 單筆查詢 + AU012 `SalaryRankQueryProcessor`
-
 ## 範例代碼
 
 ```java

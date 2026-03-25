@@ -1,6 +1,5 @@
 # eap 後端代碼模式
 
-> 權威來源：`Docs/EAP_BACKEND_ARCHITECTURE.md` + `Docs/BACKEND_PROCESSOR_SKILL_GUIDE.md`
 > 載入時機：Phase 2 後端 Task
 
 ## Processor 固定骨架

@@ -1,7 +1,5 @@
 # Backend: Create Processor 模板
 
-> 權威來源：`Docs/EAP_BACKEND_ARCHITECTURE.md` 開發模式 + Demo `DemoCreateProcessor`
-
 ## Thick Processor 版（簡單 CRUD，業務邏輯在 Processor 內）
 
 ```java

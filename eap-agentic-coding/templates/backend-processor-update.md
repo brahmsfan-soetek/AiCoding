@@ -1,7 +1,5 @@
 # Backend: Update Processor 模板
 
-> 權威來源：`Docs/BACKEND_PROCESSOR_SKILL_GUIDE.md` UpdateProcessor 範例
-
 ## 範例代碼
 
 ```java

@@ -1,6 +1,5 @@
 # eap 前端代碼模式
 
-> 權威來源：`Docs/EAP_FRONTEND_ARCHITECTURE.md` + `Docs/FRONTEND_ERROR_HANDLING_GUIDE.md`
 > 載入時機：Phase 2 前端 Task
 
 ## 三層架構（強制）

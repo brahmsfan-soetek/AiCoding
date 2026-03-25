@@ -1,7 +1,5 @@
 # Frontend: Dialog 組件模板
 
-> 權威來源：`Docs/EAP_FRONTEND_ARCHITECTURE.md` Dialog 模式 + AU001 ApplicationDialog 範例
-
 ## 範例代碼
 
 ```vue

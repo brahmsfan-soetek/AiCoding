@@ -1,7 +1,5 @@
 # Frontend: Page 模板（CRUD + Dialog 模式）
 
-> 權威來源：`Docs/EAP_FRONTEND_ARCHITECTURE.md` 開發模式 + AU002/AU010 實際代碼
-
 ## 範例代碼
 
 ```vue

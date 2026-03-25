@@ -1,7 +1,5 @@
 # eap 資料存取與回應慣例
 
-> 權威來源：`Docs/EAP_BACKEND_ARCHITECTURE.md` + `Docs/Schema-SQL-Best-Practices.md` + `Docs/backend/LOV下拉式選單開發指南.md`
-
 ## ORM 策略
 
 **預設**: Panache Entity 靜態方法（JPQL，Hibernate 自動處理 Schema）

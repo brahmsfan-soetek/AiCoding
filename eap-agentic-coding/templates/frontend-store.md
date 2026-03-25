@@ -1,7 +1,5 @@
 # Frontend: Store 模板（Pinia）
 
-> 權威來源：`Docs/EAP_FRONTEND_ARCHITECTURE.md` 混合 Store 語法 + AU010/AU002 實際代碼
-
 ## Setup Syntax（推薦新模組使用）
 
 ```typescript

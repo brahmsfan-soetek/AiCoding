@@ -1,7 +1,5 @@
 # Backend: 下拉選單 — LOV 機制（推薦）vs 獨立 Processor
 
-> 權威來源：`Docs/backend/LOV下拉式選單開發指南.md`
-
 ## 方式 1：LOV YAML 配置（推薦，不需要寫 Processor）
 
 ### 步驟
