@@ -9,9 +9,15 @@
   },
   "plugins": [
     {
-      "name": "soetek-agentic-coding",
-      "source": "./",
-      "description": "規格驅動開發 Skills：多源規格交叉比對、Agent 分離實作、交叉驗證 QA",
+      "name": "eap-agentic-coding",
+      "source": "./eap",
+      "description": "eap 專案規格驅動開發：多源規格交叉比對、Agent 分離實作、交叉驗證 QA（Quarkus + Vue 3 + MSSQL）",
+      "version": "1.0.0"
+    },
+    {
+      "name": "serp-agentic-coding",
+      "source": "./serp",
+      "description": "serp 專案規格驅動開發：test-first + Agent 分離、Phase 0-3 執行",
       "version": "1.0.0"
     }
   ]
