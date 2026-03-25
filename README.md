@@ -2,12 +2,20 @@
 
 以 LLM 行為特性實證研究為基礎的 AI Coding 開發框架。
 
+## 目前狀態
+
+| SKILL | 狀態 | 說明 |
+|-------|------|------|
+| `eap-agentic-coding/` | **實測中** | eap 專案實測，優先推進 |
+| `serp-agentic-coding/` | 暫停 | 原型骨架，待 eap 實測結論回饋後再迭代 |
+
 ## 文件體系
 
 ```
 01（研究基礎）：LLM 行為特性，11 項風險 + 量化證據
   ↓ 推導出
-serp-agentic-coding（SKILL）：完整開發流程 Phase 0-3
+eap-agentic-coding（SKILL）：eap 專案實測版 Phase 0-3  ← 目前進行中
+serp-agentic-coding（SKILL）：原型骨架（暫停）
 
 02, 03（參考文獻）：Skill / Harness 設計原則
   ↓ 審視
@@ -20,8 +28,9 @@ review/（審查報告）：SKILL 審視與修正追蹤
 | `01_摘要.md` | 01 的萃取摘要，供 SKILL 推導用 |
 | `02_Skill設計原則_Thariq_Anthropic.md` | 9 類 Skill 分類 + 9 項設計原則（Anthropic 內部實踐） |
 | `03_Harness_Engineering_HumanLayer.md` | 7 項 Harness Engineering 原則 + 反模式 |
-| `serp-agentic-coding/` | Claude SKILL — 規格衝突檢查 → 任務拆解 → 測試先行 → 實作 → 交叉驗證 |
-| `review/` | 審查報告（SR1: SKILL 審視 2 嚴重 + 4 中等 + 4 輕微） |
+| `eap-agentic-coding/` | Claude SKILL — eap 專案實測版（[使用方法](eap-agentic-coding/README.md)） |
+| `serp-agentic-coding/` | Claude SKILL — 原型骨架（暫停，待 eap 實測回饋） |
+| `review/` | 審查報告（含多輪交叉審查） |
 
 ## 核心觀點
 
@@ -32,7 +41,8 @@ review/（審查報告）：SKILL 審視與修正追蹤
 
 ## 設計決策
 
-- **研究 → SKILL 直接推導**：01 → serp-agentic-coding，不設中間層（減少語義漂移，01 §1）
-- **SKILL 格式**：供 Claude 直接讀取執行，不是給人看的手冊
+- **研究 → SKILL 直接推導**：01 → SKILL，不設中間層（減少語義漂移，01 §1）
+- **eap 優先實測**：先在真實專案驗證流程，再回饋修正 SKILL 設計
+- **SKILL 格式**：供 Claude 直接讀取執行，README 給人看
 - **每條規則追溯 01**：所有工程原則都有實證研究支撐，不是經驗談
 - **參考文獻獨立**：02, 03 為外部 Skill/Harness 設計指引，用於審視 SKILL 設計品質
