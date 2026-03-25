@@ -11,17 +11,17 @@ eap 專案的規格驅動 AI 開發流程（Claude Code Skill）。
 
 | 材料 | 格式 | 說明 |
 |------|------|------|
-| 規格書 | `.md` 或 `.docx` | SA 文件（功能需求、Use Case、業務邏輯、SQL） |
+| 規格書 | `.docx` 或 `.md`（可含圖片） | SA 文件（功能需求、Use Case、業務邏輯、SQL） |
 | HTML 畫面 | 目錄（多個 `.html`） | UI mockup，每頁一個檔案 |
 | DDL/CSV | 目錄（多個 `.csv`） | 資料表結構定義 |
 | 邏輯文件 | 目錄（`.txt` / `.md`） | SA 口頭釐清的書面化、業務邏輯補充（覆寫其他來源） |
 
-> DOCX 規格書會在 Phase 0 自動轉為 MD（透過 `docx2md.py`）。
+> DOCX 規格書會在 Phase 0 轉為 MD + 圖片（透過 `docx2md.py`）。MD 規格書中的圖片需放在可存取的目錄下。
 
 ### 2. 確認 Skill 已安裝
 
 本資料夾應位於 Claude Code 可載入的 skill 路徑下（如 `.claude/skills/eap-agentic-coding/`）。
-Claude Code 會在 skill 清單中顯示 `agentic-coding`。
+Claude Code 會在 skill 清單中顯示 `eap-agentic-coding`。
 
 ## 使用方法
 
@@ -40,12 +40,13 @@ Claude Code 會在 skill 清單中顯示 `agentic-coding`。
 Claude 會詢問以下資訊，填入後自動建立 `.agentic/config.json`：
 
 ```
-模組代號？     → TM003
-模組名稱？     → 員工年度假別額度維護
-規格書路徑？   → specs/TM-員工年度假別額度維護.md
-HTML 目錄？    → specs/html/
-DDL 目錄？     → specs/ddl_csv/
-邏輯文件目錄？ → specs/logic_txt_md/
+模組代號？       → TM003
+模組名稱？       → 員工年度假別額度維護
+規格書路徑？     → specs/TM-員工年度假別額度維護.md（或 .docx）
+規格書圖片目錄？ → specs/images/（MD 格式時；DOCX 轉換後自動產生）
+HTML 目錄？      → specs/html/
+DDL 目錄？       → specs/ddl_csv/
+邏輯文件目錄？   → specs/logic_txt_md/
 ```
 
 之後每次啟動會讀取此配置，確認後直接進入流程。

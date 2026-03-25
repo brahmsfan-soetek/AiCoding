@@ -11,7 +11,7 @@
 
 | 來源 | 說明 | 格式 |
 |------|------|------|
-| 規格書 | SA 文件，含功能需求、Use Case、業務邏輯、SQL | MD 或 DOCX |
+| 規格書 | SA 文件，含功能需求、Use Case、業務邏輯、SQL | DOCX 或 MD（可含圖片） |
 | HTML 畫面 | UI mockup，每頁一個檔案 | 目錄（多個 .html） |
 | DDL/CSV | 資料表結構定義（欄位名、型態、約束） | 目錄（多個 .csv） |
 | 邏輯文件 | 業務邏輯補充、SA 口頭澄清的書面化 | 目錄（.txt/.md） |
@@ -20,13 +20,14 @@
 
 ### Step 0：輸入前處理
 
-若規格書為 DOCX 格式，先轉為 MD 再進行後續步驟（LLM 無法可靠讀取 DOCX — §6 自信填補風險）：
+根據規格書格式執行對應的前處理：
 
-```bash
-python docx2md.py {specPath}
-```
+| 格式 | 處理方式 |
+|------|---------|
+| **DOCX** | 執行 `python docx2md.py {specPath}` 轉為 MD + 圖片，更新 `config.json` 的 `specPath` 和 `specImageDir` |
+| **MD + 圖片** | 確認 `config.json` 的 `specImageDir` 指向圖片目錄，MD 中的圖片引用路徑正確 |
 
-轉換完成後更新 `.agentic/config.json` 中的 `specPath` 指向產出的 MD 檔案。
+> LLM 無法可靠讀取 DOCX（§6 自信填補風險）。MD 中引用的圖片須以 Read 工具讀取確認內容。
 
 ### Step 1：讀取所有來源
 
