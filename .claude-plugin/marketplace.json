@@ -10,13 +10,13 @@
   "plugins": [
     {
       "name": "eap-agentic-coding",
-      "source": "./eap",
+      "source": "./eap-agentic-coding",
       "description": "eap 專案規格驅動開發：多源規格交叉比對、Agent 分離實作、交叉驗證 QA（Quarkus + Vue 3 + MSSQL）",
       "version": "1.0.0"
     },
     {
       "name": "serp-agentic-coding",
-      "source": "./serp",
+      "source": "./serp-agentic-coding",
       "description": "serp 專案規格驅動開發：test-first + Agent 分離、Phase 0-3 執行",
       "version": "1.0.0"
     }
