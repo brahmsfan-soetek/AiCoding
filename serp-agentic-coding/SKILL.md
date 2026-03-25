@@ -1,8 +1,9 @@
 ---
-name: agentic-coding
+name: serp-agentic-coding
 description: >
-  serp 專案的規格驅動開發流程。DOCX + HTML 規格輸入，
+  當 serp 專案需要從規格書（DOCX + HTML）進行功能開發時觸發。
   test-first + agent 分離，Phase 0-3 執行。
+  不適用於單檔修正、純重構、無規格書的探索式開發。
 ---
 
 # Agentic Coding — serp 專屬

@@ -1,5 +1,5 @@
 ---
-name: agentic-coding
+name: eap-agentic-coding
 description: >
   當 eap 專案需要從規格書（含 HTML 畫面 + DDL + 邏輯文件）進行功能開發時觸發。
   涵蓋規格衝突檢查、test-first 任務拆解、agent 分離實作、交叉驗證。
