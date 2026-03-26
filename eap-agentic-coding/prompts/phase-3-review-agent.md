@@ -14,6 +14,12 @@
 
 ## 步驟
 
+### 進場日誌
+
+```bash
+bash .claude/hooks/phase-logger.sh start P3
+```
+
 ### Step 1：規格覆蓋率檢查
 
 逐條比對統一規格的功能點，確認每一條都有對應的代碼實作和測試案例。
@@ -71,6 +77,14 @@
 - Review Notes 裁決結果
 - 測試品質評估
 - 建議的修正項目
+
+## 出場日誌
+
+審查完成後（STOP Gate 判斷之前），記錄耗時與 token：
+
+```bash
+bash .claude/hooks/phase-logger.sh end P3
+```
 
 ## STOP Gate
 

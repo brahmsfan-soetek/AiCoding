@@ -13,6 +13,12 @@
 
 ## 步驟
 
+### 進場日誌
+
+```bash
+bash .claude/hooks/phase-logger.sh start P1
+```
+
 ### Step 1：規格理解
 
 1. 讀取統一規格，列出所有功能點。
@@ -110,6 +116,14 @@ Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 - `tasks.md` — 任務清單（含依賴關係和執行順序）
 - 測試檔案 — 按 `conventions/tech-stack.md` 的測試框架規範放置
 - `test_spec_map.md` — 測試案例 ↔ 規格條目的對應表
+
+## 出場日誌
+
+Phase 結束前（STOP Gate 判斷之前），記錄耗時與 token：
+
+```bash
+bash .claude/hooks/phase-logger.sh end P1
+```
 
 ## STOP Gate
 

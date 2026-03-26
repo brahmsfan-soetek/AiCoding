@@ -18,6 +18,12 @@
 
 ## 步驟
 
+### 進場日誌
+
+```bash
+bash .claude/hooks/phase-logger.sh start P0
+```
+
 ### Step 0：輸入前處理
 
 根據規格書格式執行對應的前處理：
@@ -110,6 +116,14 @@
 - `conflicts.md` — 衝突清單 + 裁決結果（存入 `.agentic/`）
 - `sa_pending.md` — SA 待確認清單 + 回覆（存入 `.agentic/`）
 - `unified-spec.md` — 統一規格：衝突已解決的版本，後續 Phase 的**唯一輸入源**（存入 `.agentic/`）
+
+## 出場日誌
+
+Phase 結束前（STOP Gate 判斷之前），記錄耗時與 token：
+
+```bash
+bash .claude/hooks/phase-logger.sh end P0
+```
 
 ## STOP Gate
 

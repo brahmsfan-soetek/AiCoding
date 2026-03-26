@@ -16,6 +16,12 @@
 
 ## 步驟
 
+### 進場日誌
+
+```bash
+bash .claude/hooks/phase-logger.sh start P2
+```
+
 對每個 Task（按 `tasks.md` 的執行順序）：
 
 ### Step 0：模板匹配
@@ -81,6 +87,14 @@
 - 實作代碼（按 ``conventions/`` 的目錄結構放置）
 - 測試執行結果（成功靜默，失敗詳述）
 - `review_notes.md` — 遇到的疑問、可能的測試問題、規格模糊處
+
+## 出場日誌
+
+所有 Task 處理完畢後（STOP Gate 判斷之前），記錄耗時與 token：
+
+```bash
+bash .claude/hooks/phase-logger.sh end P2
+```
 
 ## STOP Gate
 
