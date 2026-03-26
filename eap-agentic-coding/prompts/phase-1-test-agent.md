@@ -10,7 +10,6 @@
 
 - Phase 0 產出的統一規格
 - `conventions/tech-stack.md`、`conventions/naming-conventions.md`、`conventions/db-conventions.md`
-- `templates/test-infrastructure.md`（測試基礎建設模板 — 配置 application.properties、pom.xml 依賴、編碼設定）
 
 ## 步驟
 
@@ -78,11 +77,38 @@ for each Task in 任務清單:
 | 前端 Types（型別定義） | 確認 TypeScript 編譯通過即可 |
 | 前端與後端聯動的 Task | 後端部分寫測試，前端部分標記 `[人工測試]` |
 
+### 前端 Task 強制拆解粒度
+
+**禁止**將所有前端工作合併為 1-2 個大 Task。即使不寫自動化測試，前端仍須按以下粒度拆解：
+
+| Task 類型 | 涉及檔案 | 必須獨立為 Task | 依賴 | 需載入的模板 |
+|-----------|---------|----------------|------|-------------|
+| Types 定義 | `{moduleCode}Types.ts` | 是 | 無 | `frontend-types.md` |
+| Service 層 | `{moduleCode}Service.ts` | 是 | Types | `frontend-service.md` |
+| Store 層 | `use{ModuleCode}Store.ts` | 是 | Service, Types | `frontend-store.md` |
+| Router 註冊 | `routes.ts`（新增項目） | 是 | 無 | `frontend-router.md` |
+| i18n Keys | `{module}.json`（新增 key 區塊） | 是 | 主頁面, Dialog | `frontend-i18n.md` |
+| 主頁面 | `{ModuleCode}.vue` | 是 | Store, Types | `frontend-page.md` |
+| 每個 Dialog | `{EntityName}Dialog.vue` | 各自獨立 | Store, Types | `frontend-dialog.md` |
+
+每個前端 Task 須包含：
+- 涉及的檔案清單
+- 需要 Phase 2 載入的模板名稱
+- 標記 `[人工測試]`
+- 預估行數（仍遵守 <50 行原則）
+
+> 為什麼要這麼細？ Test-01 數據顯示前端 7 個檔案只用了 24/283 tool calls（8%），品質極差。細粒度拆解確保 Phase 2 對每個前端檔案投入足夠注意力。
+
+### 前端 Task 的 P3 審查重點
+
 Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 - TypeScript 型別是否完整（無 `any`）
 - 是否遵循三層架構（Page → Store → Service）
-- 是否使用正確的共用組件（SBtn, SInput 等）
-- i18n 和 permission-id 是否齊全
+- 是否使用正確的共用組件（SBtn, SInput, SSelect2, SDialog2, SCard 等）
+- i18n keys 是否齊全且結構正確
+- Router 路由是否已註冊且 `meta.pid` 與 `setPagePid` 一致
+- Dialog 是否遵循 `frontend-dialog.md` 模板結構（使用 `@confirm`/`@cancel` 事件）
+- `permission-id` 是否配置在所有操作按鈕上
 
 ## 測試撰寫原則
 
@@ -102,34 +128,21 @@ Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 | **不可為「讓測試容易寫」而降低規格要求** | §7：附和偏見的變體 |
 | 無法轉化為可測試斷言的業務規則 → 標記 `[無法測試：需人工驗證]` | 不跳過 |
 
-## 測試基礎建設設定
+## 測試資料庫配置
 
-首次建立測試時，按 `templates/test-infrastructure.md` 確認以下檔案存在且正確：
+測試檔案可能需要 `import.sql` 種子資料。配置測試資料庫時**必須遵守** `conventions/tech-stack.md` 的「測試資料庫隔離」規則：
 
-| 檔案 | 動作 |
-|------|------|
-| `src/test/resources/application.properties` | 若不存在 → 按模板建立；若已存在 → 確認 DB 連線、auth bypass、encoding 設定完整 |
-| `src/test/resources/junit-platform.properties` | 若不存在 → 按模板建立 |
-| `application/pom.xml` | 確認 test dependencies（quarkus-junit5, rest-assured）和 plugin encoding 設定存在 |
-
-> **不可修改主 `application.properties`** — `drop-and-create` 只能出現在 test resources。詳見 `conventions/tech-stack.md` 的「測試資料庫隔離」規則。
-
-## 測試種子資料（import.sql）
-
-測試檔案通常需要 `import.sql` 種子資料，放在 `src/test/resources/`。
-
-| 規則 | 說明 |
-|------|------|
-| 檔案編碼 **UTF-8 without BOM** | BOM 會導致第一行 SQL 語法錯誤 |
-| 中文字串用 `N'前綴'` | MSSQL NVARCHAR 插入中文的必要語法 |
-| Schema prefix `EAP.TABLE_NAME` | 種子資料插入 EAP Schema |
-| 每個 INSERT 獨立一行 | Hibernate 逐行執行 import.sql |
+| 做 | 不做 |
+|----|------|
+| 在 `src/test/resources/application.properties` 設定連線和 `drop-and-create` | 在主 `application.properties` 加 `%test.*.drop-and-create` |
+| 連線指向 Docker 本地 MSSQL (`localhost:11434`) | 連線指向遠端共用 DB |
+| `import.sql` 放在 `src/test/resources/` | 在測試代碼中手動建立/清除資料 |
 
 ## 產出
 
-- `tasks.md` — 任務清單（含依賴關係和執行順序），存入 `.agentic/{moduleCode}/`
+- `tasks.md` — 任務清單（含依賴關係和執行順序）
 - 測試檔案 — 按 `conventions/tech-stack.md` 的測試框架規範放置
-- `test_spec_map.md` — 測試案例 ↔ 規格條目的對應表，存入 `.agentic/{moduleCode}/`
+- `test_spec_map.md` — 測試案例 ↔ 規格條目的對應表
 
 ## 出場日誌
 

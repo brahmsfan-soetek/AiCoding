@@ -13,15 +13,6 @@
   - 共用：`tech-stack.md`、`naming-conventions.md`、`db-conventions.md`、`data-access.md`
   - 後端 Task：`code-patterns-backend.md`（不載入 frontend）
   - 前端 Task：`code-patterns-frontend.md`（不載入 backend）
-  - 測試環境問題：`templates/test-infrastructure.md`（僅在測試執行失敗且疑似環境問題時載入）
-
-## 前置條件
-
-Phase 2 進場時驗證以下條件，缺一不可：
-
-1. **Hooks 已安裝**：確認 eap 專案的 `.claude/hooks/` 下有 `block-test-edit.sh` 和 `silent-test-pass.sh`，且 `.claude/settings.local.json` 已配置對應的 PreToolUse/PostToolUse hooks。缺少 → **停止，提示使用者重新執行 Setup**。
-
-2. **後端已編譯**：eap 是 Maven 多模組專案，`application` 模組的測試依賴其他子模組。確認使用者已執行 `cd backend && mvn clean install -DskipTests`。若不確定 → 提醒使用者先執行。
 
 ## 步驟
 
@@ -48,11 +39,27 @@ bash .claude/hooks/phase-logger.sh start P2
    - `*Service.ts` → `frontend-service.md`（API 封裝）
    - `*Store.ts` → `frontend-store.md`（Setup + Object 兩版）
    - `*Types.ts` → `frontend-types.md`（Entity + Request + Response 型別）
+   - `routes.ts`（路由註冊） → `frontend-router.md`
+   - `{moduleCode}.json`（i18n keys） → `frontend-i18n.md`
 2. 有匹配 → 以模板骨架開始，填入業務邏輯
 3. 無匹配 → 參考 `conventions/code-patterns-backend.md`（後端 Task）或 `conventions/code-patterns-frontend.md`（前端 Task）
 4. **不可自行發明新的結構模式** (§5：防止模式發散)
 5. **不可一次載入所有模板** (§2 + §10：精簡 context，每個 Task 最多 1-2 個模板)
 6. 如有 `permission_framework` 定義 → 前端按鈕必須使用指定的權限組件
+
+### 前端整合模板規則
+
+當任何 `*.vue` 檔案出現在 Task 中，必須**同時載入**以下伴隨模板（不計入「1-2 個」限制）：
+- `frontend-router.md` — 路由註冊是頁面可運作的前提
+- `frontend-i18n.md` — i18n keys 是頁面顯示正確的前提
+
+### 模板載入驗證（Mandatory）
+
+前端 Task 開始前，Code Agent 必須：
+1. 列出本 Task 要建立/修改的所有檔案
+2. 對照上方映射表，載入每個檔案對應的模板
+3. 若任何檔案無已載入的模板 → **STOP**，記錄到 review_notes.md
+4. 自我檢查：「我是否已載入 frontend-page.md / frontend-dialog.md？」— 如果 Task 涉及 Vue 檔案，答案必須是「是」
 
 ### Step 1：從源頭載入
 
@@ -71,12 +78,34 @@ bash .claude/hooks/phase-logger.sh start P2
 
 根據模板骨架（或 `conventions/code-patterns-{backend,frontend}.md`）+ 統一規格中該 Task 的業務規則，撰寫實作代碼。
 
+### Backend → Frontend 過渡檢查
+
+當所有後端 Task 完成且測試通過後，進入第一個前端 Task **之前**：
+
+1. **重新載入** `conventions/code-patterns-frontend.md`（不再載入 backend conventions）
+2. **按前端 Task 的檔案類型載入所有相關模板**（見 Step 0 映射表 + 前端整合模板規則）
+3. **前端 Task 不基於後端 Task 的 context 繼續** — 從源頭重新載入
+
+> 為什麼？ Session 數據顯示，長時間處理後端（50+ min、250+ tool calls）後，agent context 品質下降，容易跳過指令。顯式重置確保前端 Task 從乾淨狀態開始。
+
 ### Step 3：執行測試
 
 ```
 測試通過 → 下一個 Task
 測試失敗 → 修正代碼（不可修改測試），重新執行
 ```
+
+### Step 3a：前端驗證（所有前端 Task 完成後）
+
+| 檢查 | 方法 | 通過條件 |
+|------|------|---------|
+| TypeScript 編譯 | `cd frontend && npx vue-tsc --noEmit` | 0 errors |
+| Router 路由存在 | 確認 `src/router/routes.ts` 包含新頁面的路由項目 | 路由已註冊 |
+| meta.pid 一致性 | 比對路由的 `meta.pid` 與頁面 `sessionStore.setPagePid()` 的參數 | 完全一致 |
+| i18n key 完整性 | 逐個檢查每個 `$t()` / `t()` 調用，確認 i18n JSON 中有對應 key | 全部有對應 |
+
+> TypeScript 編譯失敗 → 修正代碼。i18n key 缺失 → 補充。Router 未註冊 → 補充。
+> 這些是**結構性問題**，不是品質問題 — 缺失的路由和 i18n key **100% 會導致頁面無法運作**。
 
 ## 約束
 
@@ -95,7 +124,7 @@ bash .claude/hooks/phase-logger.sh start P2
 
 - 實作代碼（按 ``conventions/`` 的目錄結構放置）
 - 測試執行結果（成功靜默，失敗詳述）
-- `review_notes.md` — 遇到的疑問、可能的測試問題、規格模糊處（存入 `.agentic/{moduleCode}/`）
+- `review_notes.md` — 遇到的疑問、可能的測試問題、規格模糊處
 
 ## 出場日誌
 

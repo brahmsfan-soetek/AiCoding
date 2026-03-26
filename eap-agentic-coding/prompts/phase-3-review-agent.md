@@ -42,6 +42,24 @@ bash .claude/hooks/phase-logger.sh start P3
 - 規格模糊處 → 標記需要使用者確認
 - 實作疑問 → 提供獨立判斷
 
+### Step 2a：前端結構審查
+
+對所有前端檔案執行以下結構性檢查（不依賴自動化測試）：
+
+| 檢查 | 方法 | 嚴重等級（若失敗） |
+|------|------|-------------------|
+| Router 路由已註冊 | 確認 `src/router/routes.ts` 有對應路由項目，`path` 和 `component` 正確 | **MUST-FIX** |
+| `meta.pid` 與 `setPagePid` 一致 | 比對路由 `meta.pid` 與頁面 `onMounted` 中 `sessionStore.setPagePid()` 的參數 | **MUST-FIX** |
+| i18n keys 齊全 | 掃描所有 `$t()` / `t()` 調用，確認 i18n JSON 中有對應 key | **MUST-FIX** |
+| i18n JSON 結構正確 | 檢查 key 命名遵循 `{moduleCode}.{section}.{field}` 格式 | **MUST-FIX** |
+| 三層架構遵循 | Page 不直接呼叫 Service/API，必須透過 Store | SHOULD-FIX |
+| 共用組件使用 | 使用 SBtn/SInput/SSelect2/SDialog2/SCard，不直接用 q-btn/q-input/q-select/q-dialog/q-card | SHOULD-FIX |
+| Dialog 使用 SDialog2 API | 使用 `@confirm`/`@cancel` 事件 + `:confirm-loading`，不手動放置按鈕 | SHOULD-FIX |
+| 無 `any` 型別 | grep `any` in Types/Store/Service 檔案 | SHOULD-FIX |
+| `permission-id` 配置 | 所有操作按鈕（查詢、新增、編輯、刪除）有 `permission-id` | SHOULD-FIX |
+
+> Router 和 i18n 的問題是**結構性的** — 缺失即 100% 無法運作，因此一律 MUST-FIX。
+
 ### Step 3：代碼與規格一致性審查
 
 - 代碼中的業務邏輯是否與統一規格一致？
@@ -71,7 +89,7 @@ bash .claude/hooks/phase-logger.sh start P3
 
 ## 產出
 
-`review_report.md`（存入 `.agentic/{moduleCode}/`）— 審查報告，含：
+`review_report.md` — 審查報告，含：
 - 規格覆蓋率表
 - 問題清單（含嚴重等級、規格引用、代碼位置）
 - Review Notes 裁決結果
