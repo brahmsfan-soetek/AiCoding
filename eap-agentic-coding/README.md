@@ -127,6 +127,28 @@ Phase 3    決定修正範圍                 獨立審查代碼 vs 規格
 
 ---
 
+## 測試策略
+
+eap 的業務邏輯主要在 SQL（Native Query / YAML LOV），Java 層是薄膠水。因此 AI 產出的是**整合測試**（`@QuarkusTest` + REST Assured 打真實 API），而非 Mock DB 的單元測試。
+
+測試資料庫使用 Docker 本地 MSSQL 實例，與遠端共用 DB 完全隔離。`drop-and-create` 只允許出現在 `src/test/resources/application.properties`，防止意外清除遠端資料庫。
+
+---
+
+## Phase 日誌
+
+每個 Phase 進場/出場時自動記錄時間戳、token 耗用、費用，產出 `.agentic/phase-log.md`。
+
+透過 Claude Code 的 **statusline** 功能自動擷取 session metrics（token/費用/時間），`phase-logger.sh` 在 end 時算差值，不需手動輸入。
+
+```
+| Phase | 開始時間 | 結束時間 | 階段耗時 | 累計耗時 | Token (in/out) | 費用 (USD) |
+|-------|---------|---------|---------|---------|---------------|-----------|
+| P0    | ... | ... | 15m 0s | 15m 0s | 12,300 / 5,900 | $0.25 |
+```
+
+---
+
 ## 產出物
 
 所有中間產物存放在 eap 專案根目錄的 `.agentic/` 下：
@@ -141,6 +163,7 @@ Phase 3    決定修正範圍                 獨立審查代碼 vs 規格
 | `test_spec_map.md` | P1 | 測試案例 ↔ 規格條目對應表 |
 | `review_notes.md` | P2 | Code Agent 遇到的疑問 |
 | `review_report.md` | P3 | 審查報告（含嚴重等級） |
+| `phase-log.md` | 全程 | 每階段耗時、token 耗用、費用（自動產出） |
 
 > 建議在 `.gitignore` 中加入 `.agentic/`。
 
@@ -159,13 +182,16 @@ Phase 3    決定修正範圍                 獨立審查代碼 vs 規格
 
 ```
 SKILL.md                     主入口 — AI 讀取此檔案執行流程
+.claude/hooks/
+  phase-logger.sh            Phase 計時 & Token 追蹤（進場/出場自動記錄）
+  statusline.sh              Claude Code statusline — 自動擷取 session metrics
 prompts/
   phase-0-spec-check.md      P0 詳細指令
   phase-1-test-agent.md      P1 詳細指令
   phase-2-code-agent.md      P2 詳細指令
   phase-3-review-agent.md    P3 詳細指令
 conventions/                 eap 專案規範（AI 按需載入）
-  tech-stack.md              技術棧 + 測試框架
+  tech-stack.md              技術棧 + 測試框架 + 測試 DB 隔離規則
   naming-conventions.md      命名 + 目錄結構
   db-conventions.md          資料庫慣例
   code-patterns-backend.md   後端代碼模式 + 禁止模式
