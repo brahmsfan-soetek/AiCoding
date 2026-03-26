@@ -155,21 +155,15 @@ phase-logger.sh start Px ──→ 記錄開始時間 + snapshot 基準
 phase-logger.sh end   Px ──→ 讀取最新 snapshot，算差值 → 寫入 phase-log.md
 ```
 
-Token 耗用透過 Claude Code **statusline** 功能自動取得（每次互動後 Claude Code 將 session JSON 推送到 `statusline.sh`，腳本解析後寫入 `.agentic/.session-stats`）。Phase logger 在 `end` 時自動讀取，**不需手動輸入**。
+Token 耗用透過 Claude Code **statusline** 功能自動取得（每次互動後 Claude Code 將 session JSON 推送到 `statusline.sh`，腳本解析後寫入 `.agentic/.session-stats`，再透傳給使用者原本的 statusline command）。Phase logger 在 `end` 時自動讀取，**不需手動輸入**。
 
 ### 前置配置
 
-Phase 0 進場前，確認 statusline 已啟用：
+Phase 0 進場時自動設定（透明包裝，不覆蓋使用者原本的 statusline）：
 
-```jsonc
-// .claude/settings.local.json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "bash .claude/hooks/statusline.sh"
-  }
-}
-```
+1. 讀取 `.claude/settings.local.json` 中現有的 `statusLine.command`
+2. 若有，備份到 `.agentic/.original-statusline-cmd`
+3. 將 `statusLine.command` 設為 `bash .claude/hooks/statusline.sh`（此腳本會存 stats 後透傳給原本的 command）
 
 ### 使用方式
 
@@ -278,15 +272,17 @@ P0 → P1 → P2 → P3，不可跳過、不可亂序。
 
 > **為什麼用 hook 而非 prompt 指令？** SKILL 的核心主張是「結構性防禦優於指令性約束」——§9 數據顯示反作弊指令幾乎無效（o3 被告知不要作弊後仍 14/20 次博弈）。Hook 是確定性控制流 (03-P6)，Agent 無法繞過。
 
-### Statusline：Session Stats 自動擷取
+### Statusline：Session Stats 透明擷取
 
 透過 Claude Code 的 statusline 功能，每次互動後自動將 token/費用/時間寫入 `.agentic/.session-stats`，供 `phase-logger.sh` 讀取。
 
 ```bash
-# .claude/hooks/statusline.sh
-# 從 Claude Code 推送的 JSON stdin 解析 session metrics，寫入 .session-stats
+# .claude/hooks/statusline.sh — 透明包裝器
+# 1. 從 Claude Code 推送的 JSON stdin 解析 session metrics，寫入 .session-stats
+# 2. 透傳 JSON 給使用者原本的 statusline command（從 .agentic/.original-statusline-cmd 讀取）
 ```
 
+> **透明設計**：不覆蓋使用者的 statusline 顯示，僅在旁邊多記一份 stats。Phase 0 進場時備份原本的 command，本腳本處理完後透傳給原本的 command。
 > **全 Phase 啟用**：statusline 在整個開發流程中持續運作，不限於 Phase 2。
 
 ### Hook 1：測試檔案唯讀強制
@@ -328,7 +324,7 @@ Phase 2 的 hooks（測試唯讀 + 靜默通過）在 Phase 2 啟動時加入，
 
 ```jsonc
 // .claude/settings.local.json
-// statusLine: 全 Phase 生效（Phase 0 進場時寫入）
+// statusLine: 全 Phase 生效（Phase 0 進場時包裝，備份原本的 command）
 // hooks: Phase 2 啟動時寫入，結束時移除
 {
   "statusLine": {
