@@ -24,7 +24,7 @@
 - **DDL 管理**: SQL 腳本手動管理（`sql/` 目錄）
 
 ## 測試
-- **後端**: JUnit 5 + REST Assured + `@QuarkusTest`（`./mvnw test`，單一：`./mvnw test -Dtest={Class}`）
+- **後端**: JUnit 5 + REST Assured + `@QuarkusTest`（`mvn test`，單一：`mvn test -Dtest={Class}`）
 - **前端**: 未配置
 - **策略**: AI 從規格寫整合測試（`@QuarkusTest` + REST Assured 打 API），人工做驗收測試（網頁實際操作）
 

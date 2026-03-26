@@ -14,6 +14,14 @@
   - 後端 Task：`code-patterns-backend.md`（不載入 frontend）
   - 前端 Task：`code-patterns-frontend.md`（不載入 backend）
 
+## 前置條件
+
+Phase 2 進場時驗證以下條件，缺一不可：
+
+1. **Hooks 已安裝**：確認 eap 專案的 `.claude/hooks/` 下有 `block-test-edit.sh` 和 `silent-test-pass.sh`，且 `.claude/settings.local.json` 已配置對應的 PreToolUse/PostToolUse hooks。缺少 → **停止，提示使用者重新執行 Setup**。
+
+2. **後端已編譯**：eap 是 Maven 多模組專案，`application` 模組的測試依賴其他子模組。確認使用者已執行 `cd backend && mvn clean install -DskipTests`。若不確定 → 提醒使用者先執行。
+
 ## 步驟
 
 ### 進場日誌
@@ -86,7 +94,7 @@ bash .claude/hooks/phase-logger.sh start P2
 
 - 實作代碼（按 ``conventions/`` 的目錄結構放置）
 - 測試執行結果（成功靜默，失敗詳述）
-- `review_notes.md` — 遇到的疑問、可能的測試問題、規格模糊處
+- `review_notes.md` — 遇到的疑問、可能的測試問題、規格模糊處（存入 `.agentic/{moduleCode}/`）
 
 ## 出場日誌
 

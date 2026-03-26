@@ -71,7 +71,7 @@ bash .claude/hooks/phase-logger.sh start P3
 
 ## 產出
 
-`review_report.md` — 審查報告，含：
+`review_report.md`（存入 `.agentic/{moduleCode}/`）— 審查報告，含：
 - 規格覆蓋率表
 - 問題清單（含嚴重等級、規格引用、代碼位置）
 - Review Notes 裁決結果

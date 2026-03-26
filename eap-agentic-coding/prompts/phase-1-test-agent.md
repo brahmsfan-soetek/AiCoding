@@ -113,9 +113,9 @@ Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 
 ## 產出
 
-- `tasks.md` — 任務清單（含依賴關係和執行順序）
+- `tasks.md` — 任務清單（含依賴關係和執行順序），存入 `.agentic/{moduleCode}/`
 - 測試檔案 — 按 `conventions/tech-stack.md` 的測試框架規範放置
-- `test_spec_map.md` — 測試案例 ↔ 規格條目的對應表
+- `test_spec_map.md` — 測試案例 ↔ 規格條目的對應表，存入 `.agentic/{moduleCode}/`
 
 ## 出場日誌
 

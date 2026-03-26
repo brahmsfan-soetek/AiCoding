@@ -113,9 +113,9 @@ bash .claude/hooks/phase-logger.sh start P0
 
 ## 產出
 
-- `conflicts.md` — 衝突清單 + 裁決結果（存入 `.agentic/`）
-- `sa_pending.md` — SA 待確認清單 + 回覆（存入 `.agentic/`）
-- `unified-spec.md` — 統一規格：衝突已解決的版本，後續 Phase 的**唯一輸入源**（存入 `.agentic/`）
+- `conflicts.md` — 衝突清單 + 裁決結果（存入 `.agentic/{moduleCode}/`）
+- `sa_pending.md` — SA 待確認清單 + 回覆（存入 `.agentic/{moduleCode}/`）
+- `unified-spec.md` — 統一規格：衝突已解決的版本，後續 Phase 的**唯一輸入源**（存入 `.agentic/{moduleCode}/`）
 
 ## 出場日誌
 

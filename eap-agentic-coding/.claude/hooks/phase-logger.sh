@@ -13,9 +13,22 @@ ACTION="${1:?Usage: phase-logger.sh start|end <phase>}"
 PHASE="${2:?Phase name required (e.g. P0, P1, P2, P3)}"
 
 AGENTIC_DIR=".agentic"
-TIMER_DIR="$AGENTIC_DIR/.timers"
-LOG_MD="$AGENTIC_DIR/phase-log.md"
+CONFIG_FILE="$AGENTIC_DIR/config.json"
 SESSION_STATS="$AGENTIC_DIR/.session-stats"
+
+# 從 config.json 讀取 moduleCode，決定模組目錄
+if [ -f "$CONFIG_FILE" ]; then
+  MODULE_CODE=$(python -c "import json; print(json.load(open('$CONFIG_FILE'))['moduleCode'])" 2>/dev/null)
+fi
+
+if [ -z "${MODULE_CODE:-}" ]; then
+  echo "❌ 找不到 $CONFIG_FILE 或無法讀取 moduleCode" >&2
+  exit 1
+fi
+
+MODULE_DIR="$AGENTIC_DIR/$MODULE_CODE"
+TIMER_DIR="$MODULE_DIR/.timers"
+LOG_MD="$MODULE_DIR/phase-log.md"
 
 mkdir -p "$TIMER_DIR"
 
