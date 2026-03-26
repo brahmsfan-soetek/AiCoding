@@ -13,6 +13,7 @@
   - 共用：`tech-stack.md`、`naming-conventions.md`、`db-conventions.md`、`data-access.md`
   - 後端 Task：`code-patterns-backend.md`（不載入 frontend）
   - 前端 Task：`code-patterns-frontend.md`（不載入 backend）
+  - 測試環境問題：`templates/test-infrastructure.md`（僅在測試執行失敗且疑似環境問題時載入）
 
 ## 前置條件
 

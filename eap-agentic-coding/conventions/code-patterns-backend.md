@@ -2,6 +2,41 @@
 
 > 載入時機：Phase 2 後端 Task
 
+## API 請求完整 Flow
+
+```
+HTTP POST /api/{routeId}
+  → HandlerApiResource.handleProxy()     // 統一入口（@Path("/api")）
+    → JWT / Session 驗證                  // 測試環境已 bypass
+    → camelContext.createProducerTemplate()
+        .requestBody("direct:{routeId}", payload)
+      → BaseApiRouteBuilder 註冊的 route
+        → @Named("{routeId}Processor").process()
+          → processBusinessLogic(payload, traceId)
+            → Service（複雜邏輯）或直接操作 Entity
+          → buildStandardResponse(traceId, data, "CREATE")
+  → Response 200 / BusinessException → Error Response
+```
+
+### 關鍵類別
+
+| 類別 | 位置 | 職責 |
+|------|------|------|
+| `HandlerApiResource` | `application/.../api/` | JAX-RS 入口，`@POST @Path("/{route}")` 接收所有 API |
+| `BaseApiRouteBuilder` | `foundation` 模組 | 提供 `buildApiRoute(routeId)` 快捷方法 |
+| `{ModuleCode}RouteBuilder` | `{module}/.../route/` | 每個模組一個，註冊所有 routeId |
+| `ApiRouteProcessor` | `foundation` 模組 | Processor 基類，提供 `executeWithErrorHandling`、`buildStandardResponse` |
+| `BusinessException` | `foundation` 模組 | 業務異常，建構子 `(errorCode, httpStatus, message)` |
+
+### 新模組要建的檔案
+
+1. **Entity** — `{module}/domain/{Name}Entity.java`
+2. **Service**（選用）— `{module}/service/{Name}Service.java`
+3. **Processor** — `{module}/processor/{Name}{Action}Processor.java`（每個 API 一個）
+4. **RouteBuilder** — `{module}/route/{ModuleCode}RouteBuilder.java`（整個模組一個）
+
+> Processor 透過 `@Named("{routeId}Processor")` 被 Camel 發現，RouteBuilder 透過 `buildApiRoute("{routeId}")` 建立路由。**routeId 必須完全一致**（大小寫敏感）。
+
 ## Processor 固定骨架
 
 ```java

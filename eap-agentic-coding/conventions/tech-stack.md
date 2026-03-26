@@ -38,7 +38,7 @@
 |------|------|
 | `drop-and-create` **只能放在** `src/test/resources/application.properties` | 此檔案的連線指向 Docker 本地 DB，確保 drop-and-create 不會影響遠端 |
 | 主 `application.properties` 中 **禁止** 出現 `%test.*.database.generation=drop-and-create` | 避免 test profile 意外 fallback 到遠端共用資料庫時清掉所有資料表 |
-| 測試連線 URL **必須指向 Docker 本地** (`localhost:11434`) | 不可指向遠端 IP（如 `192.168.x.x`） |
+| 測試連線 URL **必須指向 Docker 本地** (`localhost:11433`) | 不可指向遠端 IP（如 `192.168.x.x`） |
 | `import.sql`（種子資料）放在 `src/test/resources/` | Hibernate 啟動後自動載入 |
 
 ```

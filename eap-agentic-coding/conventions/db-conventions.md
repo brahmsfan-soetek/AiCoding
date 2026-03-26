@@ -47,3 +47,46 @@ public class BusinessEntity extends AuditableEntity { }      // 不可以！
 ```
 
 > 業務模組的 Entity 一律繼承 `AuditableEapEntity`。需要 EntityManager 時用 `@PersistenceUnit("eap")`。
+
+## 測試 DB 編碼與 Collation
+
+### Docker MSSQL Collation
+
+Docker MSSQL 預設 collation 是 `SQL_Latin1_General_CP1_CI_AS`，**不支援中文排序與比對**。測試 DB 必須使用：
+
+```
+Chinese_Taiwan_Stroke_CI_AS
+```
+
+建議在 `docker/mssql/init-db.sql` 建立 `EAP_TEST` 時直接指定：
+
+```sql
+CREATE DATABASE EAP_TEST COLLATE Chinese_Taiwan_Stroke_CI_AS;
+```
+
+若 DB 已存在但 collation 錯誤：
+
+```sql
+ALTER DATABASE EAP_TEST COLLATE Chinese_Taiwan_Stroke_CI_AS;
+```
+
+### import.sql 編碼要求
+
+| 規則 | 原因 |
+|------|------|
+| 檔案必須 **UTF-8 without BOM** | BOM 會導致第一行 SQL 語法錯誤 |
+| 中文字串使用 `N'前綴'` | MSSQL 的 NVARCHAR 欄位插入中文需要 N prefix |
+| `application.properties` 設定 `scripts.charset=UTF-8` | Hibernate 讀取 import.sql 時使用的編碼 |
+
+### Maven 編碼設定
+
+Windows JVM 預設編碼是 MS950（Big5），必須在 `pom.xml` 強制 UTF-8：
+
+```xml
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+</properties>
+```
+
+詳細的 plugin 編碼配置見 `templates/test-infrastructure.md`。

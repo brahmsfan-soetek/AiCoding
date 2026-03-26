@@ -10,6 +10,7 @@
 
 - Phase 0 產出的統一規格
 - `conventions/tech-stack.md`、`conventions/naming-conventions.md`、`conventions/db-conventions.md`
+- `templates/test-infrastructure.md`（測試基礎建設模板 — 配置 application.properties、pom.xml 依賴、編碼設定）
 
 ## 步驟
 
@@ -101,15 +102,28 @@ Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 | **不可為「讓測試容易寫」而降低規格要求** | §7：附和偏見的變體 |
 | 無法轉化為可測試斷言的業務規則 → 標記 `[無法測試：需人工驗證]` | 不跳過 |
 
-## 測試資料庫配置
+## 測試基礎建設設定
 
-測試檔案可能需要 `import.sql` 種子資料。配置測試資料庫時**必須遵守** `conventions/tech-stack.md` 的「測試資料庫隔離」規則：
+首次建立測試時，按 `templates/test-infrastructure.md` 確認以下檔案存在且正確：
 
-| 做 | 不做 |
-|----|------|
-| 在 `src/test/resources/application.properties` 設定連線和 `drop-and-create` | 在主 `application.properties` 加 `%test.*.drop-and-create` |
-| 連線指向 Docker 本地 MSSQL (`localhost:11434`) | 連線指向遠端共用 DB |
-| `import.sql` 放在 `src/test/resources/` | 在測試代碼中手動建立/清除資料 |
+| 檔案 | 動作 |
+|------|------|
+| `src/test/resources/application.properties` | 若不存在 → 按模板建立；若已存在 → 確認 DB 連線、auth bypass、encoding 設定完整 |
+| `src/test/resources/junit-platform.properties` | 若不存在 → 按模板建立 |
+| `application/pom.xml` | 確認 test dependencies（quarkus-junit5, rest-assured）和 plugin encoding 設定存在 |
+
+> **不可修改主 `application.properties`** — `drop-and-create` 只能出現在 test resources。詳見 `conventions/tech-stack.md` 的「測試資料庫隔離」規則。
+
+## 測試種子資料（import.sql）
+
+測試檔案通常需要 `import.sql` 種子資料，放在 `src/test/resources/`。
+
+| 規則 | 說明 |
+|------|------|
+| 檔案編碼 **UTF-8 without BOM** | BOM 會導致第一行 SQL 語法錯誤 |
+| 中文字串用 `N'前綴'` | MSSQL NVARCHAR 插入中文的必要語法 |
+| Schema prefix `EAP.TABLE_NAME` | 種子資料插入 EAP Schema |
+| 每個 INSERT 獨立一行 | Hibernate 逐行執行 import.sql |
 
 ## 產出
 
