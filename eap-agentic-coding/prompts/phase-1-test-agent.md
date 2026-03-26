@@ -2,7 +2,7 @@
 
 **執行者**：Test Agent
 
-**目的**：理解統一規格，拆解為小任務，逐任務撰寫單元測試。
+**目的**：理解統一規格，拆解為小任務，逐任務撰寫整合測試（`@QuarkusTest` + REST Assured）。
 
 > 合併三步的原因：少一次 Agent 交接 = 少一次有損轉換 (§1)。拆解時規格理解已在 context 中，此時寫測試信噪比最高 (§2)。
 
@@ -49,7 +49,7 @@
 
 ### Step 3：逐任務寫測試
 
-對每個 Task **立即**撰寫對應的單元測試，然後再處理下一個 Task。
+對每個 Task **立即**撰寫對應的整合測試，然後再處理下一個 Task。
 
 ```
 for each Task in 任務清單:
@@ -67,7 +67,7 @@ for each Task in 任務清單:
 
 | 情況 | 做法 |
 |------|------|
-| 前端 Task（Vue/TS） | 不寫單元測試，在 `tasks.md` 標記 `[人工測試]` |
+| 前端 Task（Vue/TS） | 不寫測試，在 `tasks.md` 標記 `[人工測試]` |
 | 前端 Types（型別定義） | 確認 TypeScript 編譯通過即可 |
 | 前端與後端聯動的 Task | 後端部分寫測試，前端部分標記 `[人工測試]` |
 
@@ -94,6 +94,16 @@ Phase 3 Review Agent 對前端 `[人工測試]` Task 的審查重點：
 | **不可讀取任何現有實作代碼來推導測試** | §5：規格挖掘誤判率 90-99% |
 | **不可為「讓測試容易寫」而降低規格要求** | §7：附和偏見的變體 |
 | 無法轉化為可測試斷言的業務規則 → 標記 `[無法測試：需人工驗證]` | 不跳過 |
+
+## 測試資料庫配置
+
+測試檔案可能需要 `import.sql` 種子資料。配置測試資料庫時**必須遵守** `conventions/tech-stack.md` 的「測試資料庫隔離」規則：
+
+| 做 | 不做 |
+|----|------|
+| 在 `src/test/resources/application.properties` 設定連線和 `drop-and-create` | 在主 `application.properties` 加 `%test.*.drop-and-create` |
+| 連線指向 Docker 本地 MSSQL (`localhost:11434`) | 連線指向遠端共用 DB |
+| `import.sql` 放在 `src/test/resources/` | 在測試代碼中手動建立/清除資料 |
 
 ## 產出
 

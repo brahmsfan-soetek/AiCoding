@@ -24,6 +24,28 @@
 - **DDL 管理**: SQL 腳本手動管理（`sql/` 目錄）
 
 ## 測試
-- **後端**: JUnit 5 + REST Assured（`./mvnw test`，單一：`./mvnw test -Dtest={Class}`）
+- **後端**: JUnit 5 + REST Assured + `@QuarkusTest`（`./mvnw test`，單一：`./mvnw test -Dtest={Class}`）
 - **前端**: 未配置
-- **策略**: AI 從規格寫單元測試，人工做整合測試（網頁實際操作）
+- **策略**: AI 從規格寫整合測試（`@QuarkusTest` + REST Assured 打 API），人工做驗收測試（網頁實際操作）
+
+> **為什麼是整合測試而非單元測試？** eap 的業務邏輯主要在 SQL（Native Query / YAML LOV），Java 層是薄膠水（Processor → Service → EntityManager）。Mock DB 的單元測試只驗證 `Object[]→Map` 轉換，測不到 SQL 正確性、JOIN 邏輯、WHERE 條件——這些才是真正出 bug 的地方。整合測試打真實 DB 才能驗證完整路徑。
+
+### 測試資料庫隔離（必遵守）
+
+測試使用 Docker Compose 提供的**獨立本地 MSSQL 實例**，與遠端共用開發資料庫完全隔離。
+
+| 規則 | 說明 |
+|------|------|
+| `drop-and-create` **只能放在** `src/test/resources/application.properties` | 此檔案的連線指向 Docker 本地 DB，確保 drop-and-create 不會影響遠端 |
+| 主 `application.properties` 中 **禁止** 出現 `%test.*.database.generation=drop-and-create` | 避免 test profile 意外 fallback 到遠端共用資料庫時清掉所有資料表 |
+| 測試連線 URL **必須指向 Docker 本地** (`localhost:11434`) | 不可指向遠端 IP（如 `192.168.x.x`） |
+| `import.sql`（種子資料）放在 `src/test/resources/` | Hibernate 啟動後自動載入 |
+
+```
+# src/test/resources/application.properties 的結構
+# 1. 覆寫連線 → Docker 本地 MSSQL/Redis
+# 2. 設定 drop-and-create（只在此檔案）
+# 3. 測試專用配置（如 auth bypass）
+```
+
+**為什麼這樣設計？** 如果 `src/test/resources/application.properties` 未載入（路徑錯誤、建構異常等），Quarkus 會 fallback 到主 `application.properties`。此時若主設定有 `drop-and-create`，就會用遠端共用 DB 的連線執行 drop-and-create，**清掉整個遠端資料庫**。
