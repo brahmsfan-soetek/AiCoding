@@ -1,0 +1,7 @@
+{
+  "name": "eap-agentic-coding-lite",
+  "version": "1.0.0",
+  "description": "eap 規格驅動開發 Demo 版：快速從規格產出可運行程式碼（Quarkus + Vue 3 + MSSQL）",
+  "author": { "name": "soetek" },
+  "skills": ["./"]
+}
