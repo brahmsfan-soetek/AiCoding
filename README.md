@@ -18,6 +18,7 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 | Skill | 狀態 | 適用場景 | 說明 |
 |-------|------|---------|------|
 | [eap-agentic-coding](eap-agentic-coding/) | **實測中** | eap 專案（Quarkus + Vue 3 + MSSQL） | 規格驅動開發：多源規格交叉比對 → 任務拆解 → test-first → agent 分離實作 → 交叉驗證 |
+| [eap-agentic-coding-lite](eap-agentic-coding-lite/) | **v1.0.0** | eap 專案（Demo 用） | 精簡版：同一 session 連續執行 P0→P1→P2，無測試、模板含 TM002 完整參考實作 |
 | [serp-agentic-coding](serp-agentic-coding/) | 暫停 | serp 專案 | 原型骨架，待 eap 實測結論回饋後迭代 |
 
 ### eap-agentic-coding
@@ -30,6 +31,16 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 - **精簡 Context** — 每個 Task 獨立載入，按需載入 conventions + templates（減少 60% 錯誤）
 
 詳細使用方法見 [eap-agentic-coding/README.md](eap-agentic-coding/README.md)。
+
+### eap-agentic-coding-lite
+
+完整版的 Demo 精簡版，目標 30 分鐘內完成一個模組。同一 session 連續執行 P0→P1→P2，無測試、無 hooks、無 P3 審查。模板從骨架升級為含 TM002 完整實作的參考程式碼，P2 直接做 placeholder 替換 + 業務邏輯微調。
+
+必須流程：
+- **後端** — Entity → Create → Update → Delete → Query → GetById → [Dropdown] → `mvn compile`
+- **前端** — Types → Service → Store → Router → 主頁面 → 各 Dialog → i18n → `vue-tsc --noEmit`
+
+詳細使用方法見 [eap-agentic-coding-lite/README.md](eap-agentic-coding-lite/README.md)。
 
 ## 研究基礎
 
