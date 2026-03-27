@@ -2,11 +2,8 @@
 
 > **v1.0.0** — 2026-03-27
 
-eap 專案的規格驅動 AI 開發流程 **Demo 精簡版**（Claude Code Skill）。
-目標 30 分鐘內完成一個模組從規格到可運行程式碼。
-
-**與完整版的差異**：無測試、無 hooks、無 P3 審查、同一 session 連續執行。
-模板從骨架升級為「含 TM002 完整實作的參考程式碼」。
+eap 專案的規格驅動 AI 開發流程（Claude Code Skill）。
+同一 session 連續執行 P0→P1→P2，30 分鐘內完成一個模組從規格到可運行程式碼。
 
 ## 使用前準備
 
@@ -169,7 +166,7 @@ conventions/                     eap 專案規範（按需載入）
   code-patterns-backend.md       後端代碼模式 + 禁止模式
   code-patterns-frontend.md      前端代碼模式 + 禁止模式
   data-access.md                 ORM 策略 + 回應格式 + 共用組件
-templates/                       代碼模板（含 TM002 完整參考實作）
+templates/                       代碼模板（按 Task 類型載入）
   backend-entity.md              Entity（Panache + @Cacheable）
   backend-processor-create.md    Create（Thick / Thin 兩版）
   backend-processor-update.md    Update
@@ -194,17 +191,3 @@ references/
 
 eap：Quarkus 3.25.4 + Apache Camel 4.4.0 + Vue 3 + Quasar 2.14.2 + MSSQL
 
----
-
-## vs 完整版 (eap-agentic-coding)
-
-| | lite | 完整版 |
-|---|------|--------|
-| Phase | P0 → P1 → P2 | P0 → P1 → P2 → P3 |
-| Session | 同一 session | 每 Phase 獨立 session |
-| 測試 | 不寫、不跑 | 整合測試（@QuarkusTest） |
-| Hooks | 無 | 測試唯讀 + 靜默通過 |
-| 模板 | TM002 完整參考實作 | 通用骨架 |
-| 產出物 | 4 個 | 9 個（含測試、審查報告） |
-| Phase 日誌 | 無 | 自動記錄 token/費用 |
-| 目標 | 30 分鐘 Demo | 完整品質保證 |
