@@ -178,7 +178,15 @@ Step 1  Types 定義
    - Dialog 種類和數量
    - 下拉選單來源（LOV key）
    - 按鈕權限（permission-id）
-7. Write / Edit 檔案
+7. ★ 欄位完整性檢查（Dialog 的明細表格）：
+   - 比對 DDL 中主表的每個業務欄位是否都出現在 Dialog 表格欄位中
+   - 可編輯或唯讀皆可，但不可省略欄位
+   - 特別注意「看起來不重要」但 DDL 有定義的欄位（如 cashOutHours、unusedHours）
+8. ★ 級聯下拉檢查（統一規格有「級聯下拉邏輯」段落時）：
+   - 確認父層 LOV + 子層 LOV 都已載入
+   - 確認父層變更時子層篩選邏輯正確
+   - 確認無子選項時的顯示方式（'---'）
+9. Write / Edit 檔案
 ```
 
 ---
@@ -247,13 +255,19 @@ Step 1  Types 定義
 - [ ] Service 方法（若有）正確注入 EntityManager
 
 ### 前端驗證
+- [ ] **共用組件未被修改**：`src/components/common/` 下的所有檔案（SDialog2, SBtn, SInput, SSelect2 等）不可有任何修改 — `git diff` 確認無變更
 - [ ] **UI 互動模式一致性**：Dialog 模式 → 無獨立 Create/Edit/Batch 路由，僅 1 條主頁面路由；Page 模式 → 有 Detail 路由
 - [ ] **元件結構正確**：Dialog 模式 → Create/Edit/Batch 在 `components/` 子目錄且使用 SDialog2；Page 模式 → Detail 在頁面目錄且為獨立 .vue 頁面
+- [ ] **SDialog2 Slot 模式正確**：Dialog 內容直接放入 `<s-dialog2>` 標籤，不自己包 `<q-card>`，不自己放確認/取消按鈕
+- [ ] **欄位完整性**：Dialog 明細表格的欄位涵蓋 DDL 中所有業務欄位（可編輯或唯讀）
+- [ ] **級聯下拉正確**（若有）：父層 LOV + 子層 LOV 載入、篩選邏輯、無子選項顯示 '---'
+- [ ] **條件編輯正確**（若有）：結算/鎖定列的欄位為唯讀文字 + 鎖定圖示
+- [ ] **批次預覽欄位順序**（若有）：狀態欄放第一欄，用 `q-icon` + `q-tooltip` 顯示（非 `q-badge` 文字）
 - [ ] `vue-tsc --noEmit` 通過（無型別錯誤）
 - [ ] Router 已註冊，meta.pid 與 setPagePid 一致
 - [ ] i18n zh-TW 和 en-US 的 key 結構一致
 - [ ] 所有操作按鈕有 `permission-id`
-- [ ] Dialog 模式下所有 Dialog 使用 SDialog2（@confirm / @cancel）
+- [ ] `<template>` 中無硬編碼中文/英文文字（全部使用 `$t()` / `t()`）
 - [ ] 無自訂 CSS（使用共用組件樣式）
 - [ ] Types 無 `any` 型別
 

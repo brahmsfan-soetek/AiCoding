@@ -62,6 +62,41 @@
 | 欄位型態與長度 | 規格書寫 INT，DDL 寫 DECIMAL(5,1) |
 | 必填約束 | 規格書未標，DDL 為 NOT NULL |
 | Schema 歸屬 | DDL 標 `hrm` 還是 `eap`（決定 Entity 基類） |
+| **FK 關係與表層級** | **DDL 中的外鍵欄位揭示父子表層級，規格書常省略此關係** |
+
+### Step 3-b：DDL FK 關係分析（必做）
+
+> **⚠️ 規格書通常不會完整描述資料表之間的 FK 關係和層級結構。這些關係必須直接從 DDL 分析。**
+> **遺漏 FK 分析會導致前端下拉邏輯錯誤（如級聯下拉選項空白），是最常見的前端問題根因。**
+
+逐張 DDL 表，標記疑似 FK 的欄位（欄名含 `_ID`、`_CODE` 且指向另一張表的 PK），建立表層級圖：
+
+```
+範例（TM002）：
+TM_VACATION_SETTING (PK: VACATION_CODE)
+  └── TM_VACATION_DETAIL_SETTING (PK: VACATION_SUB_ID, FK: VACATION_CODE)
+        └── TM_EMP_VACATION (PK: EMP_VACATION_ID, FK: VACATION_SUB_ID)
+```
+
+**必須在統一規格中記錄**：
+1. 表層級圖（父→子關係）
+2. 每個 FK 的語意（如「EMP_VACATION 透過 VACATION_SUB_ID 連結到假別細項，非直接連結到假別」）
+3. 前端下拉選單的**級聯邏輯**：哪個下拉是父層、哪個是子層、子層如何篩選
+4. 沒有子分類時的處理方式（如假別無細項時 VACATION_SUB_CODE 為 NULL 但仍有 VACATION_SUB_ID）
+
+> **統一規格必須包含「資料表關係」段落**，格式範例：
+> ```
+> ## 資料表關係
+> | 父表 | 子表 | FK 欄位 | 語意 |
+> |------|------|---------|------|
+> | TM_VACATION_SETTING | TM_VACATION_DETAIL_SETTING | VACATION_CODE | 假別→假別細項 |
+> | TM_VACATION_DETAIL_SETTING | TM_EMP_VACATION | VACATION_SUB_ID | 假別細項→員工額度 |
+>
+> ## 級聯下拉邏輯
+> | 父層下拉 | 子層下拉 | 篩選方式 | 無子選項處理 |
+> |---------|---------|---------|------------|
+> | 假別 (VACATION_CODE) | 假別細項 (VACATION_SUB_ID) | 子層按父層 code 篩選 | 顯示 '---'，使用 VACATION_SUB_CODE IS NULL 的記錄 |
+> ```
 
 ### Step 4：HTML ↔ DDL/CSV 比對
 
@@ -132,3 +167,5 @@
 - HTML 畫面中展示用的假資料不代表業務規則 — 以規格書和邏輯文件為準
 - 邏輯文件可能用口語化描述 — 要精確對應到具體的規格條目和 DDL 欄位
 - 規格書中的「頁面」≠ 前端的獨立路由頁面 — SA 文件習慣把每個子功能都稱為「頁面」，但前端實作可能是 Dialog 彈窗。必須以 HTML mockup 的實際呈現方式為準，並在統一規格中明確標註 UI 互動模式
+- **FK 關係是前端下拉邏輯的根源** — 規格書幾乎不會描述 FK 層級（如「假別細項透過 VACATION_SUB_ID 連結，不是直接連 VACATION_CODE」），但這決定了前端級聯下拉的整個架構。遺漏 FK 分析 = 前端下拉必定出錯
+- **DDL 中某些記錄有雙重身份** — 如 `VACATION_SUB_CODE IS NULL` 的記錄既是「沒有細項的假別」，也是 `VACATION_SUB_ID` 的有效值。這種設計需要在統一規格中明確記錄
