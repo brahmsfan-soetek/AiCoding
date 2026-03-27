@@ -95,6 +95,21 @@ Step 1  Entity 定義
 
 **執行順序**：嚴格按依賴關係，不可跳步。
 
+### ★ 前端預檢（開始前必做）
+
+開始前端實作之前，讀取 tasks.md 頂部的「UI 互動模式決策」，確認：
+
+| 檢查項目 | Dialog 模式 | Page 模式 |
+|---------|-------------|-----------|
+| 路由數量 | 僅 1 條（主頁面） | 多條（主頁面 + Detail 等） |
+| Create/Edit/Batch 模板 | `frontend-dialog.md` | `frontend-page.md` |
+| Create/Edit/Batch 檔案位置 | `components/{ModuleCode}XxxDialog.vue` | `{MODULE_CODE}Xxx.vue` |
+| 主頁面按鈕行為 | 開啟 Dialog（`showXxxDialog = true`） | 路由跳轉（`router.push()`） |
+
+> **若 tasks.md 使用了 `frontend-page.md` 模板來建立 Create/Edit/Batch 頁面（而 UI 模式應為 Dialog），必須在此修正任務清單後再繼續。不可帶著錯誤的任務清單進入實作。**
+
+### 前端實作步驟
+
 ```
 Step 1  Types 定義
   │     載入 frontend-types.md
@@ -116,17 +131,24 @@ Step 1  Types 定義
   │     在既有 routes.ts 中追加路由項目
   │     Edit: router/routes.ts（追加，不覆寫）
   │     ★ meta.pid 必須與頁面 setPagePid 一致
+  │     ★ Dialog 模式 → 僅 1 條路由；Page 模式 → 含 Detail 路由
   │
   ├──→ Step 5  主頁面
   │     載入 frontend-page.md + conventions/code-patterns-frontend.md
-  │     查詢區 + 操作按鈕（permission-id）+ 資料表格 + Dialog 整合
-  │     Write: pages/{module}/{moduleCode}/{ModuleCode}.vue
+  │     查詢區 + 操作按鈕（permission-id）+ 資料表格
+  │     ★ Dialog 模式 → 主頁面底部整合 Dialog 組件（v-model 控制）
+  │     ★ Page 模式 → 操作按鈕使用 router.push() 跳轉
+  │     Write: pages/{module}/{moduleCode}/{MODULE_CODE}.vue
   │
-  ├──→ Step 6  各 Dialog 組件
+  ├──→ Step 6a 各 Dialog 組件（Dialog 模式時）
   │     載入 frontend-dialog.md
   │     每種 Dialog 獨立一個檔案（Create / Edit / Batch ...）
   │     使用 SDialog2（@confirm / @cancel），不手動加按鈕
   │     Write: pages/{module}/{moduleCode}/components/{ModuleCode}XxxDialog.vue
+  │
+  ├── Step 6b 各明細頁面（Page 模式時）
+  │     載入 frontend-page.md
+  │     Write: pages/{module}/{moduleCode}/{MODULE_CODE}Detail.vue
   │
   └──→ Step 7  i18n Keys
         載入 frontend-i18n.md
@@ -163,22 +185,36 @@ Step 1  Types 定義
 
 ## 前端組件拆分規則
 
-依規格的畫面需求決定需要哪些組件：
+### Dialog 模式（預設）
 
-| 規格描述 | 產出組件 | 說明 |
-|---------|---------|------|
-| 查詢 + 列表頁面 | `{ModuleCode}.vue` | 主頁面，必要 |
-| 新增功能（按鈕 / Dialog） | `{ModuleCode}CreateDialog.vue` | 新增表單 |
-| 編輯功能（點擊列 / Dialog） | `{ModuleCode}EditDialog.vue` | 編輯表單 |
-| 批次匯入（上傳 Excel） | `{ModuleCode}BatchDialog.vue` | 檔案上傳 + 預覽 |
-| 明細檢視（唯讀） | `{ModuleCode}DetailDialog.vue` | 唯讀展示 |
-| 子表格（Master-Detail） | `{ModuleCode}DetailTable.vue` | 嵌入主頁面 |
+| 規格描述 | 產出組件 | 檔案位置 | 模板 |
+|---------|---------|---------|------|
+| 查詢 + 列表頁面 | `{MODULE_CODE}.vue` | `pages/{module}/{moduleCode}/` | `frontend-page.md` |
+| 新增功能 | `{ModuleCode}CreateDialog.vue` | `pages/{module}/{moduleCode}/components/` | `frontend-dialog.md` |
+| 編輯功能 | `{ModuleCode}EditDialog.vue` | `pages/{module}/{moduleCode}/components/` | `frontend-dialog.md` |
+| 批次匯入 | `{ModuleCode}BatchDialog.vue` | `pages/{module}/{moduleCode}/components/` | `frontend-dialog.md` |
+| 明細檢視（唯讀） | `{ModuleCode}DetailDialog.vue` | `pages/{module}/{moduleCode}/components/` | `frontend-dialog.md` |
+| 子表格 | `{ModuleCode}DetailTable.vue` | `pages/{module}/{moduleCode}/components/` | — |
 
-**規則**：
+**Dialog 模式規則**：
 - 每個 Dialog 獨立為一個 Task、一個檔案
 - 所有 Dialog 使用 `SDialog2` 組件（`@confirm` / `@cancel` 事件）
 - 不自己寫確認/取消按鈕（SDialog2 已內建）
+- 主頁面 import 並整合所有 Dialog（v-model 控制開關）
 - 共用組件（SBtn, SInput, SSelect2, SCard 等）優先，零自訂 CSS
+
+### Page 模式（僅複雜場景）
+
+| 規格描述 | 產出組件 | 檔案位置 | 模板 |
+|---------|---------|---------|------|
+| 查詢 + 列表頁面 | `{MODULE_CODE}.vue` | `pages/{module}/{moduleCode}/` | `frontend-page.md` |
+| 明細/編輯頁面 | `{MODULE_CODE}Detail.vue` | `pages/{module}/{moduleCode}/` | `frontend-page.md` |
+
+**Page 模式規則**：
+- 每個獨立頁面有對應的路由，共用 `meta.pid`
+- 頁面間使用 `router.push()` 跳轉（query 傳參，如 `?empId=X&year=Y`）
+
+> ⚠️ **不可混用**：同一模組不可同時有 Dialog 和 Page 模式的 CRUD 組件。選定後全部一致。
 
 ---
 
@@ -211,11 +247,13 @@ Step 1  Types 定義
 - [ ] Service 方法（若有）正確注入 EntityManager
 
 ### 前端驗證
+- [ ] **UI 互動模式一致性**：Dialog 模式 → 無獨立 Create/Edit/Batch 路由，僅 1 條主頁面路由；Page 模式 → 有 Detail 路由
+- [ ] **元件結構正確**：Dialog 模式 → Create/Edit/Batch 在 `components/` 子目錄且使用 SDialog2；Page 模式 → Detail 在頁面目錄且為獨立 .vue 頁面
 - [ ] `vue-tsc --noEmit` 通過（無型別錯誤）
 - [ ] Router 已註冊，meta.pid 與 setPagePid 一致
 - [ ] i18n zh-TW 和 en-US 的 key 結構一致
 - [ ] 所有操作按鈕有 `permission-id`
-- [ ] Dialog 使用 SDialog2（@confirm / @cancel）
+- [ ] Dialog 模式下所有 Dialog 使用 SDialog2（@confirm / @cancel）
 - [ ] 無自訂 CSS（使用共用組件樣式）
 - [ ] Types 無 `any` 型別
 

@@ -31,11 +31,22 @@
 
 ### Frontend
 ```
-src/pages/{module}/{moduleCode}/       頁面組件
-src/components/common/                 共用組件（SBtn, SInput 等）
-src/components/{module}/{moduleCode}/  業務組件
-src/stores/{module}/{moduleCode}/      Pinia stores
-src/services/{module}/{moduleCode}/    API 服務層
-src/types/{module}/                    TypeScript 型別
-src/i18n/zh-TW/{module}/              國際化
+src/pages/{module}/{moduleCode}/                    主頁面（{MODULE_CODE}.vue）
+src/pages/{module}/{moduleCode}/components/         Dialog 組件（{ModuleCode}XxxDialog.vue）— Dialog 模式
+src/pages/{module}/{moduleCode}/{MODULE_CODE}Detail.vue  明細頁面 — Page 模式（僅複雜場景）
+src/components/common/                              共用組件（SBtn, SInput, SDialog2 等）
+src/stores/{module}/{moduleCode}/                   Pinia stores
+src/services/{module}/                              API 服務層
+src/types/{module}/                                 TypeScript 型別
+src/i18n/zh-TW/{module}/                            國際化
 ```
+
+> **Dialog 模式目錄範例**（TM002）：
+> ```
+> src/pages/tm/tm002/
+>   TM002.vue                            ← 主頁面（清單查詢 + Dialog 整合）
+>   components/
+>     Tm002CreateDialog.vue              ← 新增 Dialog（SDialog2）
+>     Tm002EditDialog.vue                ← 編輯 Dialog（SDialog2）
+>     Tm002BatchDialog.vue               ← 批次匯入 Dialog（SDialog2）
+> ```

@@ -7,6 +7,12 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
 
 主頁面組件：查詢區 + 操作按鈕區 + 資料表格 + Dialog 整合。含分頁排序、LOV 下拉載入、permission-id 標記。
 
+> **⚠️ 此模板僅用於主頁面（清單查詢頁面）**，不用於 Create/Edit/Batch 組件。
+> - **Dialog 模式**（預設）：Create/Edit/Batch 使用 `frontend-dialog.md` 模板，產出 `components/{ModuleCode}XxxDialog.vue`，由主頁面以 `v-model` 整合
+> - **Page 模式**（僅複雜場景）：Detail 頁面可用此模板產出 `{MODULE_CODE}Detail.vue`，需配合獨立路由
+>
+> 若你正在為 Create/Edit/Batch 功能選擇模板，請使用 `frontend-dialog.md` 而非本模板。
+
 ## 替換規則
 
 - `{ModuleCode}` → PascalCase 模組代碼（如 `Tm002`）

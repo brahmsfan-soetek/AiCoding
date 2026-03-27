@@ -10,6 +10,7 @@
 
 - Phase 0 產出的統一規格（`.agentic/{moduleCode}/unified-spec.md`）
 - `conventions/tech-stack.md`、`conventions/naming-conventions.md`、`conventions/db-conventions.md`
+- `conventions/code-patterns-frontend.md`（**必須載入** — 含 UI 互動模式規則、禁止模式）
 
 ## 步驟
 
@@ -21,7 +22,44 @@
    - 隱含的假設（需在實作中注意）
    - 依賴的外部系統 / API
 
-### Step 2：任務拆解
+### Step 2：UI 互動模式決策（前端 Dialog vs Page）
+
+**在拆解前端任務之前，必須先確定每個子功能的 UI 互動模式。此步驟直接決定前端的元件結構、路由數量和模板選擇。**
+
+#### 決策依據（按優先順序）
+
+1. **統一規格的「UI 互動模式」段落**（Phase 0 產出，最高優先）
+2. **HTML mockup 的實際呈現方式**：
+   - 彈窗 / overlay / modal → **Dialog 模式**
+   - 完整獨立頁面（有返回按鈕、獨立標題列） → **Page 模式**
+3. **`code-patterns-frontend.md` 規定**：「❌ 為 CRUD 建獨立路由（用 Dialog）」— eap 專案預設使用 Dialog 模式
+
+#### 兩種模式的影響
+
+| | Dialog 模式（預設） | Page 模式（僅複雜場景） |
+|---|---|---|
+| **適用場景** | 表單欄位少（<20）、操作流程簡單 | 明細有多區塊（>3 section）、需獨立 URL |
+| **路由數量** | 僅 1 條（主頁面） | 多條（主頁面 + Detail 等） |
+| **Create/Edit/Batch 檔案** | `components/{ModuleCode}XxxDialog.vue` | `{MODULE_CODE}Xxx.vue`（頁面級） |
+| **Create/Edit/Batch 模板** | **`frontend-dialog.md`** | `frontend-page.md` |
+| **主頁面模板** | `frontend-page.md`（含 Dialog 整合） | `frontend-page.md`（含路由跳轉） |
+| **參考範例** | TM002（假別額度維護） | TM001/TM003/PM001（多區塊明細） |
+
+#### 決策輸出
+
+在任務清單頂部記錄決策結果：
+
+```markdown
+## UI 互動模式決策
+- **模式**: Dialog / Page
+- **依據**: 統一規格 UI 互動模式段落 / HTML mockup / 複雜度分析
+- **路由規劃**: 僅 /TM002（Dialog）或 /TM002 + /TM002Detail（Page）
+- **前端元件**: 列出每個 Dialog 或 Page 的檔名和模板
+```
+
+> ⚠️ **常見錯誤**：規格書用「頁面」描述子功能（如「新增頁面」「修改頁面」），但這**不代表**要建立獨立路由頁面。必須依上述決策依據判斷，不可直接把規格書的「頁面」對應為前端的路由頁面。
+
+### Step 3：任務拆解
 
 將功能點拆解為開發任務，每個任務須滿足：
 
@@ -36,7 +74,7 @@
 
 **反附和檢查**：任務清單完成後，列出此拆解方案的 2-3 個潛在問題或替代拆法。
 
-### Step 3：後端任務拆解參考
+### Step 4：後端任務拆解參考
 
 後端任務通常包含以下類型（依序）：
 
@@ -52,21 +90,55 @@
 
 > 不是每個模組都需要全部 7 種。依統一規格的功能點決定需要哪些。
 
-### Step 4：前端任務拆解（強制粒度）
+### Step 5：前端任務拆解（強制粒度 + UI 模式區分）
 
 **禁止**將所有前端工作合併為 1-2 個大 Task。前端須按以下粒度拆解：
 
+#### 共通任務（不受 UI 模式影響）
+
 | Task 類型 | 涉及檔案 | 模板 | 依賴 |
 |-----------|---------|------|------|
-| Types 定義 | `{moduleCode}Types.ts` | `frontend-types.md` | 無 |
-| Service 層 | `{moduleCode}Service.ts` | `frontend-service.md` | Types |
-| Store 層 | `use{ModuleCode}Store.ts` | `frontend-store.md` | Service, Types |
-| Router 註冊 | `routes.ts`（新增項目） | `frontend-router.md` | 無 |
-| i18n Keys | `{module}.json`（新增 key 區塊） | `frontend-i18n.md` | 主頁面, Dialog |
-| 主頁面 | `{ModuleCode}.vue` | `frontend-page.md` | Store, Types |
-| 每個 Dialog | `{EntityName}Dialog.vue` | `frontend-dialog.md` | Store, Types |
+| Types 定義 | `types/{module}/{moduleCode}.ts` | `frontend-types.md` | 無 |
+| Service 層 | `services/{module}/{moduleCode}Service.ts` | `frontend-service.md` | Types |
+| Store 層 | `stores/{module}/{moduleCode}/use{ModuleCode}Store.ts` | `frontend-store.md` | Service, Types |
+| Router 註冊 | `router/routes.ts`（追加項目） | `frontend-router.md` | 無 |
+| i18n Keys | `i18n/zh-TW/{module}/{module}.json`（追加 key 區塊） | `frontend-i18n.md` | 主頁面, Dialog/Page |
 
-### Step 5：產出任務清單
+#### Dialog 模式的前端任務（Step 2 決策為 Dialog 時）
+
+| Task 類型 | 涉及檔案 | 模板 | 依賴 |
+|-----------|---------|------|------|
+| 主頁面 | `pages/{module}/{moduleCode}/{MODULE_CODE}.vue` | **`frontend-page.md`** | Store, Types |
+| 每個 Dialog | `pages/{module}/{moduleCode}/components/{ModuleCode}XxxDialog.vue` | **`frontend-dialog.md`** | Store, Types |
+
+> **Dialog 模式規則**：
+> - 路由只需 **1 條**（主頁面）；Dialog 不建立獨立路由
+> - 主頁面底部整合所有 Dialog（`v-model` 控制開關）
+> - 每個 Dialog 使用 `SDialog2` 組件（`@confirm` / `@cancel`）
+> - Dialog 檔案放在 `components/` 子目錄下
+> - 命名規則：`{ModuleCode}CreateDialog.vue`、`{ModuleCode}EditDialog.vue`、`{ModuleCode}BatchDialog.vue`
+
+#### Page 模式的前端任務（Step 2 決策為 Page 時）
+
+| Task 類型 | 涉及檔案 | 模板 | 依賴 |
+|-----------|---------|------|------|
+| 主頁面 | `pages/{module}/{moduleCode}/{MODULE_CODE}.vue` | **`frontend-page.md`** | Store, Types |
+| 明細頁面 | `pages/{module}/{moduleCode}/{MODULE_CODE}Detail.vue` | **`frontend-page.md`** | Store, Types |
+
+> **Page 模式規則**：
+> - 路由需要**多條**（主頁面 + Detail 等），共用 `meta.pid`
+> - 頁面間使用 `router.push()` 跳轉
+> - 僅在明細頁面極為複雜（多區塊、多 section）時使用
+
+#### ⚠️ 禁止的組合
+
+| 錯誤做法 | 正確做法 |
+|---------|---------|
+| 用 `frontend-page.md` 模板建 CreatePage / ImportPage | Dialog 模式下用 `frontend-dialog.md` 建 CreateDialog / BatchDialog |
+| Dialog 模式下建多條路由 | Dialog 模式只需 1 條路由（主頁面） |
+| Page 模式下用 `frontend-dialog.md` 建明細頁面 | Page 模式下用 `frontend-page.md` 建明細頁面 |
+
+### Step 6：產出任務清單
 
 產出格式：
 
@@ -131,3 +203,6 @@
 - 預估行數是品質安全閥，不是精確計算 — 寧可估高一點再拆
 - 不是每個模組都需要全部 14 個 Task — 依統一規格決定
 - 前端 i18n Task 依賴主頁面和 Dialog（需要知道有哪些 key）— 排在最後
+- **Dialog vs Page 是最高優先決策** — 選錯會導致整個前端架構重做（元件結構、路由、模板全部不同）
+- 規格書的「修改頁面」「新增頁面」「匯入頁面」不代表前端要建獨立路由頁面 — 必須依 Step 2 的決策依據判斷
+- `code-patterns-frontend.md` 明確規定「❌ 為 CRUD 建獨立路由（用 Dialog）」— 除非有充分理由（多區塊明細），否則一律用 Dialog 模式
