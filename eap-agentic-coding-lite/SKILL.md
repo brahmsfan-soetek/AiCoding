@@ -137,22 +137,21 @@ P2-lite 按 Task 涉及的檔案類型，只載入對應的 1-2 個模板。
 
 **目的**：逐任務執行——載入 template → 套用變數替換 → Write 檔案。
 
-**流程**：
+**詳細指令**：讀取 [prompts/phase-2-implementation.md](prompts/phase-2-implementation.md)
+
+**必須流程**（後端 → 前端 → 驗證）：
 
 ```
-for each Task in tasks.md:
-    1. 載入該 Task 標記的 template（1-2 個）
-    2. 載入對應的 conventions 檔案
-    3. 讀取統一規格中該 Task 的段落
-    4. 套用 placeholder 替換 + 業務邏輯微調
-    5. Write 檔案
-    next Task
+後端：Entity → Create → Update → Delete → Query → GetById → [Dropdown]
+      ★ mvn compile
+
+前端：Types → Service → Store → Router → 主頁面 → 各 Dialog → i18n
+      ★ vue-tsc --noEmit
+
+整合：啟動應用 → 人工驗證 CRUD
 ```
 
-**驗證**：
-- 後端全部完成 → `mvn compile`（只確認編譯，不跑測試）
-- 前端全部完成 → `vue-tsc --noEmit`（只確認型別，不跑測試）
-- 全部完成 → 啟動應用人工驗證
+**產出**：`phase-2-implementation.md` 含完整步驟、placeholder 速查表、驗證清單。
 
 ---
 
