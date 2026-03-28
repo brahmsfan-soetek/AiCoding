@@ -10,7 +10,7 @@
 
 - Phase 0 產出的統一規格（`.agentic/{moduleCode}/unified-spec.md`）
 - `conventions/tech-stack.md`、`conventions/naming-conventions.md`、`conventions/db-conventions.md`
-- `conventions/code-patterns-frontend.md`（**必須載入** — 含 UI 互動模式規則、禁止模式）
+- `conventions/code-patterns-frontend.md`（**必須載入** — 含 UI 互動模式規則、統一 LOV 模式）
 
 ## 步驟
 
@@ -22,160 +22,99 @@
    - 隱含的假設（需在實作中注意）
    - 依賴的外部系統 / API
 
-### Step 2：UI 互動模式決策（前端 Dialog vs Page）
+### Step 2：UI 互動模式確認
 
-**在拆解前端任務之前，必須先確定每個子功能的 UI 互動模式。此步驟直接決定前端的元件結構、路由數量和模板選擇。**
+確認統一規格中的「UI 互動模式」段落。eap 專案預設 Dialog 模式。
 
-#### 決策依據（按優先順序）
+| | Dialog 模式（預設） |
+|---|---|
+| **路由數量** | 僅 1 條（主頁面） |
+| **Create/Edit/Batch 檔案** | `components/{ModuleCode}XxxDialog.vue` |
+| **Create/Edit/Batch 模板** | `frontend-dialog-create.md` / `frontend-dialog-edit.md` / `frontend-dialog-batch.md` |
+| **主頁面模板** | `frontend-page.md`（含 Dialog 整合） |
 
-1. **統一規格的「UI 互動模式」段落**（Phase 0 產出，最高優先）
-2. **HTML mockup 的實際呈現方式**：
-   - 彈窗 / overlay / modal → **Dialog 模式**
-   - 完整獨立頁面（有返回按鈕、獨立標題列） → **Page 模式**
-3. **`code-patterns-frontend.md` 規定**：「❌ 為 CRUD 建獨立路由（用 Dialog）」— eap 專案預設使用 Dialog 模式
+### Step 3：後端任務拆解
 
-#### 兩種模式的影響
-
-| | Dialog 模式（預設） | Page 模式（僅複雜場景） |
-|---|---|---|
-| **適用場景** | 表單欄位少（<20）、操作流程簡單 | 明細有多區塊（>3 section）、需獨立 URL |
-| **路由數量** | 僅 1 條（主頁面） | 多條（主頁面 + Detail 等） |
-| **Create/Edit/Batch 檔案** | `components/{ModuleCode}XxxDialog.vue` | `{MODULE_CODE}Xxx.vue`（頁面級） |
-| **Create/Edit/Batch 模板** | **`frontend-dialog.md`** | `frontend-page.md` |
-| **主頁面模板** | `frontend-page.md`（含 Dialog 整合） | `frontend-page.md`（含路由跳轉） |
-| **參考範例** | TM002（假別額度維護） | TM001/TM003/PM001（多區塊明細） |
-
-#### 決策輸出
-
-在任務清單頂部記錄決策結果：
-
-```markdown
-## UI 互動模式決策
-- **模式**: Dialog / Page
-- **依據**: 統一規格 UI 互動模式段落 / HTML mockup / 複雜度分析
-- **路由規劃**: 僅 /TM002（Dialog）或 /TM002 + /TM002Detail（Page）
-- **前端元件**: 列出每個 Dialog 或 Page 的檔名和模板
-```
-
-> ⚠️ **常見錯誤**：規格書用「頁面」描述子功能（如「新增頁面」「修改頁面」），但這**不代表**要建立獨立路由頁面。必須依上述決策依據判斷，不可直接把規格書的「頁面」對應為前端的路由頁面。
-
-### Step 3：任務拆解
-
-將功能點拆解為開發任務，每個任務須滿足：
-
-| 條件 | 原因 |
-|------|------|
-| 單一職責（一個任務做一件事） | >50 行正確率大幅下降 |
-| 標明涉及的檔案清單 | P2-lite 只載入需要的檔案 |
-| 標明對應的 template 檔名 | P2-lite 按此載入模板 |
-| 標明依賴的其他任務 | 確定執行順序 |
-| 預估代碼行數 < 50 行 | 50 行是品質斷崖 |
-| 標記後端/前端分組 | 後端先做，前端後做 |
-
-**反附和檢查**：任務清單完成後，列出此拆解方案的 2-3 個潛在問題或替代拆法。
-
-### Step 4：後端任務拆解參考
-
-後端任務通常包含以下類型（依序）：
+**後端架構**：Thin Processor + 集中式 Service。所有業務邏輯在 Service 中，Processor 僅做參數驗證和委派。
 
 | Task 類型 | 涉及檔案 | 模板 | 依賴 |
 |-----------|---------|------|------|
-| Entity 定義 | `{moduleCode}/domain/{EntityName}Entity.java` | `backend-entity.md` | 無 |
-| Create Processor | `{moduleCode}/processor/{ModuleCode}CreateProcessor.java` | `backend-processor-create.md` | Entity |
-| Update Processor | `{moduleCode}/processor/{ModuleCode}UpdateProcessor.java` | `backend-processor-update.md` | Entity |
-| Delete Processor | `{moduleCode}/processor/{ModuleCode}DeleteProcessor.java` | `backend-processor-delete.md` | Entity |
-| Query Processor | `{moduleCode}/processor/{ModuleCode}QueryProcessor.java` | `backend-processor-query.md` | Entity |
-| GetById Processor | `{moduleCode}/processor/{ModuleCode}GetByIdProcessor.java` | `backend-processor-getbyid.md` | Entity |
-| Dropdown Processor | `{moduleCode}/processor/{ModuleCode}DropdownProcessor.java` | `backend-processor-dropdown.md` | Entity |
+| Entity 定義 | `tm/domain/{EntityName}Entity.java` | `backend-entity.md` | 無 |
+| Service（核心邏輯） | `tm/service/{ModuleCode}EmpVacationService.java` | `backend-service.md` | Entity |
+| Save Processor（新增+修改） | `tm/processor/{ModuleCode}EmpVacationSaveProcessor.java` | `backend-processor-save.md` | Service |
+| Delete Processor | `tm/processor/{ModuleCode}EmpVacationDeleteProcessor.java` | `backend-processor-delete.md` | Service |
+| Detail Processor（明細查詢） | `tm/processor/{ModuleCode}EmpVacationDetailProcessor.java` | `backend-processor-detail.md` | Service |
+| DefaultVacation Processor | `tm/processor/{ModuleCode}DefaultVacationProcessor.java` | `backend-processor-default.md` | Service |
+| BatchValidate Processor | `tm/processor/{ModuleCode}BatchValidateProcessor.java` | `backend-processor-batch-validate.md` | Service |
+| BatchImport Processor | `tm/processor/{ModuleCode}BatchImportProcessor.java` | `backend-processor-batch-import.md` | Service |
 
-> 不是每個模組都需要全部 7 種。依統一規格的功能點決定需要哪些。
+> **Save = Create + Update 合併**。不建立分開的 Create/Update Processor。
+> BatchValidate 和 BatchImport 僅在有批次匯入功能時需要。
 
-### Step 5：前端任務拆解（強制粒度 + UI 模式區分）
+### Step 4：前端任務拆解
 
 **禁止**將所有前端工作合併為 1-2 個大 Task。前端須按以下粒度拆解：
 
-#### 共通任務（不受 UI 模式影響）
-
 | Task 類型 | 涉及檔案 | 模板 | 依賴 |
 |-----------|---------|------|------|
-| Types 定義 | `types/{module}/{moduleCode}.ts` | `frontend-types.md` | 無 |
-| Service 層 | `services/{module}/{moduleCode}Service.ts` | `frontend-service.md` | Types |
-| Store 層 | `stores/{module}/{moduleCode}/use{ModuleCode}Store.ts` | `frontend-store.md` | Service, Types |
+| Types 定義 | `types/tm/{moduleCode}.ts` | `frontend-types.md` | 無 |
+| Service 層 | `services/tm/{moduleCode}Service.ts` | `frontend-service.md` | Types |
+| Store 層 | `stores/tm/{moduleCode}/use{ModuleCode}Store.ts` | `frontend-store.md` | Service, Types |
 | Router 註冊 | `router/routes.ts`（追加項目） | `frontend-router.md` | 無 |
-| i18n Keys | `i18n/zh-TW/{module}/{module}.json`（追加 key 區塊） | `frontend-i18n.md` | 主頁面, Dialog/Page |
+| 主頁面 | `pages/tm/{moduleCode}/{MODULE_CODE}.vue` | `frontend-page.md` | Store, Types |
+| CreateDialog | `pages/tm/{moduleCode}/components/{ModuleCode}CreateDialog.vue` | `frontend-dialog-create.md` | Store, Types |
+| EditDialog | `pages/tm/{moduleCode}/components/{ModuleCode}EditDialog.vue` | `frontend-dialog-edit.md` | Store, Types |
+| BatchDialog | `pages/tm/{moduleCode}/components/{ModuleCode}BatchDialog.vue` | `frontend-dialog-batch.md` | Store, Types |
+| i18n Keys | `i18n/zh-TW/tm/tm.json` + `i18n/en-US/tm/tm.json` | `frontend-i18n.md` | 主頁面, Dialog |
 
-#### Dialog 模式的前端任務（Step 2 決策為 Dialog 時）
-
-| Task 類型 | 涉及檔案 | 模板 | 依賴 |
-|-----------|---------|------|------|
-| 主頁面 | `pages/{module}/{moduleCode}/{MODULE_CODE}.vue` | **`frontend-page.md`** | Store, Types |
-| 每個 Dialog | `pages/{module}/{moduleCode}/components/{ModuleCode}XxxDialog.vue` | **`frontend-dialog.md`** | Store, Types |
-
-> **Dialog 模式規則**：
-> - 路由只需 **1 條**（主頁面）；Dialog 不建立獨立路由
-> - 主頁面底部整合所有 Dialog（`v-model` 控制開關）
-> - 每個 Dialog 使用 `SDialog2` 組件（`@confirm` / `@cancel`）
-> - Dialog 檔案放在 `components/` 子目錄下
-> - 命名規則：`{ModuleCode}CreateDialog.vue`、`{ModuleCode}EditDialog.vue`、`{ModuleCode}BatchDialog.vue`
-
-#### Page 模式的前端任務（Step 2 決策為 Page 時）
-
-| Task 類型 | 涉及檔案 | 模板 | 依賴 |
-|-----------|---------|------|------|
-| 主頁面 | `pages/{module}/{moduleCode}/{MODULE_CODE}.vue` | **`frontend-page.md`** | Store, Types |
-| 明細頁面 | `pages/{module}/{moduleCode}/{MODULE_CODE}Detail.vue` | **`frontend-page.md`** | Store, Types |
-
-> **Page 模式規則**：
-> - 路由需要**多條**（主頁面 + Detail 等），共用 `meta.pid`
-> - 頁面間使用 `router.push()` 跳轉
-> - 僅在明細頁面極為複雜（多區塊、多 section）時使用
-
-#### ⚠️ 禁止的組合
-
-| 錯誤做法 | 正確做法 |
-|---------|---------|
-| 用 `frontend-page.md` 模板建 CreatePage / ImportPage | Dialog 模式下用 `frontend-dialog.md` 建 CreateDialog / BatchDialog |
-| Dialog 模式下建多條路由 | Dialog 模式只需 1 條路由（主頁面） |
-| Page 模式下用 `frontend-dialog.md` 建明細頁面 | Page 模式下用 `frontend-page.md` 建明細頁面 |
-
-### Step 6：產出任務清單
+### Step 5：產出任務清單
 
 產出格式：
 
 ```markdown
 # 任務清單 — {moduleCode} {moduleName}
 
+## UI 互動模式決策
+- **模式**: Dialog
+- **路由規劃**: 僅 /{MODULE_CODE}
+- **前端元件**: 主頁面 + CreateDialog + EditDialog + BatchDialog
+
 ## 後端任務
 
 ### Task-01: Entity 定義
 - **類型**: 後端
-- **檔案**: `{moduleCode}/domain/{EntityName}Entity.java`
+- **檔案**: `tm/domain/TmEmpVacationEntity.java`
 - **模板**: `backend-entity.md`
 - **依賴**: 無
-- **預估行數**: ~40 行
 - **業務規則**:
-  1. 規則 A（來源：統一規格 §X.X）
-  2. 規則 B（來源：統一規格 §X.X）
+  1. DDL 欄位對應（來源：統一規格 DDL 段落）
+  2. Schema: EAP → 基類 AuditableEapEntity
 
-### Task-02: Create Processor
+### Task-02: Service（核心邏輯）
 - **類型**: 後端
-- **檔案**: `{moduleCode}/processor/{ModuleCode}CreateProcessor.java`
-- **模板**: `backend-processor-create.md`
+- **檔案**: `tm/service/Tm002EmpVacationService.java`
+- **模板**: `backend-service.md`
 - **依賴**: Task-01
-- **預估行數**: ~35 行
 - **業務規則**:
-  1. ...
+  1. B1: UNUSED_HOURS = MAX_HOURS - USED_HOURS
+  2. B3: 執行預設僅回傳病假
+  3. B4: 結算列不可刪除
+  4. B5: 不修改 CLEAR 欄位
+  5. ...（從統一規格列出）
+
+### Task-03 ~ Task-08: 各 Processor
+（依上表列出）
 
 ## 前端任務
 
-### Task-08: Types 定義
+### Task-09: Types 定義
 - **類型**: 前端
-- **檔案**: `types/tm/{moduleCode}.ts`
+- **檔案**: `types/tm/tm002.ts`
 - **模板**: `frontend-types.md`
 - **依賴**: 無
-- **預估行數**: ~30 行
 
-（以此類推）
+### Task-10 ~ Task-17: 其他前端
+（依上表列出）
 ```
 
 ## 約束
@@ -184,7 +123,7 @@
 |------|------|
 | **不可合併前端任務** | 細粒度拆解確保 P2 對每個檔案投入足夠注意力 |
 | **每個任務必須標記 template** | P2-lite 依此載入模板，遺漏會導致從零開始寫 |
-| **預估行數 < 50 行** | 超過 50 行正確率從 87% 降至 26% |
+| **後端 Save = Create + Update** | 不分開建立，統一由 Service 處理 |
 
 ## 產出
 
@@ -200,9 +139,7 @@
 
 ## Gotchas
 
-- 預估行數是品質安全閥，不是精確計算 — 寧可估高一點再拆
-- 不是每個模組都需要全部 14 個 Task — 依統一規格決定
+- 不是每個模組都需要全部 17 個 Task — 依統一規格決定（如無批次匯入則不需 BatchValidate/BatchImport/BatchDialog）
 - 前端 i18n Task 依賴主頁面和 Dialog（需要知道有哪些 key）— 排在最後
-- **Dialog vs Page 是最高優先決策** — 選錯會導致整個前端架構重做（元件結構、路由、模板全部不同）
-- 規格書的「修改頁面」「新增頁面」「匯入頁面」不代表前端要建獨立路由頁面 — 必須依 Step 2 的決策依據判斷
-- `code-patterns-frontend.md` 明確規定「❌ 為 CRUD 建獨立路由（用 Dialog）」— 除非有充分理由（多區塊明細），否則一律用 Dialog 模式
+- **Dialog 模式只需 1 條路由** — 不為 Create/Edit/Batch 建獨立路由
+- 規格書的「修改頁面」「新增頁面」不代表前端要建獨立路由頁面

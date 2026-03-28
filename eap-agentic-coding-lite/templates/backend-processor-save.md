@@ -1,20 +1,19 @@
 ---
-name: backend-processor-delete
-applies_to: "*DeleteProcessor.java"
+name: backend-processor-save
+applies_to: "*SaveProcessor.java"
 ---
 
 ## 說明
-刪除 Processor（Thin 版），接收主鍵後委派 Service 執行硬刪除。Service 內含業務規則檢查（如結算列不可刪除）。
+儲存 Processor（Thin 版），負責參數擷取與驗證後委派 Service 執行 Create + Update 合併邏輯。不在此寫業務邏輯。
 
 ## 🔧 依規格調整的部分
-- **@Named**: `"{routeId}Processor"`（如 `tm002EmpVacationDeleteProcessor`）
-- **routeId**: getTemplateParams 中的 routeId（如 `tm002EmpVacationDelete`）
-- **apiDescription**: API 中文描述（如 `刪除員工假別明細`）
-- **requiredFields**: 必填欄位清單（如 `empVacationId`）
+- **@Named**: `"{routeId}Processor"`（如 `tm002EmpVacationSaveProcessor`）
+- **routeId**: getTemplateParams 中的 routeId（如 `tm002EmpVacationSave`）
+- **apiDescription**: API 中文描述（如 `儲存員工假別明細`）
+- **requiredFields**: 必填欄位清單（如 `empId,details`）
 - **@AuditLog entity**: Entity 名稱（如 `TmEmpVacation`）
 - **Service 型別與注入名**: 如 `Tm002EmpVacationService empVacationService`
-- **pkField**: 主鍵欄位名（如 `empVacationId`）
-- **Service 方法名**: 如 `deleteEmpVacation`
+- **payload 取值 key**: 如 `empId`、`details`
 
 ## 完整參考實作
 ```java
@@ -36,13 +35,14 @@ import org.soetek.foundation.processor.ApiRouteProcessor;       // 🔒 固定
 import org.soetek.foundation.util.LogType;                      // 🔒 固定
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j                                                         // 🔒 固定
 @ApplicationScoped                                             // 🔒 固定
-@Named("tm002EmpVacationDeleteProcessor")                      // 🔧 routeId + "Processor"
+@Named("tm002EmpVacationSaveProcessor")                        // 🔧 routeId + "Processor"
 @RegisterForReflection                                         // 🔒 固定
-public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒 extends ApiRouteProcessor
+public class Tm002EmpVacationSaveProcessor extends ApiRouteProcessor { // 🔒 extends ApiRouteProcessor
 
     @Inject
     Tm002EmpVacationService empVacationService;                // 🔧 Service 注入
@@ -51,9 +51,9 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     @Override
     public Map<String, Object> getTemplateParams() {
         return Map.of(
-                "routeId", "tm002EmpVacationDelete",           // 🔧
-                "apiDescription", "刪除員工假別明細",            // 🔧
-                "requiredFields", "empVacationId");            // 🔧
+                "routeId", "tm002EmpVacationSave",             // 🔧
+                "apiDescription", "儲存員工假別明細",            // 🔧
+                "requiredFields", "empId,details");            // 🔧
     }
 
     @Override
@@ -64,11 +64,11 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     @Override
     @ActivateRequestContext                                     // 🔒 固定
     @AuditLog(
-            operation = AuditLog.OperationType.DELETE,          // 🔒 Delete 固定
+            operation = AuditLog.OperationType.CREATE,         // 🔧 CREATE / UPDATE / QUERY
             entity = "TmEmpVacation",                          // 🔧 Entity 名稱
-            description = "刪除員工假別明細",                    // 🔧
-            logParameters = true,                              // 🔒 固定
-            logResult = false)                                 // 🔒 Delete 固定 false
+            description = "儲存員工假別明細",                    // 🔧
+            logParameters = true,                              // 🔒 Save 固定 true
+            logResult = true)                                  // 🔒 Save 固定 true
     public Object process(Exchange exchange,
                           @Body Map<String, Object> payload,
                           @Headers Map<String, Object> headers) throws Exception {
@@ -76,6 +76,7 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected Object processBusinessLogic(
             Exchange exchange,
             Map<String, Object> payload,
@@ -83,28 +84,35 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
             String traceId,
             String routeId) throws Exception {
 
-        // 🔧 取主鍵值 -- key 名稱從規格取得
-        Object idObj = payload.get("empVacationId");
-        if (idObj == null) {
-            throw new BusinessException("REQUIRED_FIELD", 400,
-                    "empVacationId 為必填欄位");
+        // 🔧 參數擷取 -- key 名稱從規格取得
+        Object empIdObj = payload.get("empId");
+        if (empIdObj == null) {
+            throw new BusinessException("REQUIRED_FIELD", 400, "empId 為必填欄位");
         }
-        Integer empVacationId = ((Number) idObj).intValue();
+        Integer empId = ((Number) empIdObj).intValue();
 
-        // 🔒 委派 Service -- 業務規則檢查（如 CLEAR 不可刪除）在 Service 內
-        empVacationService.deleteEmpVacation(empVacationId);
+        Object detailsObj = payload.get("details");
+        if (detailsObj == null || !(detailsObj instanceof List)
+                || ((List<?>) detailsObj).isEmpty()) {
+            throw new BusinessException("REQUIRED_FIELD", 400, "details 為必填欄位");
+        }
+        List<Map<String, Object>> details = (List<Map<String, Object>>) detailsObj;
+
+        // 🔒 委派 Service -- 所有業務邏輯在 Service 內
+        List<Map<String, Object>> savedRecords =
+                empVacationService.saveEmpVacationDetails(empId, details);
 
         // 🔒 回傳標準格式
         Map<String, Object> data = new HashMap<>();
-        data.put("empVacationId", empVacationId);
-        data.put("entityId", empVacationId);
+        data.put("records", savedRecords);
+        data.put("entityId", empId);
         return buildStandardResponse(traceId, data);           // 🔒 固定
     }
 }
 ```
 
 ## 已知陷阱
-1. **@AuditLog logResult = false** -- Delete 操作不記錄回傳結果，固定 `logResult = false`。
-2. **業務規則在 Service** -- 結算列不可刪除（`CLEAR = true`）的檢查在 Service.deleteXxx() 內，Processor 不重複檢查。
-3. **硬刪除** -- 使用 `entity.delete()` + `em.flush()`，不是軟刪除（更新狀態欄位）。若規格要求軟刪除，需改 Service 實作。
-4. **Number 轉型** -- 主鍵值必須用 `((Number) idObj).intValue()`，不可直接 cast `Integer`。
+1. **Processor 不寫業務邏輯** -- 所有驗證（重複檢查、員工存在性、CLEAR 判斷）都在 Service 內。Processor 只做 payload 取值和必填檢查。
+2. **@AuditLog operation** -- Save 用 `CREATE`（因為涵蓋新增），不要用 `UPDATE`。
+3. **details 驗證** -- 必須同時檢查 `null`、`not instanceof List`、`isEmpty()` 三種情況。
+4. **Number 轉型** -- payload 中的數字必須用 `((Number) obj).intValue()` 轉型，不可直接 cast 為 `Integer`（JSON 反序列化可能產生 Long 或 Double）。

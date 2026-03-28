@@ -1,20 +1,19 @@
 ---
-name: backend-processor-delete
-applies_to: "*DeleteProcessor.java"
+name: backend-processor-detail
+applies_to: "*DetailProcessor.java"
 ---
 
 ## 說明
-刪除 Processor（Thin 版），接收主鍵後委派 Service 執行硬刪除。Service 內含業務規則檢查（如結算列不可刪除）。
+明細查詢 Processor（Thin 版），接收查詢條件後委派 Service 執行多表 JOIN 查詢並回傳明細列表。
 
 ## 🔧 依規格調整的部分
-- **@Named**: `"{routeId}Processor"`（如 `tm002EmpVacationDeleteProcessor`）
-- **routeId**: getTemplateParams 中的 routeId（如 `tm002EmpVacationDelete`）
-- **apiDescription**: API 中文描述（如 `刪除員工假別明細`）
-- **requiredFields**: 必填欄位清單（如 `empVacationId`）
+- **@Named**: `"{routeId}Processor"`（如 `tm002EmpVacationDetailProcessor`）
+- **routeId**: getTemplateParams 中的 routeId（如 `tm002EmpVacationDetail`）
+- **apiDescription**: API 中文描述（如 `查詢員工假別明細`）
+- **requiredFields**: 必填欄位清單（如 `empId,year`）
 - **@AuditLog entity**: Entity 名稱（如 `TmEmpVacation`）
 - **Service 型別與注入名**: 如 `Tm002EmpVacationService empVacationService`
-- **pkField**: 主鍵欄位名（如 `empVacationId`）
-- **Service 方法名**: 如 `deleteEmpVacation`
+- **查詢參數**: payload 取值的 key 名稱與型別（如 empId: Integer, year: Integer）
 
 ## 完整參考實作
 ```java
@@ -36,13 +35,14 @@ import org.soetek.foundation.processor.ApiRouteProcessor;       // 🔒 固定
 import org.soetek.foundation.util.LogType;                      // 🔒 固定
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j                                                         // 🔒 固定
 @ApplicationScoped                                             // 🔒 固定
-@Named("tm002EmpVacationDeleteProcessor")                      // 🔧 routeId + "Processor"
+@Named("tm002EmpVacationDetailProcessor")                      // 🔧 routeId + "Processor"
 @RegisterForReflection                                         // 🔒 固定
-public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒 extends ApiRouteProcessor
+public class Tm002EmpVacationDetailProcessor extends ApiRouteProcessor { // 🔒 extends ApiRouteProcessor
 
     @Inject
     Tm002EmpVacationService empVacationService;                // 🔧 Service 注入
@@ -51,9 +51,9 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     @Override
     public Map<String, Object> getTemplateParams() {
         return Map.of(
-                "routeId", "tm002EmpVacationDelete",           // 🔧
-                "apiDescription", "刪除員工假別明細",            // 🔧
-                "requiredFields", "empVacationId");            // 🔧
+                "routeId", "tm002EmpVacationDetail",           // 🔧
+                "apiDescription", "查詢員工假別明細",            // 🔧
+                "requiredFields", "empId,year");               // 🔧
     }
 
     @Override
@@ -64,11 +64,11 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     @Override
     @ActivateRequestContext                                     // 🔒 固定
     @AuditLog(
-            operation = AuditLog.OperationType.DELETE,          // 🔒 Delete 固定
+            operation = AuditLog.OperationType.QUERY,          // 🔒 查詢固定 QUERY
             entity = "TmEmpVacation",                          // 🔧 Entity 名稱
-            description = "刪除員工假別明細",                    // 🔧
+            description = "查詢員工假別明細",                    // 🔧
             logParameters = true,                              // 🔒 固定
-            logResult = false)                                 // 🔒 Delete 固定 false
+            logResult = true)                                  // 🔒 Query 固定 true
     public Object process(Exchange exchange,
                           @Body Map<String, Object> payload,
                           @Headers Map<String, Object> headers) throws Exception {
@@ -83,28 +83,40 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
             String traceId,
             String routeId) throws Exception {
 
-        // 🔧 取主鍵值 -- key 名稱從規格取得
-        Object idObj = payload.get("empVacationId");
-        if (idObj == null) {
-            throw new BusinessException("REQUIRED_FIELD", 400,
-                    "empVacationId 為必填欄位");
-        }
-        Integer empVacationId = ((Number) idObj).intValue();
+        // 🔧 參數擷取 -- key 名稱從規格取得
+        Integer empId = getRequiredInteger(payload, "empId", "員工ID");
+        Integer year = getRequiredInteger(payload, "year", "年度");
 
-        // 🔒 委派 Service -- 業務規則檢查（如 CLEAR 不可刪除）在 Service 內
-        empVacationService.deleteEmpVacation(empVacationId);
+        // 🔒 委派 Service
+        List<Map<String, Object>> records =
+                empVacationService.queryEmpVacationDetail(empId, year);
 
         // 🔒 回傳標準格式
         Map<String, Object> data = new HashMap<>();
-        data.put("empVacationId", empVacationId);
-        data.put("entityId", empVacationId);
+        data.put("records", records);
         return buildStandardResponse(traceId, data);           // 🔒 固定
+    }
+
+    // 🔒 整數型必填參數擷取工具方法 -- 支援 Number 和 String 兩種輸入
+    private Integer getRequiredInteger(Map<String, Object> data,
+                                       String key, String fieldName) {
+        Object value = data.get(key);
+        if (value == null) {
+            throw new BusinessException("REQUIRED_FIELD", 400,
+                    fieldName + " 為必填欄位");
+        }
+        if (value instanceof Number) return ((Number) value).intValue();
+        try {
+            return Integer.parseInt(value.toString().trim());
+        } catch (NumberFormatException e) {
+            throw new BusinessException("INVALID_FORMAT", 400,
+                    fieldName + " 格式錯誤，必須為整數");
+        }
     }
 }
 ```
 
 ## 已知陷阱
-1. **@AuditLog logResult = false** -- Delete 操作不記錄回傳結果，固定 `logResult = false`。
-2. **業務規則在 Service** -- 結算列不可刪除（`CLEAR = true`）的檢查在 Service.deleteXxx() 內，Processor 不重複檢查。
-3. **硬刪除** -- 使用 `entity.delete()` + `em.flush()`，不是軟刪除（更新狀態欄位）。若規格要求軟刪除，需改 Service 實作。
-4. **Number 轉型** -- 主鍵值必須用 `((Number) idObj).intValue()`，不可直接 cast `Integer`。
+1. **getRequiredInteger 必須支援 String** -- 前端可能傳字串型數字（如 `"2024"`），必須用 `Integer.parseInt` 兜底，不可只處理 Number。
+2. **QUERY 類 Processor 不加 @Transactional** -- 查詢不需要交易，@Transactional 只加在 Service 的寫入方法上。
+3. **records 回傳** -- 查詢結果統一放在 `data.put("records", ...)` 中，前端依此 key 取值。

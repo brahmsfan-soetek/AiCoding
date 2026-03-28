@@ -110,60 +110,96 @@ SDialog2 有兩種模式，業務 Dialog **一律使用 Slot 模式**：
 </s-dialog2>
 ```
 
-## 級聯下拉選單模式（Cascading LOV）
+## 統一 LOV 級聯下拉模式（🔒 固定模式）
 
-當下拉選項有父子關係（如「假別」→「假別細項」）時，使用級聯模式：
+當下拉選項有父子關係（如「假別」→「假別細項」）時，使用**統一 LOV 模式**：
+一次 LOV 呼叫取得完整清單，前端從中推導兩層下拉。
 
 ```typescript
-// 1. 載入父層選項（onMounted 或 watch dialog open）
-const parentOptions = ref<{ value: string; label: string }[]>([])
-const childOptions = ref<{ value: number; label: string; parentCode: string }[]>([])
-const allChildOptions = ref<{ value: number; label: string; parentCode: string }[]>([])
+// 🔒 統一 LOV — 一次呼叫取得所有明細項（含父層資訊）
+interface VacDetailOption {
+  vacationSubId: number
+  vacationCode: string      // 父層 code
+  vacationName: string      // 父層名稱
+  vacationSubCode: string | null
+  vacationSubName: string | null
+  maxHours: number | null
+}
+const allDetailOptions = ref<VacDetailOption[]>([])
 
-async function loadParentOptions() {
-  const res = await LovService.loadLovAll('parentLovType')
+async function loadVacationOptions() {
+  const res = await LovService.loadLovAll('tm002VacationDetailList')
   if (res?.success && res.items) {
-    parentOptions.value = res.items.map(i => ({
-      value: String(i.value || ''),
-      label: String(i.label || '')
+    allDetailOptions.value = res.items.map((i: Record<string, unknown>) => ({
+      vacationSubId: Number(i.vacationSubId || i.vacationsubid || 0),
+      vacationCode: String(i.vacationCode || i.vacationcode || ''),
+      vacationName: String(i.vacationName || i.vacationname || ''),
+      vacationSubCode: i.vacationSubCode ? String(i.vacationSubCode) : null,
+      vacationSubName: i.vacationSubName ? String(i.vacationSubName) : null,
+      maxHours: i.maxHours != null ? Number(i.maxHours) : null
     }))
   }
 }
 
-async function loadChildOptions() {
-  const res = await LovService.loadLovAll('childLovType')
-  if (res?.success && res.items) {
-    allChildOptions.value = res.items.map(i => ({
-      value: Number(i.value || 0),
-      label: String(i.label || ''),
-      parentCode: String(i.parentCode || '')
-    }))
+// 🔒 從統一 LOV 推導父層下拉（按 vacationCode 去重）
+const vacTypeOptions = computed(() => {
+  const map = new Map<string, string>()
+  for (const d of allDetailOptions.value) {
+    if (!map.has(d.vacationCode)) map.set(d.vacationCode, d.vacationName)
   }
+  return [...map.entries()].map(([value, label]) => ({ value, label }))
+})
+
+// 🔒 取得該父層下的子層選項
+function getDetailsByCode(vacationCode?: string): VacDetailOption[] {
+  if (!vacationCode) return []
+  return allDetailOptions.value.filter(d => d.vacationCode === vacationCode)
 }
 
-// 2. 父層變更時篩選子層
-function getFilteredChildOptions(parentCode: string) {
-  return allChildOptions.value.filter(c => c.parentCode === parentCode)
+function getSubOptions(vacationCode?: string) {
+  return getDetailsByCode(vacationCode).map(d => ({
+    value: d.vacationSubId,
+    label: d.vacationSubName || d.vacationName
+  }))
 }
 
-// 3. 處理無子選項的情況（如假別沒有細項）
-function hasChildOptions(parentCode: string): boolean {
-  return getFilteredChildOptions(parentCode).length > 0
+// 🔒 hasMultipleSubs — >1 才顯示下拉，=1 顯示文字
+function hasMultipleSubs(vacationCode?: string): boolean {
+  return getDetailsByCode(vacationCode).length > 1
+}
+
+// 🔒 onVacTypeChange — =1 自動帶入，>1 清空
+function onVacTypeChange(row: DetailRow) {
+  const found = vacTypeOptions.value.find(o => o.value === row.vacationCode)
+  row.vacationName = found?.label || ''
+  const subs = getDetailsByCode(row.vacationCode)
+  if (subs.length === 1) {
+    row.vacationSubId = subs[0].vacationSubId
+    row.vacationSubName = subs[0].vacationSubName || subs[0].vacationName
+  } else {
+    row.vacationSubId = 0
+    row.vacationSubName = ''
+  }
 }
 ```
 
 ```vue
-<!-- 父層下拉 -->
-<s-select2 v-model="row.parentCode" :options="parentOptions"
+<!-- 🔒 父層下拉 — 從統一 LOV 推導 -->
+<s-select2 v-model="row.vacationCode" :options="vacTypeOptions"
   option-label="label" option-value="value" dense emit-value map-options
-  @update:model-value="onParentChange(row)" />
+  @update:model-value="onVacTypeChange(row)" />
 
-<!-- 子層下拉：有子選項時顯示，無子選項時顯示 '---' -->
-<s-select2 v-if="hasChildOptions(row.parentCode)"
-  v-model="row.childId" :options="getFilteredChildOptions(row.parentCode)"
+<!-- 🔒 子層：>1 筆顯示下拉，=1 筆顯示文字 -->
+<s-select2 v-if="hasMultipleSubs(row.vacationCode)"
+  v-model="row.vacationSubId" :options="getSubOptions(row.vacationCode)"
   option-label="label" option-value="value" dense emit-value map-options />
-<span v-else class="text-grey-5">---</span>
+<span v-else class="text-grey-7">{{ row.vacationSubName || '—' }}</span>
 ```
+
+> **⚠️ 禁止的做法**：
+> - ❌ 兩個獨立 LOV 呼叫（`loadParentOptions()` + `loadChildOptions()`）
+> - ❌ 無子選項時顯示 `'---'`（正確做法是 =1 筆顯示文字標籤）
+> - ❌ 永遠顯示下拉（只有 >1 筆才顯示）
 
 ## 禁止模式
 

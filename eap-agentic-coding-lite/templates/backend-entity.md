@@ -4,122 +4,99 @@ applies_to: "*Entity.java"
 ---
 
 ## 說明
-JPA Entity 類別，對應單一資料表，使用 Panache Active Record 模式。
+JPA Entity 類別，對應單一資料表，使用 Panache Active Record 模式。每個功能的主要資料表對應一個 Entity。
 
-## 替換規則
-- `{ModuleCode}` -- PascalCase 模組代碼（如 Tm002）
-- `{moduleCode}` -- camelCase 模組代碼（如 tm002）
-- `{module}` -- 小寫模組前綴（如 tm）
-- `{EntityName}` -- PascalCase Entity 名稱（如 TmEmpVacation）
-- `{entityDescription}` -- Entity 中文描述（如 員工年度假別額度）
-- `{tableName}` -- DDL 表名（如 TM_EMP_VACATION）
-- `{pkColumn}` -- 主鍵欄位的資料庫欄名（如 EMP_VACATION_ID）
-- `{pkField}` -- 主鍵欄位的 Java 名稱（如 empVacationId）
-- `{PKType}` -- 主鍵 Java 型別（如 Integer）
-- `{FIELDS_BLOCK}` -- 業務欄位區塊（依 DDL 逐一定義）
-- `{QUERY_METHODS_BLOCK}` -- 自訂查詢方法區塊（依規格需求）
+## 🔧 依規格調整的部分
+- **package**: `org.soetek.eap.{module}.domain` -- module 從功能代碼取得（如 tm）
+- **Table name**: `@Table(name = "...")` -- 從 DDL 取得，不加 schema
+- **PK 欄位**: `@Id` 欄位名、型別、@Column name -- 從 DDL 取得
+- **業務欄位**: 每個 @Column 的 name、nullable、precision/scale -- 從 DDL 逐欄對應
+- **FK 欄位**: 如 empId、vacationSubId -- 從 DDL FK 定義取得
+- **Java 型別對應**: `DECIMAL/NUMERIC` -> `BigDecimal`、`DATE` -> `LocalDate`、`BIT/BOOLEAN` -> `Boolean`、`INT` -> `Integer`、`NVARCHAR` -> `String`
+- **import**: 依實際使用的型別選擇 import，不留無用 import
 
 ## 完整參考實作
 ```java
-package org.soetek.eap.{module}.domain;
+package org.soetek.eap.tm.domain;                          // 🔧 {module} 替換
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.soetek.eap.demo.domain.AuditableEapEntity;
+import io.quarkus.runtime.annotations.RegisterForReflection;  // 🔒 固定
+import jakarta.persistence.*;                                  // 🔒 固定
+import lombok.AllArgsConstructor;                              // 🔒 固定
+import lombok.Data;                                            // 🔒 固定
+import lombok.EqualsAndHashCode;                               // 🔒 固定
+import lombok.NoArgsConstructor;                               // 🔒 固定
+import org.hibernate.annotations.Cache;                        // 🔒 固定
+import org.hibernate.annotations.CacheConcurrencyStrategy;     // 🔒 固定
+import org.soetek.eap.demo.domain.AuditableEapEntity;          // 🔒 固定：EAP schema 一律用此
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.math.BigDecimal;                                   // 🔧 依欄位型別決定
+import java.time.LocalDate;                                    // 🔧 依欄位型別決定
 
-/**
- * {entityDescription} Entity
- * <p>
- * 對應 EAP.{tableName} 資料表
- *
- * @author SoeTek Team
- */
+// 🔒 以下五個 annotation 固定不變
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "{tableName}")
-@RegisterForReflection
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class {EntityName}Entity extends AuditableEapEntity {
+@Table(name = "TM_EMP_VACATION")                               // 🔧 DDL 表名，不加 schema
+@RegisterForReflection                                         // 🔒 固定
+@Cacheable                                                     // 🔒 固定
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)            // 🔒 固定
+public class TmEmpVacationEntity extends AuditableEapEntity {  // 🔒 一律 extends AuditableEapEntity
 
     // ==================== 主鍵 ====================
 
-    /**
-     * 流水號 (PK)
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "{pkColumn}", nullable = false)
-    public {PKType} {pkField};
+    @Id                                                        // 🔒 固定
+    @GeneratedValue(strategy = GenerationType.IDENTITY)        // 🔒 固定：MSSQL 自增
+    @Column(name = "EMP_VACATION_ID", nullable = false)        // 🔧 DDL PK 欄名
+    public Integer empVacationId;                              // 🔧 PK 型別 + 名稱
 
     // ==================== 業務欄位 ====================
+    // 🔧 以下所有欄位從 DDL 逐一對應
 
-    // {FIELDS_BLOCK}
-    // 範例：
-    // /**
-    //  * 員工ID (FK to PM_EMPLOYEE)
-    //  */
-    // @Column(name = "EMP_ID", nullable = false)
-    // public Integer empId;
-    //
-    // /**
-    //  * 可請時數 (8hr = 1日)
-    //  */
-    // @Column(name = "MAX_HOURS", precision = 5, scale = 1)
-    // public BigDecimal maxHours;
-    //
-    // /**
-    //  * 額度生效起始日
-    //  */
-    // @Column(name = "BEGIN_DATE", nullable = false)
-    // public LocalDate beginDate;
-    //
-    // /**
-    //  * 結算狀態 (外部批次設定，本功能唯讀)
-    //  */
-    // @Column(name = "CLEAR")
-    // public Boolean clear;
+    @Column(name = "EMP_ID", nullable = false)                 // 🔧 FK 欄位
+    public Integer empId;
+
+    @Column(name = "VACATION_SUB_ID", nullable = false)        // 🔧 FK 欄位
+    public Integer vacationSubId;
+
+    @Column(name = "MAX_HOURS", precision = 5, scale = 1)      // 🔧 precision/scale 從 DDL
+    public BigDecimal maxHours;
+
+    @Column(name = "USED_HOURS", precision = 5, scale = 1)
+    public BigDecimal usedHours;
+
+    @Column(name = "UNUSED_HOURS", precision = 5, scale = 1)
+    public BigDecimal unusedHours;
+
+    @Column(name = "CASH_OUT_HOURS", precision = 5, scale = 1)
+    public BigDecimal cashOutHours;
+
+    @Column(name = "BEGIN_DATE", nullable = false)
+    public LocalDate beginDate;
+
+    @Column(name = "END_DATE", nullable = false)
+    public LocalDate endDate;
+
+    @Column(name = "CLEAR")
+    public Boolean clear;
 
     // ==================== Panache 查詢方法 ====================
 
-    /**
-     * 根據主鍵查詢
-     */
-    public static {EntityName}Entity findByKey({PKType} {pkField}) {
-        return find("{pkField}", {pkField}).firstResult();
+    // 🔒 findByKey / existsByKey 格式固定，PK 名稱替換即可
+    public static TmEmpVacationEntity findByKey(Integer empVacationId) {
+        return find("empVacationId", empVacationId).firstResult();
     }
 
-    /**
-     * 檢查主鍵是否存在
-     */
-    public static boolean existsByKey({PKType} {pkField}) {
-        return count("{pkField}", {pkField}) > 0;
+    public static boolean existsByKey(Integer empVacationId) {
+        return count("empVacationId", empVacationId) > 0;
     }
-
-    // {QUERY_METHODS_BLOCK}
-    // 若有 Query Processor 使用 Entity 查詢（非原生 SQL），可加：
-    // public static List<{EntityName}Entity> findAllXxx(Map<String, Object> criteria) { ... }
 }
 ```
 
-## 業務邏輯注意點
-- **繼承**: 一律 `extends AuditableEapEntity`，審計欄位 `@PrePersist`/`@PreUpdate` 自動填充，不手動設定 creator/createDt/updater/updateDt
-- **快取**: `@Cacheable` + `@Cache(usage = READ_WRITE)` 一律加上
-- **@Table**: 只寫表名，不加 schema -- Hibernate 自動處理
-- **主鍵**: `@Id @GeneratedValue(strategy = GenerationType.IDENTITY)` -- MSSQL 自增
-- **欄位存取**: 使用 `public` 修飾符（Panache 風格）
-- **欄位型別對應**: `DECIMAL/NUMERIC` -> `BigDecimal`、`DATE` -> `LocalDate`、`BIT/BOOLEAN` -> `Boolean`、`INT` -> `Integer`、`NVARCHAR` -> `String`
-- **查詢方法**: 簡單查詢放 Entity（Panache `find()`/`list()`/`count()`），複雜查詢（多表 JOIN / 原生 SQL）放 Service 用 EntityManager
-- **import**: 依實際使用的型別選擇 import，不要留無用的 import
+## 已知陷阱
+1. **DDL 欄名打字錯誤** -- DDL 可能有 typo（如 `VACATION_SUN_ID` 應為 `VACATION_SUB_ID`）。務必對照規格書交叉驗證，以規格書語意為準。
+2. **@Table 不加 schema** -- 寫 `@Table(name = "TM_EMP_VACATION")`，不寫 `@Table(name = "EAP.TM_EMP_VACATION")`。Hibernate 會自動處理 schema。
+3. **繼承 AuditableEapEntity** -- 審計欄位（creator/createDt/updater/updateDt）由 `@PrePersist`/`@PreUpdate` 自動填充，Entity 中不需宣告也不需手動 set。
+4. **欄位存取修飾符** -- 使用 `public`（Panache Active Record 風格），不用 `private` + getter/setter。
+5. **複雜查詢放 Service** -- Entity 內只放 `findByKey`/`existsByKey` 等簡單查詢；多表 JOIN、原生 SQL 一律放 Service 用 EntityManager。

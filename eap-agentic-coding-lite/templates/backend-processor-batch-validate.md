@@ -1,20 +1,19 @@
 ---
-name: backend-processor-delete
-applies_to: "*DeleteProcessor.java"
+name: backend-processor-batch-validate
+applies_to: "*BatchValidateProcessor.java, *ValidateProcessor.java"
 ---
 
 ## 說明
-刪除 Processor（Thin 版），接收主鍵後委派 Service 執行硬刪除。Service 內含業務規則檢查（如結算列不可刪除）。
+批次驗證 Processor（Thin 版），接收員工帳號清單後委派 Service 逐一驗證（在職/離職/查無），回傳驗證結果供前端批次匯入前預覽。
 
 ## 🔧 依規格調整的部分
-- **@Named**: `"{routeId}Processor"`（如 `tm002EmpVacationDeleteProcessor`）
-- **routeId**: getTemplateParams 中的 routeId（如 `tm002EmpVacationDelete`）
-- **apiDescription**: API 中文描述（如 `刪除員工假別明細`）
-- **requiredFields**: 必填欄位清單（如 `empVacationId`）
-- **@AuditLog entity**: Entity 名稱（如 `TmEmpVacation`）
+- **@Named**: `"{routeId}Processor"`（如 `tm002BatchValidateProcessor`）
+- **routeId**: getTemplateParams 中的 routeId（如 `tm002BatchValidate`）
+- **apiDescription**: API 中文描述（如 `批次匯入員工驗證`）
+- **requiredFields**: 必填欄位清單（如 `empAccounts`）
+- **@AuditLog entity**: 驗證對象 Entity（如 `PmEmployee`）
 - **Service 型別與注入名**: 如 `Tm002EmpVacationService empVacationService`
-- **pkField**: 主鍵欄位名（如 `empVacationId`）
-- **Service 方法名**: 如 `deleteEmpVacation`
+- **payload 取值 key**: 如 `empAccounts`
 
 ## 完整參考實作
 ```java
@@ -36,13 +35,14 @@ import org.soetek.foundation.processor.ApiRouteProcessor;       // 🔒 固定
 import org.soetek.foundation.util.LogType;                      // 🔒 固定
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j                                                         // 🔒 固定
 @ApplicationScoped                                             // 🔒 固定
-@Named("tm002EmpVacationDeleteProcessor")                      // 🔧 routeId + "Processor"
+@Named("tm002BatchValidateProcessor")                          // 🔧 routeId + "Processor"
 @RegisterForReflection                                         // 🔒 固定
-public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒 extends ApiRouteProcessor
+public class Tm002BatchValidateProcessor extends ApiRouteProcessor { // 🔒 extends ApiRouteProcessor
 
     @Inject
     Tm002EmpVacationService empVacationService;                // 🔧 Service 注入
@@ -51,9 +51,9 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     @Override
     public Map<String, Object> getTemplateParams() {
         return Map.of(
-                "routeId", "tm002EmpVacationDelete",           // 🔧
-                "apiDescription", "刪除員工假別明細",            // 🔧
-                "requiredFields", "empVacationId");            // 🔧
+                "routeId", "tm002BatchValidate",               // 🔧
+                "apiDescription", "批次匯入員工驗證",            // 🔧
+                "requiredFields", "empAccounts");              // 🔧
     }
 
     @Override
@@ -64,11 +64,11 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     @Override
     @ActivateRequestContext                                     // 🔒 固定
     @AuditLog(
-            operation = AuditLog.OperationType.DELETE,          // 🔒 Delete 固定
-            entity = "TmEmpVacation",                          // 🔧 Entity 名稱
-            description = "刪除員工假別明細",                    // 🔧
+            operation = AuditLog.OperationType.QUERY,          // 🔒 驗證本質是查詢
+            entity = "PmEmployee",                             // 🔧 驗證對象
+            description = "批次匯入員工驗證",                    // 🔧
             logParameters = true,                              // 🔒 固定
-            logResult = false)                                 // 🔒 Delete 固定 false
+            logResult = true)                                  // 🔒 固定
     public Object process(Exchange exchange,
                           @Body Map<String, Object> payload,
                           @Headers Map<String, Object> headers) throws Exception {
@@ -76,6 +76,7 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected Object processBusinessLogic(
             Exchange exchange,
             Map<String, Object> payload,
@@ -83,28 +84,29 @@ public class Tm002EmpVacationDeleteProcessor extends ApiRouteProcessor { // 🔒
             String traceId,
             String routeId) throws Exception {
 
-        // 🔧 取主鍵值 -- key 名稱從規格取得
-        Object idObj = payload.get("empVacationId");
-        if (idObj == null) {
+        // 🔧 取清單參數 -- key 名稱從規格取得
+        Object accountsObj = payload.get("empAccounts");
+        if (accountsObj == null || !(accountsObj instanceof List)
+                || ((List<?>) accountsObj).isEmpty()) {
             throw new BusinessException("REQUIRED_FIELD", 400,
-                    "empVacationId 為必填欄位");
+                    "empAccounts 為必填欄位");
         }
-        Integer empVacationId = ((Number) idObj).intValue();
+        List<String> empAccounts = (List<String>) accountsObj;
 
-        // 🔒 委派 Service -- 業務規則檢查（如 CLEAR 不可刪除）在 Service 內
-        empVacationService.deleteEmpVacation(empVacationId);
+        // 🔒 委派 Service
+        List<Map<String, Object>> results =
+                empVacationService.validateEmployees(empAccounts);
 
         // 🔒 回傳標準格式
         Map<String, Object> data = new HashMap<>();
-        data.put("empVacationId", empVacationId);
-        data.put("entityId", empVacationId);
+        data.put("results", results);
         return buildStandardResponse(traceId, data);           // 🔒 固定
     }
 }
 ```
 
 ## 已知陷阱
-1. **@AuditLog logResult = false** -- Delete 操作不記錄回傳結果，固定 `logResult = false`。
-2. **業務規則在 Service** -- 結算列不可刪除（`CLEAR = true`）的檢查在 Service.deleteXxx() 內，Processor 不重複檢查。
-3. **硬刪除** -- 使用 `entity.delete()` + `em.flush()`，不是軟刪除（更新狀態欄位）。若規格要求軟刪除，需改 Service 實作。
-4. **Number 轉型** -- 主鍵值必須用 `((Number) idObj).intValue()`，不可直接 cast `Integer`。
+1. **三態驗證在 Service** -- 在職/已離職/查無此員工的判斷邏輯在 Service.validateEmployees() 內，Processor 不處理。
+2. **List 驗證三重檢查** -- 必須同時檢查 `null`、`not instanceof List`、`isEmpty()`。JSON 反序列化時 empAccounts 可能是各種型別。
+3. **@AuditLog entity** -- 驗證的對象是 `PmEmployee`，不是功能主 Entity。
+4. **#15 LEAVE_DATE 判斷離職** -- Service 內用 `LEAVE_DATE IS NOT NULL` 判斷離職，不要用 `ASSUME_DATE` 或 `HIRE_DATE`。

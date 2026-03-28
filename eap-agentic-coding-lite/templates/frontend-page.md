@@ -5,30 +5,19 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
 
 ## 說明
 
-主頁面組件：查詢區 + 操作按鈕區 + 資料表格 + Dialog 整合。含分頁排序、LOV 下拉載入、permission-id 標記。
+主頁面 Vue 元件：查詢條件區 + 操作按鈕區 + 資料表格 + Dialog 整合。遵循三層架構（Page -> Store，不直接呼叫 Service）。Dialog 以 v-model 控制開關，內嵌於頁面底部。
 
-> **⚠️ 此模板僅用於主頁面（清單查詢頁面）**，不用於 Create/Edit/Batch 組件。
-> - **Dialog 模式**（預設）：Create/Edit/Batch 使用 `frontend-dialog.md` 模板，產出 `components/{ModuleCode}XxxDialog.vue`，由主頁面以 `v-model` 整合
-> - **Page 模式**（僅複雜場景）：Detail 頁面可用此模板產出 `{MODULE_CODE}Detail.vue`，需配合獨立路由
->
-> 若你正在為 Create/Edit/Batch 功能選擇模板，請使用 `frontend-dialog.md` 而非本模板。
+## 依規格調整的部分
 
-## 替換規則
-
-- `{ModuleCode}` → PascalCase 模組代碼（如 `Tm002`）
-- `{moduleCode}` → camelCase 模組代碼（如 `tm002`）
-- `{MODULE_CODE}` → 大寫格式（如 `TM002`）
-- `{module}` → 模組群小寫（如 `tm`）
-- `{moduleTitle}` → 模組中文名稱（如 `員工年度假別額度維護`）
-- `{pkField}` → 主鍵欄位名（如 `quotaId`）
-- `{EntityName}` → 主要實體介面名（如 `EmpVacationListItem`）
-- `{queryParamsType}` → 查詢參數介面名（如 `EmpVacationQueryParams`）
-- `{defaultSortField}` → 預設排序欄位（如 `empNo`）
+- 查詢欄位（searchForm）：從統一規格的查詢條件取得
+- 表格欄位（columns）：從統一規格的清單欄位取得
+- LOV 下拉選項（如部門）：LOV key 從統一規格取得
+- Dialog 組件引入：依頁面功能決定需要哪些 Dialog（Create / Edit / Batch）
+- i18nPrefix：格式固定為 `'{module}.{moduleCode}.'`
 
 ## 完整參考實作
 
 ```vue
-<!-- src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue -->
 <template>
   <q-page padding class="eap-page-background">
     <!-- 查詢條件區 -->
@@ -39,19 +28,19 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
           <span class="text-subtitle1 text-weight-bold">{{ $t(i18nPrefix + 'query.title') }}</span>
         </div>
         <div class="row q-col-gutter-md items-end">
-          <!-- {查詢欄位：依規格調整欄位數量與類型} -->
+          <!-- 🔧 查詢欄位從統一規格的查詢條件取得 -->
           <div class="col-12 col-md-2">
-            <s-input v-model="searchForm.{field1}" :label="$t(i18nPrefix + 'query.{field1}')" filled dense clearable />
+            <s-input v-model="searchForm.effectiveDate" :label="$t(i18nPrefix + 'query.year')" filled dense clearable />
           </div>
           <div class="col-12 col-md-2">
-            <s-select2 v-model="searchForm.{field2}" :label="$t(i18nPrefix + 'query.{field2}')" :options="{field2Options}"
+            <s-select2 v-model="searchForm.deptCode" :label="$t(i18nPrefix + 'query.department')" :options="deptOptions"
               option-label="label" option-value="value" dense clearable emit-value map-options />
           </div>
           <div class="col-12 col-md-2">
-            <s-input v-model="searchForm.{field3}" :label="$t(i18nPrefix + 'query.{field3}')" filled dense clearable />
+            <s-input v-model="searchForm.empNo" :label="$t(i18nPrefix + 'query.empNo')" filled dense clearable />
           </div>
           <div class="col-12 col-md-2">
-            <s-input v-model="searchForm.{field4}" :label="$t(i18nPrefix + 'query.{field4}')" filled dense clearable />
+            <s-input v-model="searchForm.empName" :label="$t(i18nPrefix + 'query.empName')" filled dense clearable />
           </div>
           <div class="col-auto">
             <div class="row no-wrap q-gutter-sm">
@@ -65,7 +54,6 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
 
     <!-- 操作按鈕區 -->
     <div class="row justify-end q-mb-md q-gutter-sm">
-      <!-- {操作按鈕：依規格調整，如批次匯入、單筆新增等} -->
       <s-btn :label="$t(i18nPrefix + 'action.batchImport')" color="secondary" icon="upload_file" @click="showBatchDialog = true" />
       <s-btn :label="$t(i18nPrefix + 'action.addSingle')" color="primary" icon="add" @click="showCreateDialog = true" />
     </div>
@@ -73,7 +61,7 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
     <!-- 資料表格 -->
     <s-card class="eap-card eap-fade-in eap-card-static">
       <q-card-section>
-        <q-table :rows="store.records" :columns="columns" row-key="{pkField}" :loading="store.queryLoading"
+        <q-table :rows="store.records" :columns="columns" row-key="quotaId" :loading="store.queryLoading"
           :pagination="pagination" flat bordered @request="onRequest">
           <template #body-cell-action="props">
             <q-td :props="props">
@@ -85,11 +73,10 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
       </q-card-section>
     </s-card>
 
-    <!-- Dialogs -->
-    <!-- {Dialog 組合：依規格調整，可能有 Create / Edit / Batch 等} -->
-    <{ModuleCode}CreateDialog v-model="showCreateDialog" @saved="handleQuery" />
-    <{ModuleCode}EditDialog v-model="showEditDialog" :row-data="selectedRow" @saved="handleQuery" />
-    <{ModuleCode}BatchDialog v-model="showBatchDialog" @imported="handleQuery" />
+    <!-- 🔒 Dialog 整合 — v-model 控制開關，@saved 觸發重新查詢 -->
+    <Tm002CreateDialog v-model="showCreateDialog" @saved="handleQuery" />
+    <Tm002EditDialog v-model="showEditDialog" :row-data="selectedRow" @saved="handleQuery" />
+    <Tm002BatchDialog v-model="showBatchDialog" @imported="handleQuery" />
   </q-page>
 </template>
 
@@ -97,72 +84,54 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSessionStore } from 'stores/common/session'
-import { use{ModuleCode}Store } from 'src/stores/{module}/{moduleCode}/use{ModuleCode}Store'
+import { useTm002Store } from 'src/stores/tm/tm002/useTm002Store'
 import { LovService } from 'src/services/common/lovService'
-import type { I{EntityName}, I{queryParamsType} } from 'src/types/{module}/{moduleCode}'
-import {ModuleCode}CreateDialog from './components/{ModuleCode}CreateDialog.vue'
-import {ModuleCode}EditDialog from './components/{ModuleCode}EditDialog.vue'
-import {ModuleCode}BatchDialog from './components/{ModuleCode}BatchDialog.vue'
+import type { IEmpVacationListItem, IEmpVacationQueryParams } from 'src/types/tm/tm002'
+import Tm002CreateDialog from './components/Tm002CreateDialog.vue'
+import Tm002EditDialog from './components/Tm002EditDialog.vue'
+import Tm002BatchDialog from './components/Tm002BatchDialog.vue'
 
 const { t } = useI18n()
-const i18nPrefix = '{module}.{moduleCode}.'
+// 🔒 i18n prefix 格式固定為 '{module}.{moduleCode}.'
+const i18nPrefix = 'tm.tm002.'
 const sessionStore = useSessionStore()
-const store = use{ModuleCode}Store()
+const store = useTm002Store()
 
-// ==================== 查詢表單 ====================
-
-const searchForm = reactive<I{queryParamsType}>({
-  // {查詢欄位：依規格調整}
-  {field1}: '',
-  {field2}: undefined,
-  {field3}: '',
-  {field4}: '',
-  page: 1,
-  perPage: 10,
-  sortBy: '{defaultSortField}',
-  sortOrder: 'asc'
+// 🔧 查詢表單欄位從統一規格取得
+const searchForm = reactive<IEmpVacationQueryParams>({
+  effectiveDate: String(new Date().getFullYear()),
+  deptCode: undefined,
+  empNo: '',
+  empName: '',
+  page: 1, perPage: 10, sortBy: 'empNo', sortOrder: 'asc'
 })
 
-// ==================== 下拉選項 ====================
-// {LOV 下拉：依規格調整，使用 LovService.loadLovAll() 載入}
+// 🔧 LOV key 從統一規格取得
+const deptOptions = ref<{ value: string; label: string }[]>([])
 
-const {field2Options} = ref<{ value: string; label: string }[]>([])
-
-// ==================== 表格欄位 ====================
-
+// 🔧 表格欄位從統一規格取得，align 必須加 as const
 const columns = [
-  // {表格欄位：依規格調整，align 使用 as const}
-  { name: '{col1}', label: t(i18nPrefix + 'table.{col1}'), field: '{col1}', align: 'center' as const, sortable: true },
-  { name: '{col2}', label: t(i18nPrefix + 'table.{col2}'), field: '{col2}', align: 'left' as const, sortable: true },
-  { name: '{col3}', label: t(i18nPrefix + 'table.{col3}'), field: '{col3}', align: 'left' as const, sortable: true },
+  { name: 'year', label: t(i18nPrefix + 'table.year'), field: 'year', align: 'center' as const, sortable: true },
+  { name: 'empNo', label: t(i18nPrefix + 'table.empNo'), field: 'empNo', align: 'left' as const, sortable: true },
+  { name: 'empNameCh', label: t(i18nPrefix + 'table.empName'), field: 'empNameCh', align: 'left' as const, sortable: true },
+  { name: 'vacationName', label: t(i18nPrefix + 'table.vacationName'), field: 'vacationName', align: 'left' as const },
+  { name: 'effectiveStartDate', label: t(i18nPrefix + 'table.startDate'), field: 'effectiveStartDate', align: 'center' as const, sortable: true },
+  { name: 'effectiveEndDate', label: t(i18nPrefix + 'table.endDate'), field: 'effectiveEndDate', align: 'center' as const, sortable: true },
+  { name: 'totalHours', label: t(i18nPrefix + 'table.totalHours'), field: 'totalHours', align: 'right' as const, sortable: true },
+  { name: 'usedHours', label: t(i18nPrefix + 'table.usedHours'), field: 'usedHours', align: 'right' as const, sortable: true },
+  { name: 'remainingHours', label: t(i18nPrefix + 'table.remainingHours'), field: 'remainingHours', align: 'right' as const, sortable: true },
   { name: 'action', label: t(i18nPrefix + 'table.action'), field: 'action', align: 'center' as const }
 ]
 
-// ==================== 分頁 ====================
-
-const pagination = ref({
-  page: 1,
-  rowsPerPage: 10,
-  rowsNumber: 0,
-  sortBy: '{defaultSortField}',
-  descending: false
-})
-
-// ==================== Dialog 狀態 ====================
-
+const pagination = ref({ page: 1, rowsPerPage: 10, rowsNumber: 0, sortBy: 'empNo', descending: false })
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const showBatchDialog = ref(false)
-const selectedRow = ref<I{EntityName} | null>(null)
-
-// ==================== 方法 ====================
+const selectedRow = ref<IEmpVacationListItem | null>(null)
 
 function clearSearch() {
-  // {清除邏輯：依查詢欄位調整}
-  searchForm.{field1} = ''
-  searchForm.{field2} = undefined
-  searchForm.{field3} = ''
-  searchForm.{field4} = ''
+  searchForm.effectiveDate = ''; searchForm.deptCode = undefined
+  searchForm.empNo = ''; searchForm.empName = ''
 }
 
 async function handleQuery() {
@@ -174,49 +143,41 @@ async function handleQuery() {
 
 function onRequest(props: { pagination: typeof pagination.value }) {
   pagination.value = props.pagination
-  searchForm.sortBy = props.pagination.sortBy || '{defaultSortField}'
+  searchForm.sortBy = props.pagination.sortBy || 'empNo'
   searchForm.sortOrder = props.pagination.descending ? 'desc' : 'asc'
   handleQuery()
 }
 
-function openEditDialog(row: I{EntityName}) {
+function openEditDialog(row: IEmpVacationListItem) {
   selectedRow.value = row
   showEditDialog.value = true
 }
 
-async function load{Field2}Options() {
+async function loadDeptOptions() {
   try {
-    const res = await LovService.loadLovAll('{lovType}')
+    const res = await LovService.loadLovAll('pmOrgList')
     if (res?.success && res.items) {
-      {field2Options}.value = res.items.map((i: Record<string, unknown>) => ({
-        value: String(i.value || ''),
-        label: String(i.label || '')
+      deptOptions.value = res.items.map((i: Record<string, unknown>) => ({
+        value: String(i.value || ''), label: String(i.label || '')
       }))
     }
-  } catch {
-    // LOV loading failed silently
-  }
+  } catch { /* silent */ }
 }
 
-// ==================== 生命週期 ====================
-
 onMounted(async () => {
-  sessionStore.setPagePid('{MODULE_CODE}')  // 必須 — 權限控制依賴
-  await load{Field2}Options()
+  // 🔒 必須設定 pageId，需與 router meta.pid 一致
+  sessionStore.setPagePid('TM002')
+  await loadDeptOptions()
   handleQuery()
 })
 </script>
 ```
 
-## 業務邏輯注意點
+## 已知陷阱
 
-- **`sessionStore.setPagePid('{MODULE_CODE}')`** — onMounted 中必須呼叫，SBtn 權限機制依賴此值
-- **`i18nPrefix`** — 格式為 `'{module}.{moduleCode}.'`，TM002 實際值為 `'tm.tm002.'`
-- **查詢欄位** — 依規格調整 `searchForm` 內的欄位、`s-input` / `s-select2` 元件、和 `clearSearch()` 邏輯
-- **表格欄位** — `columns` 陣列依規格增減，每個 `align` 必須加 `as const` 避免 TypeScript 報錯
-- **LOV 下拉** — 使用 `LovService.loadLovAll('{lovType}')` 載入，在 `onMounted` 呼叫
-- **Dialog 組合** — 依規格可能有 CreateDialog、EditDialog、BatchDialog；不一定三個都有
-- **分頁排序** — `onRequest` 同步 `pagination` 與 `searchForm` 的排序參數，再重新查詢
-- **操作按鈕** — 依規格調整按鈕，批次匯入非必要功能
-- **三層分離** — Page 只呼叫 Store，不直接呼叫 Service/API
-- **types 引用** — 從 `src/types/{module}/{moduleCode}` 引入（不加 `Types` 後綴），TM002 實際路徑為 `src/types/tm/tm002`
+- **`align: 'center' as const`** — 表格欄位的 align 必須加 `as const`，否則 TypeScript 推斷為 `string` 而非字面型別，導致型別錯誤
+- **Dialog v-model** — 使用 `v-model` 控制 Dialog 開關，不使用 `visible` prop；Dialog 放在 template 最底部
+- **Page 不直接呼叫 Service** — 所有 API 呼叫透過 Store，唯一例外是 `LovService.loadLovAll`（共用 LOV 服務可直接呼叫）
+- **`setPagePid`** — 必須在 `onMounted` 中呼叫，參數必須與 router `meta.pid` 完全一致
+- **searchForm 預設年度** — 使用 `String(new Date().getFullYear())` 取得當年
+- **`@saved` / `@imported`** — Dialog 儲存/匯入成功後觸發重新查詢，統一使用 `handleQuery`
