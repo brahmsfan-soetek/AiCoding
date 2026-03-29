@@ -6,6 +6,33 @@
 
 ---
 
+## ★★★ 禁止 Subagent 委派（最高優先級）
+
+> **所有模板驅動的檔案必須在主 session 中逐檔建立，嚴禁使用 Agent tool 委派給 subagent。**
+
+### 為什麼禁止
+
+Subagent 收到的是主 Agent 的摘要 prompt，不是模板原文。摘要必然丟失 🔒 標記的結構細節，
+甚至可能與模板矛盾（歷史案例：subagent prompt 寫 "SDialog2 handles buttons"，模板實際要求自含式 `<q-card-actions>`）。
+
+### 禁止範圍
+
+- **後端**：Entity、Service、所有 Processor — 禁止 subagent
+- **前端**：Types、Service、Store、Router、主頁面、CreateDialog、EditDialog、BatchDialog、i18n — 禁止 subagent
+- **唯一允許 subagent 的場景**：Explore 型 agent 用於查找現有檔案路徑/結構（不產生程式碼）
+
+### 正確做法
+
+```
+每個 Step：
+1. 自己讀 template .md 檔案（Read tool）
+2. 自己從「完整參考實作」複製程式碼
+3. 自己替換 🔧 部分
+4. 自己用 Write tool 寫入檔案
+```
+
+---
+
 ## ★ 模板優先級規則（最重要）
 
 ```
@@ -70,15 +97,17 @@ Step 1  Entity 定義
         「不支援的 LOV 類型」錯誤。
 ```
 
-### 每個後端 Step 的執行動作
+### 每個後端 Step 的執行動作（禁止委派 Subagent）
+
+> **以下步驟必須由主 session 自己執行（Read → Write），不可使用 Agent tool 委派。**
 
 ```
 1. 讀取 tasks.md 中該 Task 的業務規則
-2. 讀取對應的 template 檔案
-3. 複製「完整參考實作」
+2. 用 Read tool 讀取對應的 template 檔案（取得「完整參考實作」原文）
+3. 以模板的「完整參考實作」為基礎，逐段複製
 4. 只替換 🔧 標記的部分（從統一規格取值）
 5. 保留所有 🔒 標記的結構不變
-6. Write 檔案
+6. 用 Write tool 寫入檔案
 ```
 
 ---
@@ -162,19 +191,28 @@ Step 1  Types 定義
   ★ 驗證: vue-tsc --noEmit
 ```
 
-### 每個前端 Step 的執行動作
+### 每個前端 Step 的執行動作（禁止委派 Subagent）
+
+> **以下步驟必須由主 session 自己執行（Read → Write），不可使用 Agent tool 委派。**
+> Subagent 會收到摘要 prompt 而非模板原文，導致 🔒 結構丟失、SDialog2 用法錯誤、LOV 模式遺漏。
 
 ```
 1. 讀取 tasks.md 中該 Task 的業務規則
-2. 讀取對應的 template 檔案
-3. 複製「完整參考實作」
+2. 用 Read tool 讀取對應的 template 檔案（取得「完整參考實作」原文）
+3. 以模板的「完整參考實作」為基礎，逐段複製
 4. 只替換 🔧 標記的部分（從統一規格取值）
-5. 保留所有 🔒 標記的結構不變
-6. ★ 級聯下拉檢查（CreateDialog / EditDialog / BatchDialog）：
-   - 確認使用統一 LOV 呼叫（不是兩個獨立 LOV）
-   - 確認 hasMultipleSubs 邏輯存在
-   - 確認 onVacTypeChange 邏輯存在
-7. Write / Edit 檔案
+5. 保留所有 🔒 標記的結構不變 — 不可「改良」、不可用自己的理解重寫
+6. ★ Dialog 結構自檢（CreateDialog / EditDialog / BatchDialog）：
+   - SDialog2 自含式：<s-dialog2 v-model persistent> 內包 <q-card>，不可傳 :title / @confirm / @cancel
+   - 按鈕在 footer：<q-card-actions align="right"> 在 q-card 底部，不在 header
+   - 關閉按鈕：header 用 <q-btn icon="close" flat round dense @click="handleCancel" />
+   - 統一 LOV：使用 LovService.loadLovAll()，不是 store 方法
+   - hasSubTypes 函式存在且邏輯正確（length > 1 && some(d => d.vacationSubCode != null)）
+   - onVacTypeChange 邏輯存在
+7. ★ 主頁面自檢：
+   - 年度欄位有 :rules 驗證（接受 YYYY 或 YYYY-MM-DD）、maxlength、placeholder、hide-bottom-space
+   - searchForm 用 reactive（不是 ref），handleQuery 建構 plain object
+8. 用 Write tool 寫入檔案
 ```
 
 ---
