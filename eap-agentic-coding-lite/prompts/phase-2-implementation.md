@@ -63,6 +63,11 @@ Step 1  Entity 定義
         Write: tm/processor/{ModuleCode}BatchImportProcessor.java
 
   ★ 驗證: mvn compile -pl backend/tm
+
+  ★ Step 9  SQL Provider 註冊（必做）
+        確認 {Module}SqlProvider.java（如 TmSqlProvider.java）的 getSqlConfigPaths()
+        已包含新模組的 SQL 設定檔（如 "sql/tm002.yml"）。若未包含則 LOV 會報
+        「不支援的 LOV 類型」錯誤。
 ```
 
 ### 每個後端 Step 的執行動作
@@ -88,6 +93,7 @@ Step 1  Entity 定義
 - 路由只需 1 條（主頁面）
 - Create/Edit/Batch 使用 `frontend-dialog-*.md` 模板
 - Create/Edit/Batch 檔案在 `components/` 子目錄
+- **xlsx 套件**：若有 BatchDialog，確認 `frontend/package.json` 已包含 `xlsx` 依賴，否則先執行 `cd frontend && npm install xlsx`
 
 ### 前端實作步驟
 
@@ -207,8 +213,13 @@ Step 1  Types 定義
 - [ ] **onVacTypeChange**：=1 自動帶入 vacationSubId，>1 清空
 - [ ] **條件編輯**：EditDialog 使用 `:disable="props.row.clear"`（非 v-if/v-else）
 - [ ] **下拉切換**：EditDialog 的 vacationCode/vacationSubId 用 `v-if="!props.row.clear"` 控制下拉/文字
-- [ ] **SDialog2 Slot 模式**：不自己包 `<q-card>`，不自己放按鈕
+- [ ] **SDialog2 自含式結構**：必須自己包 `<q-card>` + `<q-card-section>` + `<q-card-actions>`（SDialog2 使用 default slot 時不渲染內建 q-card）
 - [ ] **日期格式轉換**：EditDialog watch 中 `.replaceAll('/', '-')`
+- [ ] **usedHours 唯讀**：明細表格的「本年度已請」用純文字顯示（不可用 s-input）
+- [ ] **Store CUD 不呼叫 showError**：saveDetails / deleteDetail / batchImport 只 throw err（axios 攔截器已處理錯誤顯示）
+- [ ] **SQL Provider 已註冊**：新模組的 SQL yml 已加入 SqlProvider.getSqlConfigPaths()
+- [ ] **xlsx 已安裝**：若有 BatchDialog，`package.json` 含 `xlsx` 依賴
+- [ ] **後端錯誤碼翻譯**：`common/errors.json` 包含後端自訂錯誤碼的翻譯
 - [ ] `vue-tsc --noEmit` 通過
 - [ ] Router meta.pid 與 setPagePid 一致
 - [ ] i18n prefix 為 `'tm.tm002.'`（不是 `'tm002.'`）

@@ -68,10 +68,10 @@ export const useTm002Store = defineStore('tm002', () => {
     try {
       const response = await tm002Service.queryEmpInfo(empAccount)
       if (response.success && response.data) {
-        const info = response.data
-        // 🔒 計算年資（前端計算，不來自後端）
-        if (info.hireDate) {
-          const hire = new Date(info.hireDate.replace(/\//g, '-'))
+        const info = response.data as unknown as IEmployeeInfo
+        // 🔒 欄位名稱是 assumeDate（到職日），不是 hireDate
+        if (info.assumeDate) {
+          const hire = new Date(String(info.assumeDate).replace(/\//g, '-'))
           const now = new Date()
           let years = now.getFullYear() - hire.getFullYear()
           let months = now.getMonth() - hire.getMonth()
@@ -83,15 +83,19 @@ export const useTm002Store = defineStore('tm002', () => {
         return info
       }
       employeeInfo.value = null
-      const msg = (response as any).message || '查無此員工'
-      import('quasar').then(({ Notify }) => { Notify.create({ type: 'warning', message: msg, position: 'top' }) })
+      // 🔒 安全取得 message 屬性
+      const msg = ('message' in response ? String(response.message) : '') || '查無此員工'
+      import('quasar').then(({ Notify }) => {
+        Notify.create({ type: 'warning', message: msg, position: 'top' })
+      })
       return null
     } catch (err: unknown) { showError(err); return null }
   }
 
-  async function loadDefaultVacation(year: number): Promise<boolean> {
+  // 🔒 loadDefaultVacation 不帶參數 — Service 自行處理
+  async function loadDefaultVacation(): Promise<boolean> {
     try {
-      const response = await tm002Service.getDefaultVacation(year)
+      const response = await tm002Service.getDefaultVacation()
       if (response.success && response.data) {
         defaultVacationItems.value = response.data.records || []
         return true
@@ -113,13 +117,14 @@ export const useTm002Store = defineStore('tm002', () => {
     finally { queryLoading.value = false }
   }
 
+  // 🔒 saveDetails / deleteDetail — 只 throw，不呼叫 showError（axios 攔截器已用 Dialog 顯示）
   async function saveDetails(params: IEmpVacationSaveParams): Promise<boolean> {
     saveLoading.value = true
     try {
       const response = await tm002Service.save(params)
       if (response.success) return true
       return false
-    } catch (err: unknown) { showError(err); throw err }  // 🔒 CUD throw — 讓 Dialog 知道失敗
+    } catch (err: unknown) { throw err }
     finally { saveLoading.value = false }
   }
 
@@ -129,7 +134,7 @@ export const useTm002Store = defineStore('tm002', () => {
       const response = await tm002Service.deleteDetail(empVacationId)
       if (response.success) return true
       return false
-    } catch (err: unknown) { showError(err); throw err }
+    } catch (err: unknown) { throw err }
     finally { deleteLoading.value = false }
   }
 
@@ -144,13 +149,16 @@ export const useTm002Store = defineStore('tm002', () => {
     } catch (err: unknown) { showError(err); return false }
   }
 
-  // 🔒 batchImport — 回傳 createdCount + skippedCount
+  // 🔒 batchImport — showError + throw（與 saveDetails/deleteDetail 不同）
   async function batchImport(params: IBatchImportParams): Promise<{ createdCount: number; skippedCount: number }> {
     saveLoading.value = true
     try {
       const response = await tm002Service.batchImport(params)
       if (response.success && response.data) {
-        return { createdCount: response.data.createdCount || 0, skippedCount: (response.data as any).skippedCount || 0 }
+        return {
+          createdCount: response.data.createdCount || 0,
+          skippedCount: response.data.skippedCount || 0
+        }
       }
       return { createdCount: 0, skippedCount: 0 }
     } catch (err: unknown) { showError(err); throw err }
@@ -159,10 +167,16 @@ export const useTm002Store = defineStore('tm002', () => {
 
   // 🔒 Setup Syntax 不自帶 $reset，必須手動實作
   function $reset() {
-    records.value = []; totalCount.value = 0; currentPage.value = 1
-    queryLoading.value = false; saveLoading.value = false; deleteLoading.value = false
-    detailRecords.value = []; defaultVacationItems.value = []
-    employeeInfo.value = null; batchValidateResults.value = []
+    records.value = []
+    totalCount.value = 0
+    currentPage.value = 1
+    queryLoading.value = false
+    saveLoading.value = false
+    deleteLoading.value = false
+    detailRecords.value = []
+    defaultVacationItems.value = []
+    employeeInfo.value = null
+    batchValidateResults.value = []
   }
 
   return {
@@ -178,8 +192,11 @@ export const useTm002Store = defineStore('tm002', () => {
 
 ## 已知陷阱
 
-- **CUD 方法 throw error** — `saveDetails` / `deleteDetail` / `batchImport` 在 catch 後 `throw err`，讓 Dialog 層知道失敗；`query` 不 throw，只回傳 `false`
+- **CUD 錯誤處理分層** — `saveDetails` / `deleteDetail` 只 `throw err`（axios 攔截器已用 Dialog 顯示）；`batchImport` 是 `showError(err); throw err`（兩者不同）；`query` 類只 `showError` 不 throw
 - **`queryEmpInfo` 查不到** — 顯示 warning Notify 而非 throw，避免中斷流程
-- **年資計算** — 在 Store 的 `queryEmpInfo` 中執行，不在 Service；`hireDate` 格式可能含 `/`，需先替換為 `-`
+- **年資計算欄位名是 `assumeDate`** — 不是 `hireDate`，且需 `String(info.assumeDate).replace(/\//g, '-')` 處理日期格式
+- **`loadDefaultVacation()` 不帶參數** — Service 自行處理年度邏輯
+- **`response.data as unknown as IEmployeeInfo`** — queryEmpInfo 需要明確型別轉換
+- **`'message' in response`** — 安全取得 message 屬性，不用 `(response as any).message`
 - **`$reset()` 必須手動實作** — Setup Syntax 不自帶 `$reset`
-- **分離 Loading** — `queryLoading` / `saveLoading` / `deleteLoading` 分開管理，避免互相干擾
+- **分離 Loading** — `queryLoading` / `saveLoading` / `deleteLoading` 分開管理

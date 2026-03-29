@@ -105,7 +105,7 @@ export interface IEmpVacationQueryParams {
   deptCode?: number
   empNo?: string
   empName?: string
-  page?: number
+  currentPage?: number
   perPage?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'

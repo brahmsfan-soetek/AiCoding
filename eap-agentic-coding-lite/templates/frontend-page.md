@@ -11,7 +11,6 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
 
 - 查詢欄位（searchForm）：從統一規格的查詢條件取得
 - 表格欄位（columns）：從統一規格的清單欄位取得
-- LOV 下拉選項（如部門）：LOV key 從統一規格取得
 - Dialog 組件引入：依頁面功能決定需要哪些 Dialog（Create / Edit / Batch）
 - i18nPrefix：格式固定為 `'{module}.{moduleCode}.'`
 
@@ -29,12 +28,11 @@ applies_to: "src/pages/{module}/{moduleCode}/{MODULE_CODE}.vue"
         </div>
         <div class="row q-col-gutter-md items-end">
           <!-- 🔧 查詢欄位從統一規格的查詢條件取得 -->
+          <!-- 🔒 年度欄位 — 必須有 maxlength、placeholder、hide-bottom-space、:rules 驗證 -->
           <div class="col-12 col-md-2">
-            <s-input v-model="searchForm.effectiveDate" :label="$t(i18nPrefix + 'query.year')" filled dense clearable />
-          </div>
-          <div class="col-12 col-md-2">
-            <s-select2 v-model="searchForm.deptCode" :label="$t(i18nPrefix + 'query.department')" :options="deptOptions"
-              option-label="label" option-value="value" dense clearable emit-value map-options />
+            <s-input v-model="searchForm.effectiveDate" :label="$t(i18nPrefix + 'query.year')" filled dense clearable
+              maxlength="10" placeholder="YYYY 或 YYYY-MM-DD" hide-bottom-space
+              :rules="[v => !v || /^\d{4}$/.test(String(v)) || /^\d{4}-\d{2}-\d{2}$/.test(String(v)) || '請輸入年份(YYYY)或日期(YYYY-MM-DD)']" />
           </div>
           <div class="col-12 col-md-2">
             <s-input v-model="searchForm.empNo" :label="$t(i18nPrefix + 'query.empNo')" filled dense clearable />
@@ -85,8 +83,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSessionStore } from 'stores/common/session'
 import { useTm002Store } from 'src/stores/tm/tm002/useTm002Store'
-import { LovService } from 'src/services/common/lovService'
-import type { IEmpVacationListItem, IEmpVacationQueryParams } from 'src/types/tm/tm002'
+import type { IEmpVacationListItem } from 'src/types/tm/tm002'
 import Tm002CreateDialog from './components/Tm002CreateDialog.vue'
 import Tm002EditDialog from './components/Tm002EditDialog.vue'
 import Tm002BatchDialog from './components/Tm002BatchDialog.vue'
@@ -97,17 +94,15 @@ const i18nPrefix = 'tm.tm002.'
 const sessionStore = useSessionStore()
 const store = useTm002Store()
 
-// 🔧 查詢表單欄位從統一規格取得
-const searchForm = reactive<IEmpVacationQueryParams>({
+// 🔒 searchForm 只放查詢欄位 + sort，不放分頁（分頁在 pagination ref）
+const searchForm = reactive({
   effectiveDate: String(new Date().getFullYear()),
-  deptCode: undefined,
+  deptCode: undefined as number | undefined,
   empNo: '',
   empName: '',
-  page: 1, perPage: 10, sortBy: 'empNo', sortOrder: 'asc'
+  sortBy: 'empNo',
+  sortOrder: 'asc' as 'asc' | 'desc'
 })
-
-// 🔧 LOV key 從統一規格取得
-const deptOptions = ref<{ value: string; label: string }[]>([])
 
 // 🔧 表格欄位從統一規格取得，align 必須加 as const
 const columns = [
@@ -134,18 +129,31 @@ function clearSearch() {
   searchForm.empNo = ''; searchForm.empName = ''
 }
 
-async function handleQuery() {
-  searchForm.page = pagination.value.page
-  searchForm.perPage = pagination.value.rowsPerPage
-  await store.query(searchForm)
+// 🔒 handleQuery — 建構 plain object 傳給 API（避免 reactive proxy 問題）
+async function handleQuery(resetPage = true) {
+  if (resetPage) pagination.value.page = 1
+
+  const params = {
+    effectiveDate: searchForm.effectiveDate ? String(searchForm.effectiveDate) : undefined,
+    deptCode: searchForm.deptCode ?? undefined,
+    empNo: searchForm.empNo || undefined,
+    empName: searchForm.empName || undefined,
+    currentPage: pagination.value.page,
+    perPage: pagination.value.rowsPerPage,
+    sortBy: searchForm.sortBy,
+    sortOrder: searchForm.sortOrder
+  }
+  console.debug('[TM002] query params:', JSON.stringify(params))
+  await store.query(params)
   pagination.value.rowsNumber = store.totalCount
 }
 
-function onRequest(props: { pagination: typeof pagination.value }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function onRequest(props: any) {
   pagination.value = props.pagination
   searchForm.sortBy = props.pagination.sortBy || 'empNo'
   searchForm.sortOrder = props.pagination.descending ? 'desc' : 'asc'
-  handleQuery()
+  handleQuery(false)
 }
 
 function openEditDialog(row: IEmpVacationListItem) {
@@ -153,31 +161,21 @@ function openEditDialog(row: IEmpVacationListItem) {
   showEditDialog.value = true
 }
 
-async function loadDeptOptions() {
-  try {
-    const res = await LovService.loadLovAll('pmOrgList')
-    if (res?.success && res.items) {
-      deptOptions.value = res.items.map((i: Record<string, unknown>) => ({
-        value: String(i.value || ''), label: String(i.label || '')
-      }))
-    }
-  } catch { /* silent */ }
-}
-
 onMounted(async () => {
   // 🔒 必須設定 pageId，需與 router meta.pid 一致
   sessionStore.setPagePid('TM002')
-  await loadDeptOptions()
-  handleQuery()
+  handleQuery(true)
 })
 </script>
 ```
 
 ## 已知陷阱
 
-- **`align: 'center' as const`** — 表格欄位的 align 必須加 `as const`，否則 TypeScript 推斷為 `string` 而非字面型別，導致型別錯誤
-- **Dialog v-model** — 使用 `v-model` 控制 Dialog 開關，不使用 `visible` prop；Dialog 放在 template 最底部
-- **Page 不直接呼叫 Service** — 所有 API 呼叫透過 Store，唯一例外是 `LovService.loadLovAll`（共用 LOV 服務可直接呼叫）
+- **`align: 'center' as const`** — 表格欄位的 align 必須加 `as const`
+- **searchForm 不含分頁欄位** — `currentPage` / `perPage` 在 `handleQuery` 中從 `pagination` ref 取得，searchForm 只放查詢條件 + sort
+- **handleQuery 建構 plain object** — 不可直接傳 reactive `searchForm`（proxy 問題），必須建構 plain object 並將空值轉為 `undefined`
+- **handleQuery 有 `resetPage` 參數** — 預設 `true` 重置第一頁；`onRequest`（分頁/排序）傳 `false`
+- **年度欄位驗證** — 必須有 `maxlength="10"`、`placeholder`、`hide-bottom-space`、`:rules`（接受 YYYY 或 YYYY-MM-DD）
 - **`setPagePid`** — 必須在 `onMounted` 中呼叫，參數必須與 router `meta.pid` 完全一致
-- **searchForm 預設年度** — 使用 `String(new Date().getFullYear())` 取得當年
-- **`@saved` / `@imported`** — Dialog 儲存/匯入成功後觸發重新查詢，統一使用 `handleQuery`
+- **`@saved` / `@imported`** — Dialog 成功後觸發 `handleQuery` 重新查詢
+- **Page 不直接呼叫 Service** — 所有 API 呼叫透過 Store
