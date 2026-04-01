@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP MM - 庫存異動 (MIGO) - 調撥與報廢</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sap-header {
+            background: linear-gradient(90deg, #0070f3 0%, #004d9f 100%);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sap-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .sap-toolbar {
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 12px 16px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 4px 4px 0 0;
+        }
+        .movement-type-selector {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .cost-info {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .validation-error {
+            border: 2px solid #dc3545 !important;
+            background-color: #f8d7da !important;
+        }
+        .validation-success {
+            border: 2px solid #28a745 !important;
+            background-color: #d4edda !important;
+        }
+        .stock-level {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+        }
+        .movement-summary {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .currency-field {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        .required-field {
+            border-left: 3px solid #dc3545;
+        }
+        .batch-info {
+            font-size: 0.8em;
+            background-color: #e9ecef;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .field-help {
+            font-size: 0.75em;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- SAP標題列 -->
+    <div class="sap-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exchange-alt"></i> 
+                        SAP MM - 庫存異動處理 (MIGO)
+                    </h4>
+                    <small>Material Document - Consumption, Transfer & Scrapping</small>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="session-info">
+                        <span class="badge bg-primary">
+                            <i class="fas fa-building"></i> 蘋果3C專賣店
+                        </span>
+                        <span class="badge bg-light text-dark">工廠: P001</span>
+                        <span class="badge bg-light text-dark">用戶: MM_USER</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- 暫存單據查詢區 -->
+        <div class="sap-card" id="draftQueryCard">
+            <div class="sap-toolbar">
+                <h5 class="mb-0"><i class="fas fa-search"></i> 庫存異動單查詢</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label">文件編號</label>
+                        <input type="text" class="form-control" id="searchDocumentNumber" placeholder="DRAFT123456789">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">異動類型</label>
+                        <select class="form-select" id="searchMovementType">
+                            <option value="">全部</option>
+                            <option value="321">D01 - 庫存調撥</option>
+                            <option value="551">D02 - 成本中心領用</option>
+                            <option value="201">D03 - 報廢處理</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">文件狀態</label>
+                        <select class="form-select" id="searchDocumentStatus">
+                            <option value="">全部</option>
+                            <option value="DRAFT">暫存</option>
+                            <option value="POSTED">已過帳</option>
+                            <option value="CANCELLED">已取消</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">文件日期起</label>
+                        <input type="date" class="form-control" id="searchCreateDateFrom">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">文件日期迄</label>
+                        <input type="date" class="form-control" id="searchCreateDateTo">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary me-2" onclick="searchDrafts()">
+                            <i class="fas fa-search"></i> 查詢
+                        </button>
+                        <button class="btn btn-success" onclick="createNewDocument()">
+                            <i class="fas fa-plus"></i> 新增
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 暫存單據列表 -->
+                <div class="table-responsive" id="draftsTableContainer" style="display:none;">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>文件編號</th>
+                                <th>異動類型</th>
+                                <th>文件狀態</th>
+                                <th>參考文件</th>
+                                <th>項目數</th>
+                                <th>總金額</th>
+                                <th>建立時間</th>
+                                <th>過帳時間</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="draftsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center mt-3" id="noDraftsMessage" style="display:none;">
+                    <div class="text-muted">
+                        <i class="fas fa-inbox"></i> 
+                        沒有找到符合條件的暫存單據
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 移動類型選擇區 -->
+        <div class="sap-card" id="movementTypeCard" style="display:none;">
+            <div class="sap-toolbar">
+                <h5 class="mb-0"><i class="fas fa-cogs"></i> 異動類型選擇</h5>
+            </div>
+            <div class="card-body">
+                <div class="movement-type-selector">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-arrow-right text-primary"></i> 異動類型 *
+                            </label>
+                            <select class="form-select required-field" id="movementType" onchange="changeMovementType(event)">
+                                <option value="">請選擇異動類型</option>
+								<option value="321">D01 - 庫存調撥 (Transfer Posting)</option>
+                                <option value="551">D02 - 成本中心領用 (Cost Center Consumption)</option>
+								<option value="201">D03 - 報廢處理 (Scrapping)</option>
+								<option value="501">D04 - 雜收 (Goods Receipt without PO)</option>
+								<option value="511">D05 - 雜發 (Goods Issue without Consumption)</option>
+                            </select>
+                            <div class="field-help">選擇對應的業務場景</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">過帳日期 *</label>
+                            <input type="date" class="form-control required-field" id="postingDate" value="">
+                            <div class="field-help">影響財務期間</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">文件日期</label>
+                            <input type="date" class="form-control" id="documentDate" value="">
+                            <div class="field-help">外部文件日期</div>
+                        </div>
+                        <div class="col-md-3" id="costCenterHeaderField" style="display:none;">
+                            <label class="form-label">成本中心 *</label>
+                            <select class="form-select required-field" id="headerCostCenter">
+                                <option value="">請選擇成本中心</option>
+                                <option value="CC1001">CC1001-營運部</option>
+                                <option value="CC1002">CC1002-銷售部</option>
+                                <option value="CC1003">CC1003-倉儲部</option>
+                                <option value="CC1004">CC1004-品管部</option>
+                                <option value="CC1005">CC1005-財務部</option>
+                            </select>
+                            <div class="field-help">同一張單據使用同一個成本中心</div>
+                        </div>
+                        <div class="col-md-3" id="profitCenterHeaderField" style="display:none;">
+                            <label class="form-label">利潤中心 *</label>
+                            <select class="form-select required-field" id="headerProfitCenter">
+                                <option value="">請選擇利潤中心</option>
+                                <option value="PC1001">PC1001-3C銷售事業部</option>
+                                <option value="PC1002">PC1002-美妝事業部</option>
+                                <option value="PC1003">PC1003-居家用品事業部</option>
+                                <option value="PC1004">PC1004-電商平台事業部</option>
+                                <option value="PC1005">PC1005-倉儲物流事業部</option>
+                            </select>
+                            <div class="field-help">同一張單據使用同一個利潤中心</div>
+                        </div>
+						<div class="col-md-3" id="referenceFields" style="display:none;">
+                            <label class="form-label" id="referenceLabel">參考單號</label>
+                            <input type="text" class="form-control" id="referenceNumber" onblur="validateReference()">
+                            <div class="field-help" id="referenceHelp">輸入對應的參考單號</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 異動項目明細 -->
+        <div class="sap-card" id="movementItemsCard" style="display:none;">
+            <div class="sap-toolbar d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-list"></i> 異動項目明細</h5>
+                <button class="btn btn-outline-primary btn-sm" onclick="addMovementItem()">
+                    <i class="fas fa-plus"></i> 新增項目
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50">項次</th>
+                                <th width="100">物料編號 *</th>
+                                <th width="150">物料描述</th>
+                                <th width="70">數量 *</th>
+                                <th width="40">單位</th>
+                                <th width="60">工廠 *</th>
+                                <th width="80">庫位 *</th>
+                                <th width="60" class="target-fields">目標工廠</th>
+                                <th width="80" class="target-fields">目標庫位</th>
+                                <th width="60">批次</th>
+                                <th width="80" class="cost-center-field">成本中心</th>
+                                <th width="80">單價</th>
+                                <th width="100">金額</th>
+                                <th width="80">庫存水位</th>
+                                <th width="50">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 成本計算摘要 -->
+                <div class="movement-summary" id="costSummary" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-calculator"></i> 成本計算摘要</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td>項目總數:</td>
+                                    <td class="text-end" id="totalItems">0</td>
+                                </tr>
+                                <tr>
+                                    <td>總數量:</td>
+                                    <td class="text-end" id="totalQuantity">0</td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td>總金額:</td>
+                                    <td class="text-end" id="totalAmount">0</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle"></i> 成本影響</h6>
+                            <div id="costImpact"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 業務邏輯驗證區域 -->
+                <div class="mt-3" id="validationMessages"></div>
+            </div>
+        </div>
+
+        <!-- 過帳控制 -->
+        <div class="sap-card" id="postingControls" style="display:none;">
+            <div class="card-body">
+                <div class="text-center">
+                    <button class="btn btn-outline-dark me-2" onclick="returnToQuery()">
+                        <i class="fas fa-arrow-left"></i> 取消
+                    </button>
+                    <button class="btn btn-info me-2" onclick="saveDocument()">
+                        <i class="fas fa-save"></i> 暫存
+                    </button>
+                    <button class="btn btn-warning me-2" onclick="validateDocument()">
+                        <i class="fas fa-check-circle"></i> 驗證
+                    </button>
+                    <button class="btn btn-success" onclick="postDocument()" id="postButton">
+                        <i class="fas fa-paper-plane"></i> 過帳
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 公司主數據
+        const companyMaster = {
+            '1001': {
+                shortName: '蘋果3C專賣店',
+                fullName: '蘋果3C專賣股份有限公司',
+                address: '台北市信義區信義路五段7號10樓',
+                phone: '02-8101-1001',
+                mainPlatform: '蝦皮購物',
+                plants: ['P001']
+            },
+            '1002': {
+                shortName: '時尚美妝小舖',
+                fullName: '時尚美妝小舖 (個人商號)',
+                address: '高雄市前金區中正四路100號',
+                phone: '07-2345-6789',
+                mainPlatform: '淘寶商城',
+                plants: ['P002']
+            },
+            '1003': {
+                shortName: '居家生活館',
+                fullName: '居家生活館有限公司',
+                address: '台中市西區公益路88號',
+                phone: '04-1234-5678',
+                mainPlatform: '京東商城',
+                plants: ['P003']
+            }
+        };
+
+        // 模擬主數據
+        const materialMaster = {
+            'M001': {
+                description: 'iPhone 15 Pro 256GB',
+                baseUnit: 'EA',
+                standardPrice: 28000.00,
+                movingPrice: 27800.00,
+                priceControl: 'V', // V=移動平均價, S=標準價格
+                valuationClass: '3000'
+            },
+            'M002': {
+                description: 'MacBook Air M2 13"',
+                baseUnit: 'EA',
+                standardPrice: 35000.00,
+                movingPrice: 34500.00,
+                priceControl: 'V',
+                valuationClass: '3000'
+            },
+            'M003': {
+                description: 'AirPods Pro 2nd Gen',
+                baseUnit: 'EA',
+                standardPrice: 7500.00,
+                movingPrice: 7300.00,
+                priceControl: 'S',
+                valuationClass: '3000'
+            }
+        };
+
+        // 模擬庫存數據
+        const stockData = {
+            'M001': { '0001': 45, '0002': 120, '0003': 30 },
+            'M002': { '0001': 25, '0002': 80, '0003': 15 },
+            'M003': { '0001': 150, '0002': 300, '0003': 75 }
+        };
+
+        // 庫存調撥和報廢處理不需要採購訂單數據
+
+        let itemCounter = 1;
+        
+        // 模擬文件數據（包含暫存與已過帳）
+        const draftDocuments = [
+            {
+                documentNumber: 'DRAFT123456789',
+                movementType: '321',
+                movementTypeDesc: 'D01 - 庫存調撥',
+                referenceNumber: 'TO240001',
+                itemCount: 2,
+                totalAmount: 69800.00,
+                createTime: '2024-12-29 10:30:15',
+                createDate: '2024-12-29',
+                status: 'DRAFT',
+                statusDesc: '暫存',
+                postingTime: '',
+                postingDate: ''
+            },
+            {
+                documentNumber: '5001234567',
+                movementType: '551',
+                movementTypeDesc: 'D02 - 成本中心領用 ',
+                referenceNumber: '商品損壞無法銷售',
+                itemCount: 1,
+                totalAmount: 28000.00,
+                createTime: '2024-12-28 14:20:30',
+                createDate: '2024-12-28',
+                status: 'POSTED',
+                statusDesc: '已過帳',
+                postingTime: '2024-12-28 14:25:42',
+                postingDate: '2024-12-28'
+            },
+            {
+                documentNumber: 'DRAFT345678901',
+                movementType: '201',
+                movementTypeDesc: 'D03 - 報廢處理',
+                referenceNumber: 'REQ240001',
+                itemCount: 3,
+                totalAmount: 90300.00,
+                createTime: '2024-12-27 16:45:22',
+                createDate: '2024-12-27',
+                status: 'DRAFT',
+                statusDesc: '暫存',
+                postingTime: '',
+                postingDate: ''
+            },
+            {
+                documentNumber: '5001234568',
+                movementType: '321',
+                movementTypeDesc: 'D01 - 庫存調撥',
+                referenceNumber: 'TO240002',
+                itemCount: 1,
+                totalAmount: 35000.00,
+                createTime: '2024-12-26 09:15:30',
+                createDate: '2024-12-26',
+                status: 'POSTED',
+                statusDesc: '已過帳',
+                postingTime: '2024-12-26 09:18:15',
+                postingDate: '2024-12-26'
+            },
+            {
+                documentNumber: 'DRAFT456789012',
+                movementType: '551',
+                movementTypeDesc: 'D03 - 報廢處理',
+                referenceNumber: '過期商品處理',
+                itemCount: 2,
+                totalAmount: 14600.00,
+                createTime: '2024-12-25 11:30:45',
+                createDate: '2024-12-25',
+                status: 'CANCELLED',
+                statusDesc: '已取消',
+                postingTime: '',
+                postingDate: ''
+            }
+        ];
+
+        // 設置今天日期和初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('postingDate').value = today;
+            document.getElementById('documentDate').value = today;
+
+            // 自動顯示所有暫存單據
+            displayDraftResults(draftDocuments);
+        });
+
+        // 查詢文件
+        function searchDrafts() {
+            const documentNumber = document.getElementById('searchDocumentNumber').value.trim().toUpperCase();
+            const movementType = document.getElementById('searchMovementType').value;
+            const documentStatus = document.getElementById('searchDocumentStatus').value;
+            const createDateFrom = document.getElementById('searchCreateDateFrom').value;
+            const createDateTo = document.getElementById('searchCreateDateTo').value;
+
+            let filteredDrafts = draftDocuments;
+
+            // 篩選條件
+            if (documentNumber) {
+                filteredDrafts = filteredDrafts.filter(d => d.documentNumber.includes(documentNumber));
+            }
+            if (movementType) {
+                filteredDrafts = filteredDrafts.filter(d => d.movementType === movementType);
+            }
+            if (documentStatus) {
+                filteredDrafts = filteredDrafts.filter(d => d.status === documentStatus);
+            }
+            if (createDateFrom) {
+                filteredDrafts = filteredDrafts.filter(d => d.createDate >= createDateFrom);
+            }
+            if (createDateTo) {
+                filteredDrafts = filteredDrafts.filter(d => d.createDate <= createDateTo);
+            }
+
+            displayDraftResults(filteredDrafts);
+        }
+
+        // 顯示查詢結果
+        function displayDraftResults(drafts) {
+            const tableContainer = document.getElementById('draftsTableContainer');
+            const tableBody = document.getElementById('draftsTableBody');
+            const noDataMessage = document.getElementById('noDraftsMessage');
+            
+            if (drafts.length === 0) {
+                tableContainer.style.display = 'none';
+                noDataMessage.style.display = 'block';
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            drafts.forEach(draft => {
+                const row = document.createElement('tr');
+                
+                // 根據狀態設定不同的樣式
+                let statusBadgeClass = '';
+                let documentBadgeClass = '';
+                switch(draft.status) {
+                    case 'DRAFT':
+                        statusBadgeClass = 'bg-warning';
+                        documentBadgeClass = 'bg-info';
+                        break;
+                    case 'POSTED':
+                        statusBadgeClass = 'bg-success';
+                        documentBadgeClass = 'bg-primary';
+                        break;
+                    case 'CANCELLED':
+                        statusBadgeClass = 'bg-danger';
+                        documentBadgeClass = 'bg-secondary';
+                        break;
+                }
+                
+                // 根據狀態顯示不同的操作按鈕
+                let actionButtons = '';
+                if (draft.status === 'DRAFT') {
+                    actionButtons = `
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="loadDraft('${draft.documentNumber}')">
+                            <i class="fas fa-edit"></i> 編輯
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDraft('${draft.documentNumber}')">
+                            <i class="fas fa-trash"></i> 刪除
+                        </button>
+                    `;
+                } else if (draft.status === 'POSTED') {
+                    actionButtons = `
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadDraft('${draft.documentNumber}')">
+                            <i class="fas fa-eye"></i> 檢視
+                        </button>
+                    `;
+                } else {
+                    actionButtons = `
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadDraft('${draft.documentNumber}')">
+                            <i class="fas fa-eye"></i> 檢視
+                        </button>
+                    `;
+                }
+                
+                row.innerHTML = `
+                    <td>
+                        <span class="badge ${documentBadgeClass}">${draft.documentNumber}</span>
+                    </td>
+                    <td>${draft.movementTypeDesc}</td>
+                    <td>
+                        <span class="badge ${statusBadgeClass}">${draft.statusDesc}</span>
+                    </td>
+                    <td>${draft.referenceNumber || '-'}</td>
+                    <td class="text-center">${draft.itemCount}</td>
+                    <td class="text-end">${draft.totalAmount.toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                    <td>${draft.createTime}</td>
+                    <td>${draft.postingTime || '-'}</td>
+                    <td>
+                        ${actionButtons}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            noDataMessage.style.display = 'none';
+            tableContainer.style.display = 'block';
+        }
+
+        // 載入暫存單據
+        function loadDraft(documentNumber) {
+            const draft = draftDocuments.find(d => d.documentNumber === documentNumber);
+            if (!draft) {
+                alert('找不到指定的文件');
+                return;
+            }
+
+            // 隱藏查詢區域，顯示編輯區域
+            document.getElementById('draftQueryCard').style.display = 'none';
+            document.getElementById('movementTypeCard').style.display = 'block';
+            document.getElementById('movementItemsCard').style.display = 'block';
+            document.getElementById('postingControls').style.display = 'block';
+
+            // 填入暫存資料
+            document.getElementById('movementType').value = draft.movementType;
+            document.getElementById('referenceNumber').value = draft.referenceNumber || '';
+
+            // 觸發異動類型變更事件
+            changeMovementType();
+
+            // 模擬載入項目資料 (實際應用中會從服務器載入)
+            setTimeout(() => {
+                loadDraftItems(draft);
+
+                // 如果文件已過帳或已取消，設定所有欄位為只讀
+                if (draft.status === 'POSTED' || draft.status === 'CANCELLED') {
+                    setFormReadOnly(true);
+                    showValidationMessage('info', `文件 ${documentNumber} 狀態為${draft.statusDesc}，僅供檢視`);
+                } else {
+                    setFormReadOnly(false);
+                    showValidationMessage('success', `已載入暫存文件: ${documentNumber}`);
+                }
+            }, 100);
+        }
+
+        // 載入暫存項目資料
+        function loadDraftItems(draft) {
+            // 模擬項目資料
+            const sampleItems = [
+                { material: 'M001', quantity: 2, price: 28000.00, plant: '1', storage: '0002' },
+                { material: 'M002', quantity: 1, price: 35000.00, plant: '1', storage: '0002' }
+            ];
+            
+            sampleItems.slice(0, draft.itemCount).forEach(item => {
+                addMovementItem();
+                const lastRow = document.querySelector('#itemsTableBody tr:last-child');
+                
+                // 填入資料
+                lastRow.querySelector('.material-input').value = item.material;
+                lastRow.querySelector('.quantity-input').value = item.quantity;
+                lastRow.querySelector('.plant-input').value = item.plant;
+                lastRow.querySelector('.storage-location').value = item.storage;
+                
+                // 更新物料資訊
+                updateMaterialInfo(lastRow.querySelector('.material-input'));
+                updateStockLevel(lastRow.querySelector('.storage-location'));
+            });
+        }
+
+        // 設定表單只讀狀態
+        function setFormReadOnly(isReadOnly) {
+            // 設定標題區域欄位
+            document.getElementById('movementType').disabled = isReadOnly;
+            document.getElementById('postingDate').disabled = isReadOnly;
+            document.getElementById('documentDate').disabled = isReadOnly;
+            document.getElementById('referenceNumber').disabled = isReadOnly;
+            document.getElementById('headerCostCenter').disabled = isReadOnly;
+            document.getElementById('headerProfitCenter').disabled = isReadOnly;
+
+            // 設定項目明細中的所有輸入欄位
+            const itemRows = document.querySelectorAll('#itemsTableBody tr');
+            itemRows.forEach(row => {
+                row.querySelectorAll('input, select').forEach(input => {
+                    input.disabled = isReadOnly;
+                });
+                // 隱藏刪除按鈕
+                const deleteBtn = row.querySelector('button');
+                if (deleteBtn) {
+                    deleteBtn.style.display = isReadOnly ? 'none' : '';
+                }
+            });
+
+            // 隱藏/顯示新增項目按鈕
+            const addItemBtn = document.querySelector('[onclick="addMovementItem()"]');
+            if (addItemBtn) {
+                addItemBtn.style.display = isReadOnly ? 'none' : '';
+            }
+
+            // 隱藏/顯示操作按鈕
+            const postingControlButtons = document.querySelectorAll('#postingControls button');
+            postingControlButtons.forEach(btn => {
+                const btnText = btn.textContent.trim();
+                if (btnText.includes('取消')) {
+                    btn.style.display = ''; // 取消按鈕始終顯示
+                } else {
+                    btn.style.display = isReadOnly ? 'none' : ''; // 其他按鈕在只讀模式下隱藏
+                }
+            });
+        }
+
+        // 刪除暫存文件
+        function deleteDraft(documentNumber) {
+            const draft = draftDocuments.find(d => d.documentNumber === documentNumber);
+            if (!draft) {
+                alert('找不到指定的文件');
+                return;
+            }
+
+            if (draft.status !== 'DRAFT') {
+                alert('只有暫存狀態的文件才可以刪除');
+                return;
+            }
+
+            if (confirm(`確定要刪除暫存文件 ${documentNumber} 嗎？`)) {
+                const index = draftDocuments.findIndex(d => d.documentNumber === documentNumber);
+                if (index > -1) {
+                    draftDocuments.splice(index, 1);
+                    searchDrafts(); // 重新查詢以更新列表
+                    alert('暫存文件已刪除');
+                }
+            }
+        }
+
+        // 建立新單據
+        function createNewDocument() {
+            // 隱藏查詢區域，顯示新建區域
+            document.getElementById('draftQueryCard').style.display = 'none';
+            document.getElementById('movementTypeCard').style.display = 'block';
+
+            // 清空所有欄位（包含重置只讀狀態）
+            clearForm();
+        }
+
+        // 返回查詢畫面
+        function returnToQuery() {
+            document.getElementById('draftQueryCard').style.display = 'block';
+            document.getElementById('movementTypeCard').style.display = 'none';
+            document.getElementById('movementItemsCard').style.display = 'none';
+            document.getElementById('postingControls').style.display = 'none';
+
+            // 重置表單狀態（移除只讀模式）
+            setFormReadOnly(false);
+
+            // 清空查詢結果
+            document.getElementById('draftsTableContainer').style.display = 'none';
+            document.getElementById('noDraftsMessage').style.display = 'none';
+        }
+
+        // 移動類型變更
+        function changeMovementType(event) {
+            const selectElement = event ? event.target : document.getElementById('movementType');
+            const movementType = selectElement.value;
+            const referenceFields = document.getElementById('referenceFields');
+            const itemsCard = document.getElementById('movementItemsCard');
+            const postingControls = document.getElementById('postingControls');
+            
+            // 如果已有項目資料，詢問是否要清除
+            const itemsTableBody = document.getElementById('itemsTableBody');
+            const previousValue = selectElement.getAttribute('data-previous-value') || '';
+            
+            // 只有在真正改變值且有項目資料時才詢問
+            if (previousValue && previousValue !== movementType && itemsTableBody && itemsTableBody.children.length > 0) {
+                if (confirm('切換異動類型將清除現有的項目資料，是否繼續？')) {
+                    // 清除所有項目
+                    itemsTableBody.innerHTML = '';
+                    itemCounter = 1;
+                    
+                    // 清除參考文件欄位
+                    const referenceInput = document.getElementById('referenceNumber');
+                    if (referenceInput) referenceInput.value = '';
+                    
+                    // 清除供應商欄位（如果存在）
+                    const vendorCodeInput = document.getElementById('vendorCode');
+                    const vendorNameInput = document.getElementById('vendorName');
+                    if (vendorCodeInput) vendorCodeInput.value = '';
+                    if (vendorNameInput) vendorNameInput.value = '';
+                    
+                    // 重置成本摘要
+                    updateCostSummary();
+                    
+                    // 清除任何驗證訊息
+                    const alertDiv = document.querySelector('.alert');
+                    if (alertDiv) alertDiv.style.display = 'none';
+                } else {
+                    // 使用者取消，恢復原選項
+                    selectElement.value = previousValue;
+                    return;
+                }
+            }
+            
+            // 記錄當前選擇的值，供下次變更時使用
+            selectElement.setAttribute('data-previous-value', movementType);
+            
+            if (movementType) {
+                referenceFields.style.display = 'block';
+                itemsCard.style.display = 'block';
+                postingControls.style.display = 'block';
+                
+                // 根據移動類型更新標籤
+                updateReferenceFields(movementType);
+                
+                // 控制目標欄位標題的顯示/隱藏
+                const targetHeaders = document.querySelectorAll('.target-fields');
+                const costCenterHeaders = document.querySelectorAll('.cost-center-field');
+                const costCenterHeaderField = document.getElementById('costCenterHeaderField');
+                const profitCenterHeaderField = document.getElementById('profitCenterHeaderField');
+
+                if (movementType === '201' || movementType === '551') {
+                    // 成本中心領用、報廢處理 - 隱藏目標欄位，隱藏明細表格中的成本中心欄位，顯示表頭成本中心
+                    targetHeaders.forEach(th => th.style.display = 'none');
+                    costCenterHeaders.forEach(th => th.style.display = 'none');
+                    if (costCenterHeaderField) costCenterHeaderField.style.display = 'block';
+                    if (profitCenterHeaderField) profitCenterHeaderField.style.display = 'none';
+                } else if (movementType === '321') {
+                    // 庫存調撥 - 顯示目標欄位，隱藏成本中心相關欄位
+                    targetHeaders.forEach(th => th.style.display = '');
+                    costCenterHeaders.forEach(th => th.style.display = 'none');
+                    if (costCenterHeaderField) costCenterHeaderField.style.display = 'none';
+                    if (profitCenterHeaderField) profitCenterHeaderField.style.display = 'none';
+                } else if (movementType === '501' || movementType === '511') {
+                    // 雜收、雜發 - 隱藏目標欄位，隱藏成本中心，顯示利潤中心
+                    targetHeaders.forEach(th => th.style.display = 'none');
+                    costCenterHeaders.forEach(th => th.style.display = 'none');
+                    if (costCenterHeaderField) costCenterHeaderField.style.display = 'none';
+                    if (profitCenterHeaderField) profitCenterHeaderField.style.display = 'block';
+                }
+                
+                // 不再需要更新現有項目，因為已經清空了
+                // updateExistingItemsForMovementType(movementType);
+                
+                // 更新成本摘要
+                updateCostSummary();
+            } else {
+                referenceFields.style.display = 'none';
+                itemsCard.style.display = 'none';
+                postingControls.style.display = 'none';
+            }
+        }
+
+        // 更新參考欄位
+        function updateReferenceFields(movementType) {
+            const referenceLabel = document.getElementById('referenceLabel');
+            const referenceHelp = document.getElementById('referenceHelp');
+            const referenceNumber = document.getElementById('referenceNumber');
+
+            switch(movementType) {
+                case '551':
+                    referenceLabel.textContent = '領用申請';
+                    referenceHelp.textContent = '可選填領用申請單號或工單編號';
+                    referenceNumber.placeholder = 'REQ240001 或 WO240001';
+                    referenceNumber.classList.remove('required-field');
+                    break;
+                case '321':
+                    referenceLabel.textContent = '調撥單號';
+                    referenceHelp.textContent = '可選填調撥申請單號 (跨工廠調撥建議填寫)';
+                    referenceNumber.placeholder = 'TO240001';
+                    referenceNumber.classList.remove('required-field');
+                    break;
+                case '201':
+                    referenceLabel.textContent = '報廢原因';
+                    referenceHelp.textContent = '填寫報廢原因 (如: 損壞、過期、品質問題)';
+                    referenceNumber.placeholder = '商品損壞無法銷售';
+                    referenceNumber.classList.remove('required-field');
+                    break;
+                case '501':
+                    referenceLabel.textContent = '收貨原因';
+                    referenceHelp.textContent = '填寫雜收原因 (如: 盤盈、退貨退款、樣品)';
+                    referenceNumber.placeholder = '盤點盤盈';
+                    referenceNumber.classList.remove('required-field');
+                    break;
+                case '511':
+                    referenceLabel.textContent = '發貨原因';
+                    referenceHelp.textContent = '填寫雜發原因 (如: 盤虧、樣品贈送、展示品)';
+                    referenceNumber.placeholder = '盤點盤虧';
+                    referenceNumber.classList.remove('required-field');
+                    break;
+            }
+        }
+
+        // 驗證參考單號
+        function validateReference() {
+            const movementType = document.getElementById('movementType').value;
+            const referenceNumber = document.getElementById('referenceNumber').value;
+            const vendorCode = document.getElementById('vendorCode');
+            const vendorName = document.getElementById('vendorName');
+            
+            // 清除供應商資訊 (庫存調撥和報廢不需要供應商)
+            vendorCode.value = '';
+            vendorName.value = '';
+            
+            if (referenceNumber) {
+                let messageText = '';
+                switch(movementType) {
+                    case '321':
+                    case '322':
+                        messageText = `調撥單號 ${referenceNumber} 已記錄`;
+                        break;
+                    case '551':
+                        messageText = `報廢原因已記錄: ${referenceNumber}`;
+                        break;
+                }
+                if (messageText) {
+                    showValidationMessage('success', messageText);
+                }
+            }
+        }
+
+        // 採購訂單相關函數已移除 - 專注於庫存調撥和報廢處理
+
+        // 根據移動類型更新現有項目的欄位狀態
+        function updateExistingItemsForMovementType(movementType) {
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            rows.forEach(row => {
+                updateItemFieldsForMovementType(row, movementType);
+            });
+        }
+
+        // 更新單個項目行的欄位狀態
+        function updateItemFieldsForMovementType(row, movementType) {
+            const targetPlantCell = row.cells[7];  // 目標工廠欄位
+            const targetStorageCell = row.cells[8];  // 目標庫位欄位
+            const costCenterCell = row.cells[10];  // 成本中心欄位
+            const priceInput = row.querySelector('.price-input');  // 單價欄位
+            
+            if (movementType === '201' || movementType === '551') {
+                // 成本中心領用、報廢處理 - 隱藏目標欄位和成本中心欄位（成本中心移至表頭）
+                targetPlantCell.style.display = 'none';
+                targetStorageCell.style.display = 'none';
+                targetPlantCell.innerHTML = '';
+                targetStorageCell.innerHTML = '';
+
+                // 隱藏成本中心欄位（因為已移至表頭）
+                costCenterCell.style.display = 'none';
+                costCenterCell.innerHTML = '';
+
+                // 201和551使用物料標準成本，不可編輯
+                if (priceInput) {
+                    priceInput.readOnly = true;
+                    priceInput.style.backgroundColor = '#f5f5f5';
+                    priceInput.title = '使用物料標準成本';
+                }
+            } else if (movementType === '501' || movementType === '511') {
+                // 雜收、雜發 - 隱藏目標欄位和成本中心欄位（利潤中心在表頭）
+                targetPlantCell.style.display = 'none';
+                targetStorageCell.style.display = 'none';
+                targetPlantCell.innerHTML = '';
+                targetStorageCell.innerHTML = '';
+
+                // 隱藏成本中心欄位
+                costCenterCell.style.display = 'none';
+                costCenterCell.innerHTML = '';
+
+                // 501雜收和511雜發使用物料標準成本，不可編輯
+                if (priceInput) {
+                    priceInput.readOnly = true;
+                    priceInput.style.backgroundColor = '#f5f5f5';
+                    priceInput.title = '使用物料標準成本';
+                }
+            } else if (movementType === '321') {
+                // 調撥處理 - 顯示目標欄位，隱藏成本中心欄位
+                targetPlantCell.style.display = '';
+                targetStorageCell.style.display = '';
+                costCenterCell.style.display = 'none';
+                costCenterCell.innerHTML = '';
+                
+                // 321調撥也使用物料標準成本，不可編輯
+                if (priceInput) {
+                    priceInput.readOnly = true;
+                    priceInput.style.backgroundColor = '#f5f5f5';
+                    priceInput.title = '使用物料標準成本';
+                }
+                
+                const currentTargetPlant = targetPlantCell.querySelector('select')?.value || '';
+                const currentTargetStorage = targetStorageCell.querySelector('select')?.value || '';
+                
+                targetPlantCell.innerHTML = `
+                    <select class="form-select form-select-sm target-plant-input" onchange="updateTargetStorageOptions(this)">
+                        <option value="">選擇</option>
+                        <option value="1">工廠1-主倉庫</option>
+                        <option value="2">工廠2-配送中心</option>
+                        <option value="3">工廠3-第三方物流</option>
+                    </select>
+                `;
+                
+                targetStorageCell.innerHTML = `
+                    <select class="form-select form-select-sm target-storage-location">
+                        <option value="">選擇</option>
+                        <option value="0001">0001-原料庫</option>
+                        <option value="0002">0002-成品庫</option>
+                        <option value="0003">0003-半成品庫</option>
+                    </select>
+                `;
+                
+                // 恢復之前的選擇值
+                if (currentTargetPlant) {
+                    targetPlantCell.querySelector('select').value = currentTargetPlant;
+                }
+                if (currentTargetStorage) {
+                    targetStorageCell.querySelector('select').value = currentTargetStorage;
+                }
+            }
+        }
+
+        // 新增項目
+        function addMovementItem() {
+            const tableBody = document.getElementById('itemsTableBody');
+            const movementType = document.getElementById('movementType').value;
+            const row = createItemRow();
+            tableBody.appendChild(row);
+            
+            // 根據目前的移動類型設定欄位狀態
+            if (movementType) {
+                updateItemFieldsForMovementType(row, movementType);
+            }
+            
+            itemCounter++;
+        }
+
+        // 創建項目行
+        function createItemRow() {
+            const movementType = document.getElementById('movementType').value;
+            const row = document.createElement('tr');
+
+            // 根據移動類型決定價格欄位是否可編輯
+            const isPriceReadOnly = (movementType === '201' || movementType === '321' || movementType === '551' || movementType === '501' || movementType === '511');
+            const priceFieldStyle = isPriceReadOnly ? 'style="background-color:#f5f5f5;" readonly' : '';
+            const priceFieldTitle = isPriceReadOnly ? 'title="使用物料標準成本"' : '';
+            
+            row.innerHTML = `
+                <td class="text-center">${String(itemCounter * 10).padStart(3, '0')}</td>
+                <td>
+                    <input type="text" class="form-control form-control-sm material-input required-field" 
+                           placeholder="M001" onblur="updateMaterialInfo(this)" onchange="validateMaterial(this)">
+                </td>
+                <td class="material-desc">-</td>
+                <td>
+                    <input type="number" class="form-control form-control-sm quantity-input required-field" 
+                           min="0.001" step="0.001" onchange="updateItemAmount(this.closest('tr'))" placeholder="0.000">
+                </td>
+                <td class="unit-display">-</td>
+                <td>
+                    <select class="form-select form-select-sm plant-input required-field" onchange="updatePlantStorageOptions(this)">
+                        <option value="">選擇</option>
+                        <option value="1">工廠1-主倉庫</option>
+                        <option value="2">工廠2-配送中心</option>
+                        <option value="3">工廠3-第三方物流</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm storage-location required-field" onchange="updateStockLevel(this)">
+                        <option value="">選擇</option>
+                        <option value="0001">0001-原料庫</option>
+                        <option value="0002">0002-成品庫</option>
+                        <option value="0003">0003-半成品庫</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm target-plant-input" onchange="updateTargetStorageOptions(this)">
+                        <option value="">選擇</option>
+                        <option value="1">工廠1-主倉庫</option>
+                        <option value="2">工廠2-配送中心</option>
+                        <option value="3">工廠3-第三方物流</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm target-storage-location">
+                        <option value="">選擇</option>
+                        <option value="0001">0001-原料庫</option>
+                        <option value="0002">0002-成品庫</option>
+                        <option value="0003">0003-半成品庫</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm batch-input" placeholder="批次號">
+                </td>
+                <td class="cost-center-cell">
+                    <select class="form-select form-select-sm cost-center-input">
+                        <option value="">選擇</option>
+                        <option value="CC1001">CC1001-營運部</option>
+                        <option value="CC1002">CC1002-銷售部</option>
+                        <option value="CC1003">CC1003-倉儲部</option>
+                        <option value="CC1004">CC1004-品管部</option>
+                        <option value="CC1005">CC1005-財務部</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" class="form-control form-control-sm price-input currency-field" 
+                           step="0.01" onchange="updateItemAmount(this.closest('tr'))" placeholder="0.00"
+                           ${priceFieldStyle} ${priceFieldTitle}>
+                </td>
+                <td class="amount-display currency-field">0.00</td>
+                <td class="stock-level">-</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            return row;
+        }
+
+        // 更新物料資訊
+        function updateMaterialInfo(input) {
+            const materialCode = input.value.toUpperCase();
+            const row = input.closest('tr');
+            
+            if (materialMaster[materialCode]) {
+                const material = materialMaster[materialCode];
+                
+                row.querySelector('.material-desc').textContent = material.description;
+                row.querySelector('.unit-display').textContent = material.baseUnit;
+                
+                // 根據價格控制設定單價
+                const price = material.priceControl === 'S' ? material.standardPrice : material.movingPrice;
+                const priceInput = row.querySelector('.price-input');
+                priceInput.value = price.toFixed(2);
+                
+                // 根據移動類型設定價格欄位狀態
+                const movementType = document.getElementById('movementType').value;
+                if (movementType === '201' || movementType === '321' || movementType === '551' || movementType === '501' || movementType === '511') {
+                    // 201成本中心領用、321調撥、551報廢、501雜收、511雜發都使用標準成本，不可編輯
+                    priceInput.readOnly = true;
+                    priceInput.style.backgroundColor = '#f5f5f5';
+                    priceInput.title = '使用物料標準成本';
+                } else {
+                    // 其他移動類型可以編輯價格
+                    priceInput.readOnly = false;
+                    priceInput.style.backgroundColor = '';
+                    priceInput.title = '';
+                }
+                
+                input.classList.remove('validation-error');
+                input.classList.add('validation-success');
+                
+                updateItemAmount(row);
+            } else if (materialCode) {
+                row.querySelector('.material-desc').textContent = '物料不存在';
+                row.querySelector('.unit-display').textContent = '-';
+                row.querySelector('.price-input').value = '';
+                
+                input.classList.remove('validation-success');
+                input.classList.add('validation-error');
+            }
+        }
+
+        // 更新庫存水位
+        function updateStockLevel(select) {
+            const row = select.closest('tr');
+            const materialCode = row.querySelector('.material-input').value.toUpperCase();
+            const plant = row.querySelector('.plant-input').value;
+            const storageLocation = select.value;
+            const stockLevelCell = row.querySelector('.stock-level');
+            
+            if (materialCode && plant && storageLocation && stockData[materialCode]) {
+                const currentStock = stockData[materialCode][storageLocation] || 0;
+                stockLevelCell.innerHTML = `<span class="badge ${currentStock > 0 ? 'bg-success' : 'bg-danger'}">${currentStock}</span>`;
+                
+                // 出庫類型檢查庫存（調撥、報廢、雜發）
+                const movementType = document.getElementById('movementType').value;
+                if (movementType === '321' || movementType === '511') {
+                    const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                    if (quantity > currentStock) {
+                        const actionType = movementType === '321' ? '調撥' : '雜發';
+                        showValidationMessage('warning', `物料 ${materialCode} 庫存不足無法${actionType}：需要 ${quantity}，現有 ${currentStock}`);
+                    }
+                }
+            } else {
+                stockLevelCell.textContent = '-';
+            }
+        }
+
+        // 更新項目金額
+        function updateItemAmount(row) {
+            const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const amount = quantity * price;
+            
+            row.querySelector('.amount-display').textContent = amount.toLocaleString('zh-TW', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            
+            updateCostSummary();
+        }
+
+        // 更新成本摘要
+        function updateCostSummary() {
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            let totalItems = rows.length;
+            let totalQuantity = 0;
+            let totalAmount = 0;
+            
+            rows.forEach(row => {
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                totalQuantity += quantity;
+                totalAmount += quantity * price;
+            });
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalQuantity').textContent = totalQuantity.toLocaleString('zh-TW', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            });
+            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('zh-TW', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            
+            // 顯示成本影響
+            updateCostImpact(totalAmount);
+            
+            if (totalItems > 0) {
+                document.getElementById('costSummary').style.display = 'block';
+            }
+        }
+
+        // 更新成本影響
+        function updateCostImpact(totalAmount) {
+            const movementType = document.getElementById('movementType').value;
+            const costImpactDiv = document.getElementById('costImpact');
+            const formattedAmount = totalAmount.toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+            let impactText = '';
+            switch(movementType) {
+                case '201':
+                    impactText = `<div class="text-warning"><i class="fas fa-hand-holding"></i> 成本中心領用</div>
+                                <div class="small">Dr. 成本中心(物料消耗) ${formattedAmount}<br>
+                                Cr. 原料庫存 ${formattedAmount}</div>`;
+                    break;
+                case '321':
+                    // 檢查是否為跨工廠調撥
+                    const rows = document.querySelectorAll('#itemsTableBody tr');
+                    let isInterPlant = false;
+                    if (rows.length > 0) {
+                        const firstRow = rows[0];
+                        const sourcePlant = firstRow.querySelector('.plant-input')?.value;
+                        const targetPlant = firstRow.querySelector('.target-plant-input')?.value;
+                        isInterPlant = sourcePlant && targetPlant && sourcePlant !== targetPlant;
+                    }
+
+                    if (isInterPlant) {
+                        impactText = `<div class="text-info"><i class="fas fa-exchange-alt"></i> 跨工廠調撥</div>
+                                    <div class="small">Dr. 在途庫存 ${formattedAmount}<br>
+                                    Cr. 發出工廠庫存 ${formattedAmount}<br>
+                                    <span class="text-warning">跨工廠需產生會計分錄</span></div>`;
+                    } else {
+                        impactText = `<div class="text-info"><i class="fas fa-exchange-alt"></i> 工廠調撥</div>
+                                    <div class="small">來源庫位 (-) → 目標庫位 (+)<br>
+                                    調撥不產生會計分錄</div>`;
+                    }
+                    break;
+                case '551':
+                    impactText = `<div class="text-danger"><i class="fas fa-trash"></i> 報廢處理</div>
+                                <div class="small">Dr. 成本中心(報廢損失) ${formattedAmount}<br>
+                                Cr. 原料庫存 ${formattedAmount}</div>`;
+                    break;
+                case '501':
+                    impactText = `<div class="text-success"><i class="fas fa-plus-circle"></i> 雜收入庫</div>
+                                <div class="small">Dr. 原料庫存 ${formattedAmount}<br>
+                                Cr. 利潤中心(盤盈/其他收入) ${formattedAmount}</div>`;
+                    break;
+                case '511':
+                    impactText = `<div class="text-danger"><i class="fas fa-minus-circle"></i> 雜發出庫</div>
+                                <div class="small">Dr. 利潤中心(盤虧/其他損失) ${formattedAmount}<br>
+                                Cr. 原料庫存 ${formattedAmount}</div>`;
+                    break;
+            }
+
+            costImpactDiv.innerHTML = impactText;
+        }
+
+        // 移除項目
+        function removeItem(button) {
+            const row = button.closest('tr');
+            row.remove();
+            updateCostSummary();
+        }
+
+        // 驗證文件
+        function validateDocument() {
+            const validationMessages = document.getElementById('validationMessages');
+            const messages = [];
+            
+            // 驗證標題資料
+            const movementType = document.getElementById('movementType').value;
+            const postingDate = document.getElementById('postingDate').value;
+            const referenceNumber = document.getElementById('referenceNumber').value;
+            
+            if (!movementType) messages.push({type: 'error', text: '請選擇異動類型'});
+            if (!postingDate) messages.push({type: 'error', text: '請輸入過帳日期'});
+
+            // 成本中心領用、報廢處理需要驗證表頭成本中心
+            if (movementType === '201' || movementType === '551') {
+                const headerCostCenter = document.getElementById('headerCostCenter').value;
+                if (!headerCostCenter) {
+                    const actionType = movementType === '551' ? '成本中心領用' : '報廢處理';
+                    messages.push({type: 'error', text: `${actionType}需要選擇成本中心`});
+                }
+            }
+
+            // 雜收、雜發需要驗證表頭利潤中心
+            if (movementType === '501' || movementType === '511') {
+                const headerProfitCenter = document.getElementById('headerProfitCenter').value;
+                if (!headerProfitCenter) {
+                    const actionType = movementType === '501' ? '雜收' : '雜發';
+                    messages.push({type: 'error', text: `${actionType}需要選擇利潤中心`});
+                }
+            }
+
+            // 參考欄位驗證已移除 - 調撥和報廢都不強制要求參考資料
+            
+            // 驗證項目
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            if (rows.length === 0) {
+                messages.push({type: 'error', text: '請至少新增一個異動項目'});
+            }
+            
+            rows.forEach((row, index) => {
+                const material = row.querySelector('.material-input').value;
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const plant = row.querySelector('.plant-input').value;
+                const storageLocation = row.querySelector('.storage-location').value;
+                const targetPlant = row.querySelector('.target-plant-input').value;
+                const targetStorageLocation = row.querySelector('.target-storage-location').value;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                
+                // 基本欄位驗證
+                if (!material) messages.push({type: 'error', text: `項目 ${index + 1}: 請輸入物料編號`});
+                if (quantity <= 0) messages.push({type: 'error', text: `項目 ${index + 1}: 請輸入有效數量`});
+                if (!plant) messages.push({type: 'error', text: `項目 ${index + 1}: 請選擇工廠`});
+                if (!storageLocation) messages.push({type: 'error', text: `項目 ${index + 1}: 請選擇庫位`});
+                
+                // 調撥特殊驗證 - 只有調撥(321)才需要目標欄位
+                if (movementType === '321') {
+                    if (!targetPlant) messages.push({type: 'error', text: `項目 ${index + 1}: 調撥發出需要選擇目標工廠`});
+                    if (!targetStorageLocation) messages.push({type: 'error', text: `項目 ${index + 1}: 調撥發出需要選擇目標庫位`});
+                    
+                    // 檢查來源與目標不能相同
+                    if (plant === targetPlant && storageLocation === targetStorageLocation) {
+                        messages.push({type: 'error', text: `項目 ${index + 1}: 來源與目標工廠/庫位不能相同`});
+                    }
+                    
+                    // 跨工廠調撥提示
+                    if (plant && targetPlant && plant !== targetPlant) {
+                        messages.push({type: 'warning', text: `項目 ${index + 1}: 跨工廠調撥(工廠${plant}→工廠${targetPlant})將產生會計分錄`});
+                    }
+                }
+                
+                // 成本中心領用、報廢處理的成本中心驗證已移至表頭，此處不再驗證
+
+
+                // 業務邏輯驗證 - 出庫類型需檢查庫存充足性
+                if ((movementType === '201' || movementType === '321' || movementType === '551' || movementType === '511') && material && plant && storageLocation) {
+                    const currentStock = stockData[material.toUpperCase()]?.[storageLocation] || 0;
+                    if (quantity > currentStock) {
+                        let actionType = '';
+                        switch(movementType) {
+                            case '201': actionType = '領用'; break;
+                            case '321': actionType = '調撥'; break;
+                            case '551': actionType = '報廢'; break;
+                            case '511': actionType = '雜發'; break;
+                        }
+                        messages.push({type: 'warning', text: `項目 ${index + 1}: 工廠${plant}庫位${storageLocation}庫存不足無法${actionType}，現有 ${currentStock}，需要 ${quantity}`});
+                    }
+                }
+            });
+            
+            // 顯示驗證結果
+            displayValidationMessages(messages);
+            
+            return messages.filter(m => m.type === 'error').length === 0;
+        }
+
+        // 顯示驗證訊息
+        function displayValidationMessages(messages) {
+            const container = document.getElementById('validationMessages');
+            container.innerHTML = '';
+            
+            messages.forEach(message => {
+                const alertClass = message.type === 'error' ? 'alert-danger' : 'alert-warning';
+                const icon = message.type === 'error' ? 'fa-times-circle' : 'fa-exclamation-triangle';
+                
+                const alert = document.createElement('div');
+                alert.className = `alert ${alertClass} alert-dismissible fade show`;
+                alert.innerHTML = `
+                    <i class="fas ${icon}"></i> ${message.text}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                container.appendChild(alert);
+            });
+        }
+
+        // 顯示驗證訊息 (單一)
+        function showValidationMessage(type, text) {
+            const container = document.getElementById('validationMessages');
+            let alertClass, icon;
+
+            switch(type) {
+                case 'error':
+                    alertClass = 'alert-danger';
+                    icon = 'fa-times-circle';
+                    break;
+                case 'success':
+                    alertClass = 'alert-success';
+                    icon = 'fa-check-circle';
+                    break;
+                case 'info':
+                    alertClass = 'alert-info';
+                    icon = 'fa-info-circle';
+                    break;
+                default:
+                    alertClass = 'alert-warning';
+                    icon = 'fa-exclamation-triangle';
+            }
+
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass} alert-dismissible fade show`;
+            alert.innerHTML = `
+                <i class="fas ${icon}"></i> ${text}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(alert);
+
+            // 3秒後自動移除成功訊息
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 3000);
+            }
+        }
+
+        // 更新工廠選擇後的庫位選項
+        function updatePlantStorageOptions(plantSelect) {
+            const row = plantSelect.closest('tr');
+            const storageSelect = row.querySelector('.storage-location');
+            const plantCode = plantSelect.value;
+            
+            // 清空庫位選項
+            storageSelect.innerHTML = '<option value="">選擇</option>';
+            
+            if (plantCode) {
+                // 根據工廠代碼加載對應庫位
+                const storageOptions = {
+                    '1': [
+                        {value: '0001', text: '0001-原料庫'},
+                        {value: '0002', text: '0002-成品庫'},
+                        {value: '0003', text: '0003-半成品庫'}
+                    ],
+                    '2': [
+                        {value: '0001', text: '0001-原料庫'},
+                        {value: '0004', text: '0004-待發貨區'},
+                        {value: '0005', text: '0005-退貨區'}
+                    ],
+                    '3': [
+                        {value: '0006', text: '0006-第三方倉庫'},
+                        {value: '0007', text: '0007-暫存區'}
+                    ]
+                };
+                
+                if (storageOptions[plantCode]) {
+                    storageOptions[plantCode].forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.value;
+                        optionElement.textContent = option.text;
+                        storageSelect.appendChild(optionElement);
+                    });
+                }
+            }
+            
+            // 重新更新庫存水準
+            updateStockLevel(storageSelect);
+        }
+
+        // 更新目標工廠選擇後的目標庫位選項
+        function updateTargetStorageOptions(targetPlantSelect) {
+            const row = targetPlantSelect.closest('tr');
+            const targetStorageSelect = row.querySelector('.target-storage-location');
+            const plantCode = targetPlantSelect.value;
+            
+            // 清空目標庫位選項
+            targetStorageSelect.innerHTML = '<option value="">選擇</option>';
+            
+            if (plantCode) {
+                // 根據目標工廠代碼加載對應庫位
+                const storageOptions = {
+                    '1': [
+                        {value: '0001', text: '0001-原料庫'},
+                        {value: '0002', text: '0002-成品庫'},
+                        {value: '0003', text: '0003-半成品庫'}
+                    ],
+                    '2': [
+                        {value: '0001', text: '0001-原料庫'},
+                        {value: '0004', text: '0004-待發貨區'},
+                        {value: '0005', text: '0005-退貨區'}
+                    ],
+                    '3': [
+                        {value: '0006', text: '0006-第三方倉庫'},
+                        {value: '0007', text: '0007-暫存區'}
+                    ]
+                };
+                
+                if (storageOptions[plantCode]) {
+                    storageOptions[plantCode].forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.value;
+                        optionElement.textContent = option.text;
+                        targetStorageSelect.appendChild(optionElement);
+                    });
+                }
+            }
+        }
+
+        // 暫存文件
+        function saveDocument() {
+            const movementType = document.getElementById('movementType').value;
+            const postingDate = document.getElementById('postingDate').value;
+            const referenceNumber = document.getElementById('referenceNumber').value;
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            
+            if (!movementType) {
+                alert('請選擇異動類型才能暫存');
+                return;
+            }
+            
+            if (rows.length === 0) {
+                alert('請至少新增一個異動項目才能暫存');
+                return;
+            }
+            
+            const draftNumber = 'DRAFT' + Date.now().toString().slice(-9);
+            const totalAmount = parseFloat(document.getElementById('totalAmount').textContent.replace('TWD ', '').replace(/,/g, ''));
+            const now = new Date();
+            const createTime = now.getFullYear() + '-' + 
+                             String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(now.getDate()).padStart(2, '0') + ' ' +
+                             String(now.getHours()).padStart(2, '0') + ':' + 
+                             String(now.getMinutes()).padStart(2, '0') + ':' + 
+                             String(now.getSeconds()).padStart(2, '0');
+            const createDate = now.toISOString().split('T')[0];
+            
+            // 取得異動類型描述
+            const movementTypeDesc = document.querySelector(`#movementType option[value="${movementType}"]`).textContent;
+            
+            // 新增到暫存文件清單
+            const newDraft = {
+                documentNumber: draftNumber,
+                movementType: movementType,
+                movementTypeDesc: movementTypeDesc,
+                referenceNumber: referenceNumber || '',
+                itemCount: rows.length,
+                totalAmount: totalAmount,
+                createTime: createTime,
+                createDate: createDate,
+                status: 'DRAFT',
+                statusDesc: '暫存',
+                postingTime: '',
+                postingDate: ''
+            };
+            
+            draftDocuments.unshift(newDraft); // 新的放在最前面
+            
+            alert(`暫存成功！\n\n草稿編號: ${draftNumber}\n異動類型: ${movementTypeDesc}\n項目數量: ${rows.length}\n總金額: ${totalAmount.toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n\n可稍後繼續編輯並過帳`);
+        }
+
+        // 過帳文件
+        function postDocument() {
+            if (!validateDocument()) {
+                return;
+            }
+            
+            const movementType = document.getElementById('movementType').value;
+            const totalAmount = parseFloat(document.getElementById('totalAmount').textContent.replace('TWD ', '').replace(/,/g, ''));
+            const docNumber = '5' + Date.now().toString().slice(-9);
+            
+            // 模擬更新庫存
+            updateStockAfterPosting();
+            
+            alert(`過帳成功！\n\n單據號碼: ${docNumber}\n移動類型: ${movementType}\n總金額: ${totalAmount.toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n\n庫存已更新`);
+            
+            if (confirm('是否清除表單開始新的異動？')) {
+                clearForm();
+            }
+        }
+
+        // 過帳後更新庫存
+        function updateStockAfterPosting() {
+            const movementType = document.getElementById('movementType').value;
+            const rows = document.querySelectorAll('#itemsTableBody tr');
+            
+            rows.forEach(row => {
+                const material = row.querySelector('.material-input').value.toUpperCase();
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const plant = row.querySelector('.plant-input').value;
+                const storageLocation = row.querySelector('.storage-location').value;
+                const targetPlant = row.querySelector('.target-plant-input').value;
+                const targetStorageLocation = row.querySelector('.target-storage-location').value;
+                
+                if (movementType === '321') {
+                    // 庫存調撥 - 同時執行發出與接收
+                    // 1. 減少來源庫存
+                    if (stockData[material] && stockData[material][storageLocation] !== undefined) {
+                        stockData[material][storageLocation] = Math.max(0, stockData[material][storageLocation] - quantity);
+                    }
+
+                    // 2. 增加目標庫存
+                    if (targetStorageLocation && stockData[material]) {
+                        if (stockData[material][targetStorageLocation] === undefined) {
+                            stockData[material][targetStorageLocation] = 0;
+                        }
+                        stockData[material][targetStorageLocation] += quantity;
+                    }
+                } else if (movementType === '201' || movementType === '551' || movementType === '511') {
+                    // 成本中心領用、報廢處理、雜發 - 減少庫存
+                    if (stockData[material] && stockData[material][storageLocation] !== undefined) {
+                        stockData[material][storageLocation] = Math.max(0, stockData[material][storageLocation] - quantity);
+                    }
+                } else if (movementType === '501') {
+                    // 雜收 - 增加庫存
+                    if (stockData[material]) {
+                        if (stockData[material][storageLocation] === undefined) {
+                            stockData[material][storageLocation] = 0;
+                        }
+                        stockData[material][storageLocation] += quantity;
+                    }
+                }
+            });
+        }
+
+        // 清除表單
+        function clearForm() {
+            // 重置只讀狀態
+            setFormReadOnly(false);
+
+            document.getElementById('movementType').value = '';
+            document.getElementById('referenceNumber').value = '';
+            document.getElementById('headerCostCenter').value = '';
+            document.getElementById('headerProfitCenter').value = '';
+            document.getElementById('vendorCode').value = '';
+            document.getElementById('vendorName').value = '';
+            document.getElementById('itemsTableBody').innerHTML = '';
+            document.getElementById('validationMessages').innerHTML = '';
+            document.getElementById('costSummary').style.display = 'none';
+
+            changeMovementType();
+            itemCounter = 1;
+        }
+
+        // 驗證物料
+        function validateMaterial(input) {
+            const materialCode = input.value.toUpperCase();
+            input.value = materialCode; // 自動轉大寫
+        }
+    </script>
+</body>
+</html>

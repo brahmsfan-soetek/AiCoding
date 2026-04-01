@@ -19,6 +19,7 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 |-------|------|---------|------|
 | [eap-agentic-coding](skills/eap-agentic-coding/) | **實測中** | eap 專案（Quarkus + Vue 3 + MSSQL） | 規格驅動開發：多源規格交叉比對 → 任務拆解 → test-first → agent 分離實作 → 交叉驗證 |
 | [eap-agentic-coding-lite](skills/eap-agentic-coding-lite/) | **v1.0.0** | eap 專案（Demo 用） | 規格驅動開發：同一 session 連續執行 P0→P1→P2，模板驅動實作 |
+| [spec-digest-flow](skills/spec-digest-flow/) | **v1.0.0** | 通用（SA 規格書消化） | PG 接到 SA 規格書後的標準流程：規格統計 → 釐清清單 → SA 回覆整合 → 任務清單，含 Prompt 模板與輸出模板 |
 | [serp-agentic-coding](skills/serp-agentic-coding/) | 暫停 | serp 專案 | 原型骨架，待 eap 實測結論回饋後迭代 |
 
 ### eap-agentic-coding

@@ -31,6 +31,12 @@
       "source": "./skills/eap-agentic-coding-lite",
       "description": "eap 規格驅動開發 Demo 版：快速從規格產出可運行程式碼（Quarkus + Vue 3 + MSSQL）",
       "version": "1.0.0"
+    },
+    {
+      "name": "spec-digest-flow",
+      "source": "./skills/spec-digest-flow",
+      "description": "SA 規格書消化流程：規格統計 → 釐清清單 → SA 回覆整合 → 前後端任務清單，含 Prompt 模板與輸出模板",
+      "version": "1.0.0"
     }
   ]
 }
