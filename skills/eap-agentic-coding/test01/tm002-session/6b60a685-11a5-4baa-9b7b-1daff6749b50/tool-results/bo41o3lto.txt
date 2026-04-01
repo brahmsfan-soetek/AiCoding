@@ -1,0 +1,526 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Backend - Quarkus Application Parent                               [pom]
+[INFO] Demo - Business Module Example                                     [jar]
+[INFO] AU010 - Work Calender Module                                       [jar]
+[INFO] AU011 - Employee Agent Configuration                               [jar]
+[INFO] AU012 - Salary Rank Configuration Module                           [jar]
+[INFO] RM001 - Candidate Module                                           [jar]
+[INFO] AU013 - Administrative Organization Module                         [jar]
+[INFO] PM001 - Employee Info Module                                       [jar]
+[INFO] TM - Time Management Module                                        [jar]
+[INFO] Application - Main Entry Point                                     [jar]
+[INFO] 
+[INFO] -------------------------< org.soetek:backend >-------------------------
+[INFO] Building Backend - Quarkus Application Parent 0.1.0-SNAPSHOT      [1/10]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ backend ---
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ backend ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\backend\0.1.0-SNAPSHOT\backend-0.1.0-SNAPSHOT.pom
+[INFO] 
+[INFO] --------------------------< org.soetek:demo >---------------------------
+[INFO] Building Demo - Business Module Example 0.1.0-SNAPSHOT            [2/10]
+[INFO]   from demo\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0/1.2 kBProgress (1): 1.2 kB                        Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 4.7 kB/s)
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.2 kB                    Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 11 kB/s)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ demo ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\demo\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ demo ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ demo ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ demo ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\demo\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ demo ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\demo\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ demo ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ demo ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ demo ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\demo\target\demo-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ demo ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\demo\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\demo\0.1.0-SNAPSHOT\demo-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\demo\target\demo-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\demo\0.1.0-SNAPSHOT\demo-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------------------< org.soetek:au010 >--------------------------
+[INFO] Building AU010 - Work Calender Module 0.1.0-SNAPSHOT              [3/10]
+[INFO]   from au010\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ au010 ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\au010\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ au010 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ au010 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ au010 ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\au010\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ au010 ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\au010\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ au010 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ au010 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ au010 ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\au010\target\au010-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ au010 ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au010\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\au010\0.1.0-SNAPSHOT\au010-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au010\target\au010-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\au010\0.1.0-SNAPSHOT\au010-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------------------< org.soetek:au011 >--------------------------
+[INFO] Building AU011 - Employee Agent Configuration 0.1.0-SNAPSHOT      [4/10]
+[INFO]   from au011\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ au011 ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\au011\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ au011 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ au011 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 5 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ au011 ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\au011\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ au011 ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\au011\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ au011 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ au011 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ au011 ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\au011\target\au011-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ au011 ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au011\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\au011\0.1.0-SNAPSHOT\au011-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au011\target\au011-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\au011\0.1.0-SNAPSHOT\au011-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------------------< org.soetek:au012 >--------------------------
+[INFO] Building AU012 - Salary Rank Configuration Module 0.1.0-SNAPSHOT  [5/10]
+[INFO]   from au012\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ au012 ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\au012\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ au012 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ au012 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 9 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ au012 ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\au012\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ au012 ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\au012\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ au012 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ au012 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ au012 ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\au012\target\au012-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ au012 ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au012\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\au012\0.1.0-SNAPSHOT\au012-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au012\target\au012-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\au012\0.1.0-SNAPSHOT\au012-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------------------< org.soetek:rm001 >--------------------------
+[INFO] Building RM001 - Candidate Module 0.1.0-SNAPSHOT                  [6/10]
+[INFO]   from rm001\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ rm001 ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\rm001\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ rm001 ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ rm001 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 26 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ rm001 ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\rm001\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ rm001 ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ rm001 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ rm001 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ rm001 ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\rm001\target\rm001-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ rm001 ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\rm001\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\rm001\0.1.0-SNAPSHOT\rm001-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\rm001\target\rm001-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\rm001\0.1.0-SNAPSHOT\rm001-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------------------< org.soetek:au013 >--------------------------
+[INFO] Building AU013 - Administrative Organization Module 0.1.0-SNAPSHOT [7/10]
+[INFO]   from au013\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ au013 ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\au013\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ au013 ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ au013 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 13 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ au013 ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\au013\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ au013 ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\au013\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ au013 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ au013 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ au013 ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\au013\target\au013-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ au013 ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au013\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\au013\0.1.0-SNAPSHOT\au013-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\au013\target\au013-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\au013\0.1.0-SNAPSHOT\au013-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --------------------------< org.soetek:pm001 >--------------------------
+[INFO] Building PM001 - Employee Info Module 0.1.0-SNAPSHOT              [8/10]
+[INFO]   from pm001\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ pm001 ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\pm001\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ pm001 ---
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ pm001 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 20 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /C:/Users/a0304/IdeaProjects/eap/backend/pm001/src/main/java/org/soetek/eap/pm001/service/PmEmployeeService.java: C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\service\PmEmployeeService.java uses unchecked or unsafe operations.
+[INFO] /C:/Users/a0304/IdeaProjects/eap/backend/pm001/src/main/java/org/soetek/eap/pm001/service/PmEmployeeService.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ pm001 ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\pm001\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ pm001 ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ pm001 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ pm001 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ pm001 ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\pm001\target\pm001-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ pm001 ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\pm001\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\pm001\0.1.0-SNAPSHOT\pm001-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\pm001\target\pm001-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\pm001\0.1.0-SNAPSHOT\pm001-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] ---------------------------< org.soetek:tm >----------------------------
+[INFO] Building TM - Time Management Module 0.1.0-SNAPSHOT               [9/10]
+[INFO]   from tm\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ tm ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\tm\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ tm ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ tm ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 23 source files with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- jandex:3.2.2:jandex (make-index) @ tm ---
+[INFO] Saving Jandex index: C:\Users\a0304\IdeaProjects\eap\backend\tm\target\classes\META-INF\jandex.idx
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ tm ---
+[INFO] skip non existing resourceDirectory C:\Users\a0304\IdeaProjects\eap\backend\tm\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ tm ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ tm ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ tm ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\tm\target\tm-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ tm ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\tm\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\tm\0.1.0-SNAPSHOT\tm-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\tm\target\tm-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\tm\0.1.0-SNAPSHOT\tm-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] -----------------------< org.soetek:application >-----------------------
+[INFO] Building Application - Main Entry Point 0.1.0-SNAPSHOT           [10/10]
+[INFO]   from application\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ application ---
+[INFO] Deleting C:\Users\a0304\IdeaProjects\eap\backend\application\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ application ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- quarkus:3.25.4:generate-code (default) @ application ---
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/application/0.1.0-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ application ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- quarkus:3.25.4:generate-code-tests (default) @ application ---
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): maven-metadata.xml (1.2 kB)                                         Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 8.8 kB/s)
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): maven-metadata.xml (1.0/1.2 kB)Progress (1): maven-metadata.xml (1.2 kB)                                             Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 15 kB/s)
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ application ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ application ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target\test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ application ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ application ---
+[INFO] Building jar: C:\Users\a0304\IdeaProjects\eap\backend\application\target\application-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- quarkus:3.25.4:build (default) @ application ---
+[WARNING] [io.quarkus.hibernate.orm.deployment.HibernateOrmProcessor] Could not find a suitable persistence unit for model classes:
+	- io.quarkus.hibernate.orm.panache.PanacheEntity
+[INFO] [io.quarkus.deployment.QuarkusAugmentor] Quarkus augmentation completed in 7652ms
+[INFO] 
+[INFO] --- failsafe:3.5.3:integration-test (default) @ application ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- quarkus:3.25.4:native-image-agent (default) @ application ---
+[INFO] Missing native-image-agent-base-config directory with native image agent configuration to transform
+[INFO] 
+[INFO] --- failsafe:3.5.3:verify (default) @ application ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ application ---
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\application\pom.xml to C:\Users\a0304\.m2\repository\org\soetek\application\0.1.0-SNAPSHOT\application-0.1.0-SNAPSHOT.pom
+[INFO] Installing C:\Users\a0304\IdeaProjects\eap\backend\application\target\application-0.1.0-SNAPSHOT.jar to C:\Users\a0304\.m2\repository\org\soetek\application\0.1.0-SNAPSHOT\application-0.1.0-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Backend - Quarkus Application Parent 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] Backend - Quarkus Application Parent ............... SUCCESS [  0.250 s]
+[INFO] Demo - Business Module Example ..................... SUCCESS [  6.455 s]
+[INFO] AU010 - Work Calender Module ....................... SUCCESS [  2.614 s]
+[INFO] AU011 - Employee Agent Configuration ............... SUCCESS [  1.936 s]
+[INFO] AU012 - Salary Rank Configuration Module ........... SUCCESS [  2.255 s]
+[INFO] RM001 - Candidate Module ........................... SUCCESS [  3.286 s]
+[INFO] AU013 - Administrative Organization Module ......... SUCCESS [  1.935 s]
+[INFO] PM001 - Employee Info Module ....................... SUCCESS [  2.947 s]
+[INFO] TM - Time Management Module ........................ SUCCESS [  2.133 s]
+[INFO] Application - Main Entry Point ..................... SUCCESS [ 16.905 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  42.458 s
+[INFO] Finished at: 2026-03-26T12:21:20+08:00
+[INFO] ------------------------------------------------------------------------
+[INFO] -----------------------< org.soetek:application >-----------------------
+[INFO] Building Application - Main Entry Point 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/demo/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/backend/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/eap-application/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.2 kB                    Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 14 kB/s)
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.2 kB                    Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 12 kB/s)
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/au010/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/au011/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/au012/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/rm001/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/au013/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/pm001/0.1.0-SNAPSHOT/maven-metadata.xml
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/tm/0.1.0-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ application ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- quarkus:3.25.4:generate-code (default) @ application ---
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/application/0.1.0-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ application ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- quarkus:3.25.4:generate-code-tests (default) @ application ---
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): maven-metadata.xml (1.0/1.2 kB)Progress (1): maven-metadata.xml (1.2 kB)                                             Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/core-foundation/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 8.6 kB/s)
+Downloading from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): maven-metadata.xml (1.0/1.2 kB)Progress (1): maven-metadata.xml (1.2 kB)                                             Downloaded from soetek-snapshots: http://192.168.170.91:9081/repository/soetek-snapshots/org/soetek/authorize/1.0.0-SNAPSHOT/maven-metadata.xml (1.2 kB at 11 kB/s)
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ application ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ application ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ application ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.soetek.eap.tm.Tm002EmpVacationIntegrationTest
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.016 s <<< FAILURE! -- in org.soetek.eap.tm.Tm002EmpVacationIntegrationTest
+[ERROR] org.soetek.eap.tm.Tm002EmpVacationIntegrationTest -- Time elapsed: 0.016 s <<< ERROR!
+java.lang.RuntimeException: Internal error. The test class class org.soetek.eap.tm.Tm002EmpVacationIntegrationTest should have been loaded with a QuarkusClassLoader, but instead it was loaded with jdk.internal.loader.ClassLoaders$AppClassLoader@6bc7c054. This is caused by the FacadeClassLoader not correctly identifying this class as a QuarkusTest.
+	at io.quarkus.test.junit.QuarkusTestExtension.getClassLoaderFromTestClass(QuarkusTestExtension.java:334)
+	at io.quarkus.test.junit.QuarkusTestExtension.ensureStarted(QuarkusTestExtension.java:610)
+	at io.quarkus.test.junit.QuarkusTestExtension.beforeAll(QuarkusTestExtension.java:687)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   Tm002EmpVacationIntegrationTest ? Runtime Internal error. The test class class org.soetek.eap.tm.Tm002EmpVacationIntegrationTest should have been loaded with a QuarkusClassLoader, but instead it was loaded with jdk.internal.loader.ClassLoaders$AppClassLoader@6bc7c054. This is caused by the FacadeClassLoader not correctly identifying this class as a QuarkusTest.
+[INFO] 
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.706 s
+[INFO] Finished at: 2026-03-26T12:21:36+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project application: 
+[ERROR] 
+[ERROR] See C:\Users\a0304\IdeaProjects\eap\backend\application\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -1,0 +1,155 @@
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-167-        data.put("endDate", entity.endDate.toString());
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-168-        data.put("agentProcess", entity.agentProcess);
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-169-        data.put("remark", entity.remark != null ? entity.remark : "");
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-170-        data.put("entityId", entity.id);
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-171-
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java:172:        return buildStandardResponse(traceId, data, "UPDATE");
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-173-    }
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentUpdateProcessor.java-174-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-92-        // 3. 組裝回應
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-93-        Map<String, Object> data = new HashMap<>();
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-94-        data.put("deletedCount", deletedIds.size());
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-95-        data.put("deletedIds", deletedIds);
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-96-
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java:97:        return buildStandardResponse(traceId, data, "DELETE");
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-98-    }
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentDeleteProcessor.java-99-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-113-        data.put("endDate", entity.endDate.toString());
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-114-        data.put("agentProcess", entity.agentProcess);
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-115-        data.put("remark", entity.remark);
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-116-        data.put("entityId", entity.id);
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-117-
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java:118:        return buildStandardResponse(traceId, data, "CREATE");
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-119-    }
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-120-
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-121-    private String getRequiredString(Map<String, Object> payload, String fieldName) {
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-122-        if (!payload.containsKey(fieldName) || payload.get(fieldName) == null) {
+C:\Users\a0304\IdeaProjects\eap\backend\au011\src\main\java\org\soetek\eap\au011\processor\EmpAgentCreateProcessor.java-123-            throw new BusinessException("REQUIRED_FIELD", 400, "請填寫必填欄位：" + fieldName);
+--
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-148-        data.put("updateDt", DateFormatUtil.formatDateTime(entity.updateDt));
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-149-
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-150-        // ⭐ entityId 用於 AuditLog 記錄
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-151-        data.put("entityId", entity.demoId);
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-152-
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java:153:        return buildStandardResponse(traceId, data, "UPDATE");
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-154-    }
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoUpdateProcessor.java-155-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-120-        data.put("deleteType", hardDelete ? "HARD" : "SOFT");
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-121-
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-122-        // ⭐ entityId 用於 AuditLog 記錄
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-123-        data.put("entityId", demoId);
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-124-
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java:125:        return buildStandardResponse(traceId, data, "DELETE");
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-126-    }
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoDeleteProcessor.java-127-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-145-        // ⭐ 重要：entityId 用於 AuditLog 記錄
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-146-        // 會被自動記錄到 AUDIT_LOG 表的 ENTITY_ID 欄位
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-147-        data.put("entityId", entity.demoId);
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-148-
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-149-        // ===== 6. 返回標準回應格式 =====
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java:150:        return buildStandardResponse(traceId, data, "CREATE");
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-151-    }
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-152-
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-153-    /**
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-154-     * 從 payload 取得必填字串欄位
+C:\Users\a0304\IdeaProjects\eap\backend\demo\src\main\java\org\soetek\eap\demo\processor\DemoCreateProcessor.java-155-     *
+--
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-80-        List<Map<String, Object>> historyList = employeeService.getHistory(empId);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-81-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-82-        Map<String, Object> data = new HashMap<>();
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-83-        data.put("records", historyList);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-84-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java:85:        return buildStandardResponse(traceId, data);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-86-    }
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmHistoryQueryProcessor.java-87-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-78-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-79-        Map<String, Object> data = new HashMap<>();
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-80-        data.put("exists", exists);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-81-        data.put("empAccount", empAccount);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-82-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java:83:        return buildStandardResponse(traceId, data, "QUERY");
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-84-    }
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmCheckEmpAccountProcessor.java-85-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-78-        }
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-79-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-80-        log.debug("[合約預覽] companyCode: {}, contractKey: {}, TraceId: {}", companyCode, contractKey, traceId);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-81-        Map<String, Object> result = contractService.loadContractTemplateForPreview(companyCode, contractKey);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-82-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java:83:        return buildStandardResponse(traceId, result, "QUERY");
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-84-    }
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmContractPreviewProcessor.java-85-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-75-        Map<String, Object> result = employeeService.batchCreateTraining(payload);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-76-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-77-        int count = (int) result.get("count");
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-78-        log.info("[批次培訓] 批次匯入完成 - 成功建立 {} 筆培訓紀錄, TraceId: {}", count, traceId);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-79-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java:80:        return buildStandardResponse(traceId, result, "CREATE");
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-81-    }
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmBatchTrainingProcessor.java-82-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-108-        Map<String, Object> data = new HashMap<>();
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-109-        data.put("empId", empId);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-110-        data.put("empName", empName);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-111-        data.put("entityId", empId);
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-112-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java:113:        return buildStandardResponse(traceId, data, isCreate ? "CREATE" : "UPDATE");
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-114-    }
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-115-
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-116-    /**
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-117-     * 查詢使用者是否擁有 ADMIN 角色
+C:\Users\a0304\IdeaProjects\eap\backend\pm001\src\main\java\org\soetek\eap\pm001\processor\PmEmployeeSaveProcessor.java-118-     */
+--
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-138-        if (vacationName != null) {
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-139-            data.put("vacationName", vacationName);
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-140-        }
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-141-
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-142-        // 3. 返回標準回應格式
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java:143:        return buildStandardResponse(traceId, data, "CREATE");
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-144-    }
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationCreateProcessor.java-145-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-139-        data.put("vacationCode", vacationCode);
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-140-        data.put("entityId", vacationCode);  // 用於 AuditLog 記錄
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-141-        data.put("vacationName", vacationName);
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-142-
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-143-        // 3. 返回標準回應格式
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java:144:        return buildStandardResponse(traceId, data, "UPDATE");
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-145-    }
+C:\Users\a0304\IdeaProjects\eap\backend\tm\src\main\java\org\soetek\eap\tm\processor\VacationUpdateProcessor.java-146-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-144-        if (headerData != null && headerData.containsKey("empName")) {
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-145-            data.put("empName", headerData.get("empName"));
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-146-        }
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-147-
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-148-        // 3. 返回標準回應格式
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java:149:        return buildStandardResponse(traceId, data, "CREATE");
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-150-    }
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateCreateProcessor.java-151-}
+--
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-182-        data.put("result", ocrResult);
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-183-        data.put("fileName", fileName);
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-184-        data.put("candidateName", ocrResult.getHeader().getEmpName());
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-185-
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-186-        // 5. 返回標準回應格式
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java:187:        return buildStandardResponse(traceId, data, "QUERY");
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-188-    }
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-189-
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-190-    /**
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-191-     * 從 payload 中提取檔案名稱
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateOcrProcessor.java-192-     *
+--
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-144-        data.put("entityId", cvId);  // 用於 AuditLog 記錄
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-145-        data.put("empName", empName);
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-146-        data.put("updatedRows", updateResult.get("updatedRows"));
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-147-
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-148-        // 3. 返回標準回應格式
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java:149:        return buildStandardResponse(traceId, data, "UPDATE");
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-150-    }
+C:\Users\a0304\IdeaProjects\eap\backend\rm001\src\main\java\org\soetek\eap\rm001\processor\CandidateUpdateProcessor.java-151-}

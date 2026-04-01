@@ -10,25 +10,25 @@
   "plugins": [
     {
       "name": "eap-agentic-coding",
-      "source": "./eap-agentic-coding",
+      "source": "./skills/eap-agentic-coding",
       "description": "eap 專案規格驅動開發：多源規格交叉比對、Agent 分離實作、交叉驗證 QA（Quarkus + Vue 3 + MSSQL）",
       "version": "1.0.0"
     },
     {
       "name": "serp-agentic-coding",
-      "source": "./serp-agentic-coding",
+      "source": "./skills/serp-agentic-coding",
       "description": "serp 專案規格驅動開發：test-first + Agent 分離、Phase 0-3 執行",
       "version": "1.0.0"
     },
     {
       "name": "session-analyzer",
-      "source": "./session-analyzer",
+      "source": "./skills/session-analyzer",
       "description": "分析 Claude Code session 的 token 用量、時間、sub-agent 明細",
       "version": "1.0.0"
     },
     {
       "name": "eap-agentic-coding-lite",
-      "source": "./eap-agentic-coding-lite",
+      "source": "./skills/eap-agentic-coding-lite",
       "description": "eap 規格驅動開發 Demo 版：快速從規格產出可運行程式碼（Quarkus + Vue 3 + MSSQL）",
       "version": "1.0.0"
     }

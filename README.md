@@ -17,9 +17,9 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 
 | Skill | 狀態 | 適用場景 | 說明 |
 |-------|------|---------|------|
-| [eap-agentic-coding](eap-agentic-coding/) | **實測中** | eap 專案（Quarkus + Vue 3 + MSSQL） | 規格驅動開發：多源規格交叉比對 → 任務拆解 → test-first → agent 分離實作 → 交叉驗證 |
-| [eap-agentic-coding-lite](eap-agentic-coding-lite/) | **v1.0.0** | eap 專案（Demo 用） | 規格驅動開發：同一 session 連續執行 P0→P1→P2，模板驅動實作 |
-| [serp-agentic-coding](serp-agentic-coding/) | 暫停 | serp 專案 | 原型骨架，待 eap 實測結論回饋後迭代 |
+| [eap-agentic-coding](skills/eap-agentic-coding/) | **實測中** | eap 專案（Quarkus + Vue 3 + MSSQL） | 規格驅動開發：多源規格交叉比對 → 任務拆解 → test-first → agent 分離實作 → 交叉驗證 |
+| [eap-agentic-coding-lite](skills/eap-agentic-coding-lite/) | **v1.0.0** | eap 專案（Demo 用） | 規格驅動開發：同一 session 連續執行 P0→P1→P2，模板驅動實作 |
+| [serp-agentic-coding](skills/serp-agentic-coding/) | 暫停 | serp 專案 | 原型骨架，待 eap 實測結論回饋後迭代 |
 
 ### eap-agentic-coding
 
@@ -30,7 +30,7 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 - **測試唯讀 Hook** — 結構性阻擋 Code Agent 修改測試（博弈率差 43 倍）
 - **精簡 Context** — 每個 Task 獨立載入，按需載入 conventions + templates（減少 60% 錯誤）
 
-詳細使用方法見 [eap-agentic-coding/README.md](eap-agentic-coding/README.md)。
+詳細使用方法見 [eap-agentic-coding/README.md](skills/eap-agentic-coding/README.md)。
 
 ### eap-agentic-coding-lite
 
@@ -40,7 +40,7 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 - **後端** — Entity → Create → Update → Delete → Query → GetById → [Dropdown] → `mvn compile`
 - **前端** — Types → Service → Store → Router → 主頁面 → 各 Dialog → i18n → `vue-tsc --noEmit`
 
-詳細使用方法見 [eap-agentic-coding-lite/README.md](eap-agentic-coding-lite/README.md)。
+詳細使用方法見 [eap-agentic-coding-lite/README.md](skills/eap-agentic-coding-lite/README.md)。
 
 ## 研究基礎
 
