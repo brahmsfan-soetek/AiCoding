@@ -1,6 +1,6 @@
 # AI Coding Workflow
 
-PG 接到 SA 規格書後，透過 AI 輔助完成從規格解析到程式碼交付的標準作業流程。
+PG 接到 SA 規格書後，透過 AI 輔助完成從規格解析到任務清單的標準作業流程。
 
 ---
 
@@ -9,8 +9,8 @@ PG 接到 SA 規格書後，透過 AI 輔助完成從規格解析到程式碼交
 1. **規格統計 = 唯一權威來源（Single Source of Truth）**
    PNG / HTML 僅參考排版佈局，欄位與邏輯以規格統計為準。
 
-2. **每個 AI Session 獨立**
-   避免上下文腐壞。每個 Session 明確定義輸入檔案和期望輸出。
+2. **直接讀檔、直接做**
+   輸入檔案就在工作目錄，AI 直接讀取，不需反覆詢問路徑。各步驟可在同一 Session 內連續執行。
 
 3. **PG 是品質守門人**
    AI 產出的每份文件都需 PG 審閱。釐清清單由 PG 主動篩選——能自己回答的自己答，只把真正不確定的問 SA。
@@ -23,22 +23,28 @@ PG 接到 SA 規格書後，透過 AI 輔助完成從規格解析到程式碼交
 ## 流程總覽
 
 ```
-Step 1  [AI]  規格統計                    ← 新 Session
-Step 2  [AI]  釐清清單                    ← 新 Session
+Step 0  [AI]  DOCX → MD 轉換              ← docx2md.py（收到 .docx 時使用）
+Step 1  [AI]  規格統計                    ← 接續執行
+Step 2  [AI]  釐清清單                    ← 接續執行
 Step 3  [PG]  篩選回覆 + 問 SA + 回填清單  ← 手動
-Step 4  [AI]  釐清整合 + 二次審查          ← 新 Session
+Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
               （若有新問題 → 回 Step 3）
-Step 5  [AI]  任務清單                    ← 在 repo 開新 Session
-Step 6  [AI]  前端實作                    ← 在 repo 開新 Session
-Step 7  [PG]  前端測試 + 調整              ← 手動
-Step 8  [AI]  後端實作                    ← 在 repo 開新 Session
-Step 9  [PG]  後端測試 + 調整              ← 手動
-Step 10 [AI]  前後對接                    ← 在 repo 開新 Session
+Step 5  [AI]  任務清單                    ← 接續執行
 ```
 
 ### 流程圖
 
 ```
+┌──────────── DOCX 前處理（選用）───────┐
+│                                       │
+│  [SA 交付物]         [Step 0 · AI]    │
+│  規格書(.docx)     → docx2md.py      │
+│  產出：規格書(MD) + images/           │
+│  歸檔：.docx → SA document/          │
+│                                       │
+└───────────────────────────────────────┘
+                  │
+                  ▼
 ┌──────────── 規格解析階段 ────────────┐
 │                                       │
 │  [SA 交付物]         [Step 1 · AI]    │
@@ -66,21 +72,11 @@ Step 10 [AI]  前後對接                    ← 在 repo 開新 Session
                   ▼
 ┌──────────── 任務拆解階段 ────────────┐
 │                                       │
-│  [Step 5 · AI · 在 repo]             │
+│  [Step 5 · AI]                        │
 │  輸入：最終版規格統計 + UI 截圖       │
 │  輸出：前端清單 + 後端清單 + 測試清單 │
-│  存放：spec/ 目錄                     │
-│                                       │
-└───────────────────────────────────────┘
-                  │
-                  ▼
-┌──────────── 實作階段 ────────────────┐
-│                                       │
-│  [Step 6 · AI]  前端實作              │
-│  [Step 7 · PG]  前端測試 + 調整       │
-│  [Step 8 · AI]  後端實作              │
-│  [Step 9 · PG]  後端測試 + 調整       │
-│  [Step 10 · AI] 前後對接              │
+│  存放：工作目錄根                     │
+│  歸檔：SA 原始材料 → SA document/    │
 │                                       │
 └───────────────────────────────────────┘
 ```
@@ -91,33 +87,33 @@ Step 10 [AI]  前後對接                    ← 在 repo 開新 Session
 
 | Step | 執行者 | 輸入 | Prompt 模板 | 輸出 |
 |------|--------|------|-------------|------|
+| 0 | AI | SA 規格書 (.docx) | — (`docx2md.py`) | `{檔名}.md` + `images/` |
 | 1 | AI | SA 規格書 + HTML + 參考規格 | `step1_規格統計_prompt.md` | `{編號}_規格統計.md` |
 | 2 | AI | Step 1 規格統計 + 原始規格書 | `step2_釐清清單_prompt.md` | `{編號}_釐清清單.md` |
 | 3 | PG | Step 2 釐清清單 | — | 已填回覆的釐清清單 |
-| 4 | AI | 已填回覆的釐清清單 + 規格統計 + 原始規格書 | `step4_釐清整合_prompt.md` | 整合後釐清清單 + 最終版規格統計 |
+| 4 | AI | 已填回覆的釐清清單 + 規格統計 + 原始規格書 | `step4_釐清整合_prompt.md` | 更新釐清清單 + 最終版規格統計 |
 | 5 | AI | 最終版規格統計 + UI 截圖 | `step5_任務清單_prompt.md` | 前端清單 + 後端清單 + 測試清單 |
-| 6 | AI | `spec/` 全部檔案 | `step6_前端實作_prompt.md` | 前端程式碼 |
-| 7 | PG | 前端程式碼 | — | 測試通過的前端 |
-| 8 | AI | `spec/` 全部檔案 | `step8_後端實作_prompt.md` | 後端程式碼 |
-| 9 | PG | 後端程式碼 | — | 測試通過的後端 |
-| 10 | AI | 前後端程式碼 + `spec/` | — | 整合完成的系統 |
+
+> 所有輸出檔案皆放在工作目錄根，不另建子資料夾。
 
 ---
 
 ## 目錄結構
 
 ```
-ai-coding-workflow/
+spec-digest-flow/
 ├── README.md                              ← 本文件
+├── SKILL.md                               ← Claude Code Skill 定義
+├── .claude-plugin/
+│   └── plugin.json                        ← Plugin 清單檔
+├── docx2md.py                             ← DOCX → MD 轉換腳本（Step 0）
 │
 ├── templates/
-│   ├── prompts/                           ← AI Session 的 Prompt 模板
+│   ├── prompts/                           ← AI 的 Prompt 模板
 │   │   ├── step1_規格統計_prompt.md
 │   │   ├── step2_釐清清單_prompt.md
 │   │   ├── step4_釐清整合_prompt.md
-│   │   ├── step5_任務清單_prompt.md
-│   │   ├── step6_前端實作_prompt.md
-│   │   └── step8_後端實作_prompt.md
+│   │   └── step5_任務清單_prompt.md
 │   │
 │   └── outputs/                           ← AI 輸出的格式模板
 │       ├── 規格統計模板.md
@@ -128,7 +124,7 @@ ai-coding-workflow/
 │
 └── examples/
     └── IM004/                             ← 完整實例（庫存異動單）
-        ├── spec/                          ← 最終放入 repo 的檔案
+        ├── spec/                          ← 最終產出
         │   ├── IM004_規格統計.md
         │   ├── IM004_frontend_tasks.md
         │   ├── IM004_backend_tasks.md
@@ -145,32 +141,61 @@ ai-coding-workflow/
             └── 最新規格確認.txt
 ```
 
+### 執行時的工作目錄結構
+
+```
+{工作目錄}/
+├── SA_XXXX.md                 ← SA 規格書（轉換後）
+├── XXXX.html                  ← HTML 原型
+├── {編號}_規格統計.md          ← Step 1 產出
+├── {編號}_釐清清單.md          ← Step 2 產出
+├── {編號}_規格統計_最終版.md   ← Step 4 產出
+├── {編號}_frontend_tasks.md   ← Step 5 產出
+├── {編號}_backend_tasks.md    ← Step 5 產出
+├── {編號}_test_cases.md       ← Step 5 產出
+├── images/                    ← 圖片（Step 0 提取）
+└── SA document/               ← 歸檔：原始 SA 交付材料
+    ├── SA_XXXX.docx
+    ├── SA_XXXX.md
+    ├── XXXX.html
+    └── ...
+```
+
 ---
 
 ## 快速開始
 
 ### 1. 拿到 SA 規格書
 
-確認收到以下檔案：
-- SA 規格書（MD 格式）
+確認收到以下檔案，放到工作目錄：
+- SA 規格書（MD 或 DOCX 格式）
 - HTML 原型或 UI 截圖
 - 規格修正文件（如果有）
 - 相關參考規格（如果規格書提到）
 
+### 1.5 收到 DOCX？先轉 MD（Step 0）
+
+若 SA 交付的是 `.docx` 格式，先用 `docx2md.py` 轉換為 Markdown，避免 LLM 直接讀取 DOCX 造成表格結構與欄位名稱失真：
+
+```bash
+# 安裝依賴（首次）
+pip install python-docx Pillow
+
+# 轉換（輸出至當前目錄）
+python docx2md.py SA_IM009_XXXX.docx -o .
+```
+
+轉換完成後，原始 `.docx` 移至 `SA document/` 資料夾歸檔。
+
 ### 2. Step 1 — 規格統計
 
-1. 開啟新的 AI Session
-2. 複製 `templates/prompts/step1_規格統計_prompt.md` 中的 Prompt
-3. 替換佔位符（`{主規格檔名}` 等）
-4. 上傳規格書、HTML、`templates/outputs/規格統計模板.md`
-5. AI 產出規格統計 → PG 審閱
+1. AI 自動讀取工作目錄下的規格書、HTML 等檔案
+2. AI 依照模板產出規格統計 → PG 審閱
 
 ### 3. Step 2 — 釐清清單
 
-1. 開啟**新的** AI Session
-2. 複製 `templates/prompts/step2_釐清清單_prompt.md` 中的 Prompt
-3. 上傳 Step 1 產出的規格統計 + 原始規格書
-4. AI 產出釐清清單（含回覆欄位）
+1. AI 讀取 Step 1 產出的規格統計 + 原始規格書
+2. AI 產出釐清清單（含回覆欄位）
 
 ### 4. Step 3 — 回覆釐清
 
@@ -181,25 +206,15 @@ ai-coding-workflow/
 
 ### 5. Step 4 — 釐清整合
 
-1. 開啟**新的** AI Session
-2. 複製 `templates/prompts/step4_釐清整合_prompt.md` 中的 Prompt
-3. 上傳已填回覆的釐清清單 + Step 1 規格統計 + 原始規格書
-4. AI 產出整合後釐清清單 + **最終版規格統計**
-5. 若 AI 發現新問題 → 回 Step 3
+1. AI 讀取已填回覆的釐清清單 + Step 1 規格統計 + 原始規格書
+2. AI 直接更新釐清清單（補上狀態與實作決策）+ 產出**最終版規格統計**
+3. 若 AI 發現新問題 → 回 Step 3
 
 ### 6. Step 5 — 任務清單
 
-1. 在專案 repo 中開啟新的 AI Session
-2. 複製 `templates/prompts/step5_任務清單_prompt.md` 中的 Prompt
-3. 上傳最終版規格統計 + UI 截圖
-4. AI 產出三份文件 → 存入 `spec/` 目錄
-
-### 7. Step 6~10 — 實作
-
-1. 每個 Step 開啟新的 AI Session
-2. 使用對應的 Prompt 模板
-3. 指向 `spec/` 目錄讀取任務清單
-4. PG 在 Step 7/9 測試調整
+1. AI 讀取最終版規格統計 + UI 截圖
+2. AI 產出三份文件 → 直接存到工作目錄根
+3. 完成後，將 SA 原始材料移至 `SA document/` 資料夾歸檔
 
 ---
 
@@ -220,5 +235,4 @@ ai-coding-workflow/
 | 項目 | 現況 | 改進方向 |
 |------|------|---------|
 | 測試清單利用 | 產出測試清單但僅手動測試 | 加入自動化測試環節，或讓 AI 同步產出測試程式碼 |
-| 流程 Skill 化 | 純文件模板 | 驗證成熟後包裝成 Claude Code Skill |
-| Step 10 Prompt | 目前無獨立模板 | 累積經驗後補充前後對接的 Prompt 模板 |
+| ~~流程 Skill 化~~ | ~~純文件模板~~ | ✅ 已完成，可透過 `/spec` 觸發 |
