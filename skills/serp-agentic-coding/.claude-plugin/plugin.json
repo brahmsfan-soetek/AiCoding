@@ -1,6 +1,6 @@
 {
   "name": "serp-agentic-coding",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "serp 專案規格驅動開發：test-first + Agent 分離、Phase 0-3 執行",
   "author": {
     "name": "soetek"

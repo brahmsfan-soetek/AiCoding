@@ -1,6 +1,6 @@
 {
   "name": "eap-agentic-coding",
-  "version": "1.0.0",
+  "version": "1.7.0",
   "description": "eap 專案規格驅動開發：多源規格交叉比對、Agent 分離實作、交叉驗證 QA（Quarkus + Vue 3 + MSSQL）",
   "author": {
     "name": "soetek"
