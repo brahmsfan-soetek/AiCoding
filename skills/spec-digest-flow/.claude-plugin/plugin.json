@@ -1,0 +1,11 @@
+{
+  "name": "spec-digest-flow",
+  "version": "1.0.0",
+  "description": "SA 規格書消化流程：規格統計 → 釐清清單 → SA 回覆整合 → 前後端任務清單，含 Prompt 模板與輸出模板",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./"
+  ]
+}
