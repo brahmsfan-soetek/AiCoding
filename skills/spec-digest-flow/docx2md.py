@@ -3,9 +3,9 @@
 
 import argparse
 import io
-import os
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import docx
@@ -146,11 +146,11 @@ def _paragraph_text(paragraph) -> str:
             if not has_image:
                 r = docx.text.run.Run(child, paragraph)
                 # 處理 run 內的 w:br（換行符）→ 空格
-                has_br = child.find(qn("w:br")) is not None
                 text = r.text or ""
-                if has_br and not text:
+                has_br = child.find(qn("w:br")) is not None
+                if has_br:
                     raw_parts.append((" ", ""))
-                elif text:
+                if text:
                     raw_parts.append((text, _run_format_key(r)))
 
     # 最終合併
@@ -232,6 +232,16 @@ def _cell_text(cell) -> str:
         t = _paragraph_text(p).strip()
         if t:
             texts.append(t)
+    # 巢狀表格：MD 表格內無法嵌套，提取為純文字避免內容遺失
+    for nested in cell.tables:
+        seen: set[int] = set()
+        for row in nested.rows:
+            for c in row.cells:
+                if id(c) not in seen:
+                    seen.add(id(c))
+                    t = c.text.strip()
+                    if t:
+                        texts.append(t)
     result = " ".join(texts)
     # 移除儲存格內的換行符（避免破壞 Markdown 表格格式）
     result = result.replace("\n", " ").replace("\r", " ")
@@ -240,24 +250,34 @@ def _cell_text(cell) -> str:
 
 def _table_to_md(table) -> str:
     """將表格轉為 Markdown 表格。單欄表格視為程式碼區塊。"""
-    rows = []
-    for row in table.rows:
-        cells = [_cell_text(c) for c in row.cells]
-        rows.append(cells)
-
-    if not rows:
+    if not table.rows:
         return ""
 
-    # 處理合併儲存格造成的重複：python-docx 會為合併格重複同一 cell
-    # 去重：若連續 cell 文字相同，後面的替換為空
+    # 處理合併儲存格：python-docx 對合併格回傳同一 Cell 物件
+    # 用物件 identity 判斷，避免把內容相同的不同儲存格誤刪
     cleaned_rows = []
-    for row in rows:
+    prev_row_cells: list = []
+
+    for row in table.rows:
+        cells_obj = list(row.cells)
         cleaned = []
-        for i, cell in enumerate(row):
-            if i > 0 and cell == row[i - 1]:
+        seen_in_row: set[int] = set()
+
+        for i, cell in enumerate(cells_obj):
+            cell_id = id(cell)
+
+            if cell_id in seen_in_row:
+                # 水平合併的延續格 → 留空
                 cleaned.append("")
+            elif i < len(prev_row_cells) and cell is prev_row_cells[i]:
+                # 垂直合併的延續格 → 留空
+                cleaned.append("")
+                seen_in_row.add(cell_id)
             else:
-                cleaned.append(cell)
+                seen_in_row.add(cell_id)
+                cleaned.append(_cell_text(cell))
+
+        prev_row_cells = cells_obj
         cleaned_rows.append(cleaned)
 
     # 確保每列欄數一致
@@ -282,7 +302,7 @@ def _table_to_md(table) -> str:
                     if text:
                         code_lines.append(text)
         content = "\n".join(code_lines)
-        return f"```sql\n{content}\n```"
+        return f"```\n{content}\n```"
 
     # 一般表格：轉義 pipe 字元
     for r in cleaned_rows:
@@ -316,9 +336,18 @@ def _heading_level(paragraph) -> int | None:
     if style_name in ("Title",):
         return 1
 
-    # Header / Heading Bar → H2
-    if style_name in ("Header", "Heading Bar", "目錄標題1"):
-        return 2
+    # Fallback：透過 outlineLvl 偵測自訂命名的標題樣式
+    # 不論樣式叫 "Header"、"Heading Bar" 或任何自訂名稱，
+    # 只要 Word 內部標記了 outlineLvl 就能正確辨識
+    pPr = paragraph._element.find(qn("w:pPr"))
+    if pPr is not None:
+        outline_lvl = pPr.find(qn("w:outlineLvl"))
+        if outline_lvl is not None:
+            val = outline_lvl.get(qn("w:val"))
+            if val is not None and val.isdigit():
+                lvl = int(val)
+                if 0 <= lvl <= 5:  # outlineLvl 0 = Heading 1
+                    return lvl + 1
 
     return None
 
@@ -330,8 +359,9 @@ def _list_info(paragraph) -> tuple[int, bool] | None:
         return None
     numPr = pPr.find(qn("w:numPr"))
     if numPr is None:
-        # Bullet 樣式但沒有 numPr
-        if paragraph.style.name in ("Bullet",):
+        # 以樣式名稱模糊匹配（不限定特定名稱，適應不同模板）
+        style_lower = (paragraph.style.name or "").lower()
+        if "bullet" in style_lower or "list" in style_lower:
             return (0, False)
         return None
 
@@ -379,35 +409,58 @@ def _extract_metadata(body) -> dict:
     return meta
 
 
+def _is_toc_sdt(element) -> bool:
+    """檢查 SDT 元素是否包裹目錄。"""
+    sdt_pr = element.find(qn("w:sdtPr"))
+    if sdt_pr is None:
+        return False
+    doc_part_obj = sdt_pr.find(qn("w:docPartObj"))
+    if doc_part_obj is None:
+        return False
+    gallery = doc_part_obj.find(qn("w:docPartGallery"))
+    if gallery is not None:
+        val = (gallery.get(qn("w:val")) or "").lower()
+        if "table of contents" in val or "目錄" in val:
+            return True
+    return False
+
+
 def _find_content_start(body) -> int:
     """找出目錄（Contents/TOC）結束後第一個實質內容的 body 元素索引。"""
-    toc_styles = {"21", "30", "10"}  # toc 2, toc 3, Contents heading
     found_toc = False
     last_toc_idx = 0
 
     for i, elem in enumerate(body):
         tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
+
+        # SDT 包裹的目錄（Word 自動產生的 TOC 常用此結構）
+        if tag == "sdt":
+            if _is_toc_sdt(elem):
+                found_toc = True
+                last_toc_idx = i
+            continue
+
         if tag != "p":
             continue
 
-        # 檢查段落樣式
+        # 檢查段落樣式：style ID 含 "toc"（涵蓋 TOC1/toc2/TOCHeading 等）
         pPr = elem.find(qn("w:pPr"))
         if pPr is not None:
             pStyle = pPr.find(qn("w:pStyle"))
             if pStyle is not None:
-                style_val = pStyle.get(qn("w:val"), "")
-                if style_val in toc_styles:
+                style_val = (pStyle.get(qn("w:val")) or "").lower()
+                if "toc" in style_val:
                     found_toc = True
                     last_toc_idx = i
                     continue
 
-        # 檢查文字是否為 "Contents"
+        # 檢查文字是否為目錄標題（中英文皆認）
         texts = []
         for t in elem.findall(".//" + qn("w:t")):
             if t.text:
                 texts.append(t.text)
         text = "".join(texts).strip()
-        if text == "Contents":
+        if text in ("Contents", "Table of Contents", "目錄"):
             found_toc = True
             last_toc_idx = i
 
@@ -457,8 +510,6 @@ def convert(docx_path: str, output_dir: str | None = None) -> Path:
             extracted_images[rid] = _extract_image(rel, images_dir, img_counter)
 
     # 建立 metadata 標頭
-    from datetime import datetime
-
     md_lines: list[str] = []
     title = meta["title"] or docx_path.stem
     md_lines.append(f"# {title}")
@@ -484,6 +535,17 @@ def convert(docx_path: str, output_dir: str | None = None) -> Path:
             _process_paragraph(element, document, extracted_images, md_lines)
         elif tag == "tbl":
             _process_table(element, document, extracted_images, md_lines)
+        elif tag == "sdt":
+            if _is_toc_sdt(element):
+                continue
+            sdt_content = element.find(qn("w:sdtContent"))
+            if sdt_content is not None:
+                for child in sdt_content:
+                    child_tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+                    if child_tag == "p":
+                        _process_paragraph(child, document, extracted_images, md_lines)
+                    elif child_tag == "tbl":
+                        _process_table(child, document, extracted_images, md_lines)
 
     # 寫入 Markdown
     content = "\n".join(md_lines).strip() + "\n"
@@ -500,7 +562,10 @@ def _process_paragraph(element, document, extracted_images, md_lines):
     # 先處理段落中的文字方塊
     txbx_content = _extract_textbox_content(element)
 
-    # 再處理段落中的圖片
+    # 取得段落文字（只呼叫一次）
+    text = _paragraph_text(paragraph).strip()
+
+    # 處理段落中的圖片
     img_rids = _find_images_in_element(element)
     if img_rids:
         for rid in img_rids:
@@ -508,14 +573,11 @@ def _process_paragraph(element, document, extracted_images, md_lines):
                 md_lines.append(f"![{extracted_images[rid]}]({extracted_images[rid]})")
                 md_lines.append("")
         # 如果段落只有圖片沒有文字，輸出文字方塊後返回
-        text = _paragraph_text(paragraph).strip()
         if not text:
             if txbx_content:
                 md_lines.append(f"```\n{txbx_content}\n```")
                 md_lines.append("")
             return
-
-    text = _paragraph_text(paragraph).strip()
 
     # 空段落
     if not text:
