@@ -1,0 +1,11 @@
+{
+  "name": "spec-tasking",
+  "version": "1.0.0",
+  "description": "於專案 repo 內依最終版規格統計產出前後端與測試任務清單。先讀專案 CLAUDE.md 與既有 pattern，確保清單貼合專案慣例。接續 spec-digest-flow S0–S4。",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./"
+  ]
+}
