@@ -1,0 +1,7 @@
+{
+  "name": "session-analyzer",
+  "version": "1.0.0",
+  "description": "分析 Claude Code session 的 token 用量、時間、sub-agent 明細",
+  "author": { "name": "soetek" },
+  "skills": ["./"]
+}
