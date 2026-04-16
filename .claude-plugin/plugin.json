@@ -1,0 +1,15 @@
+{
+  "name": "spec-workflow",
+  "version": "1.0.0",
+  "description": "規格驅動開發全流程：P1 規格消化 → P2 任務分解 → P3 TDD 實作 → P4a UAT → P4b E2E",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./skills/spec-p1-digest-flow",
+    "./skills/spec-p2-tasking",
+    "./skills/spec-p3-implementing",
+    "./skills/spec-p4a-uat",
+    "./skills/spec-p4b-e2e"
+  ]
+}

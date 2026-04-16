@@ -9,10 +9,22 @@
   },
   "plugins": [
     {
+      "name": "spec-workflow",
+      "source": "./",
+      "description": "規格驅動開發全流程：P1 規格消化 → P2 任務分解 → P3 TDD 實作 → P4a UAT → P4b E2E",
+      "version": "1.0.0"
+    },
+    {
       "name": "eap-agentic-coding",
       "source": "./skills/eap-agentic-coding",
       "description": "eap 專案規格驅動開發：多源規格交叉比對、Agent 分離實作、交叉驗證 QA（Quarkus + Vue 3 + MSSQL）",
       "version": "1.7.0"
+    },
+    {
+      "name": "eap-agentic-coding-lite",
+      "source": "./skills/eap-agentic-coding-lite",
+      "description": "eap 規格驅動開發 Demo 版：快速從規格產出可運行程式碼（Quarkus + Vue 3 + MSSQL）",
+      "version": "2.0.0"
     },
     {
       "name": "serp-agentic-coding",
@@ -24,42 +36,6 @@
       "name": "session-analyzer",
       "source": "./skills/session-analyzer",
       "description": "分析 Claude Code session 的 token 用量、時間、sub-agent 明細",
-      "version": "1.0.0"
-    },
-    {
-      "name": "eap-agentic-coding-lite",
-      "source": "./skills/eap-agentic-coding-lite",
-      "description": "eap 規格驅動開發 Demo 版：快速從規格產出可運行程式碼（Quarkus + Vue 3 + MSSQL）",
-      "version": "2.0.0"
-    },
-    {
-      "name": "spec-p1-digest-flow",
-      "source": "./skills/spec-p1-digest-flow",
-      "description": "P1 SA 規格書消化流程 S0–S4：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合。任務清單階段已獨立為 spec-p2-tasking SKILL。",
-      "version": "1.2.0"
-    },
-    {
-      "name": "spec-p2-tasking",
-      "source": "./skills/spec-p2-tasking",
-      "description": "P2 於專案 repo 內依最終版規格統計產出前後端與測試任務清單。讀 CLAUDE.md 索引取得專案規範，不掃 code 歸納 pattern。接續 spec-p1-digest-flow S0–S4。",
-      "version": "2.0.0"
-    },
-    {
-      "name": "spec-p3-implementing",
-      "source": "./skills/spec-p3-implementing",
-      "description": "TDD 驅動實作：讀 P2 任務清單 + CLAUDE.md 規範，Red-Green 迴圈逐 task 實作 + 單元測試，三道 stop gate 確保品質。",
-      "version": "1.0.0"
-    },
-    {
-      "name": "spec-p4a-uat",
-      "source": "./skills/spec-p4a-uat",
-      "description": "人工驗收測試：讀 P2 的 test_cases.md + 規格統計，產 UAT checklist 供 PG 逐項勾選，完成後彙總報告。",
-      "version": "1.0.0"
-    },
-    {
-      "name": "spec-p4b-e2e",
-      "source": "./skills/spec-p4b-e2e",
-      "description": "Playwright 自動化 E2E 測試：讀 P2 的 test_cases.md + CLAUDE.md E2E 規範，產 Playwright spec + 自我修復 + 三層防護。",
       "version": "1.0.0"
     }
   ]
