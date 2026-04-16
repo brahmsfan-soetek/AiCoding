@@ -1,0 +1,11 @@
+{
+  "name": "spec-uat",
+  "version": "1.0.0",
+  "description": "人工驗收測試：讀 P2 的 test_cases.md + 規格統計，產 UAT checklist 供 PG 逐項勾選，完成後彙總報告。",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./"
+  ]
+}

@@ -15,47 +15,85 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 
 ## Skill Catalog
 
-| Skill | 狀態 | 適用場景 | 說明 |
-|-------|------|---------|------|
-| [eap-agentic-coding](skills/eap-agentic-coding/) | 暫停 | eap 專案（Quarkus + Vue 3 + MSSQL） | 規格驅動開發：多源規格交叉比對 → 任務拆解 → test-first → agent 分離實作 → 交叉驗證 |
-| [eap-agentic-coding-lite](skills/eap-agentic-coding-lite/) | 暫停 | eap 專案（Demo 用） | 規格驅動開發：同一 session 連續執行 P0→P1→P2，模板驅動實作 |
-| [spec-digest-flow](skills/spec-digest-flow/) | **v1.2.0** | 通用（SA 規格書消化 S0–S4） | PG 接到 SA 規格書後的前段流程：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合，於 SA 資料夾隔離執行 |
-| [spec-tasking](skills/spec-tasking/) | **v1.0.0** | 通用（任務清單產出） | 接續 spec-digest-flow，於專案 repo 內依最終版規格統計產出前後端與測試任務清單，先讀專案既有慣例再產清單 |
-| [serp-agentic-coding](skills/serp-agentic-coding/) | 暫停 | serp 專案 | 原型骨架，待 eap 實測結論回饋後迭代 |
+### 通用型 SKILL（P1–P4b）
+
+| Skill | 版本 | 觸發 | 說明 |
+|-------|------|------|------|
+| [spec-digest-flow](skills/spec-digest-flow/) | v1.2.0 | `/spec` | P1 — SA 規格書消化 S0–S4：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合 |
+| [spec-tasking](skills/spec-tasking/) | v2.0.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引取得規範，依最終版規格統計產出前後端與測試任務清單 |
+| [spec-implementing](skills/spec-implementing/) | v1.0.0 | `/impl` | P3 — TDD 驅動實作：Red-Green 迴圈逐 task 實作 + 單元測試，三道 stop gate 確保品質 |
+| [spec-uat](skills/spec-uat/) | v1.0.0 | `/uat` | P4a — 人工驗收測試：讀 test_cases.md 產 UAT checklist，PG 逐項勾選，彙總報告 |
+| [spec-e2e](skills/spec-e2e/) | v1.0.0 | `/e2e` | P4b — Playwright 自動化 E2E：產 Playwright spec + 自我修復 + 三層防護 |
+
+### 暫停的特化 SKILL
+
+| Skill | 版本 | 說明 |
+|-------|------|------|
+| [eap-agentic-coding](skills/eap-agentic-coding/) | v1.7.0 | eap 專案規格驅動開發（Quarkus + Vue 3 + MSSQL），已被通用型路線取代 |
+| [eap-agentic-coding-lite](skills/eap-agentic-coding-lite/) | v2.0.0 | eap 規格驅動開發 Demo 版，已被通用型路線取代 |
+| [serp-agentic-coding](skills/serp-agentic-coding/) | v1.2.0 | serp 專案規格驅動開發，已被通用型路線取代 |
+
+### 工具型 SKILL
+
+| Skill | 版本 | 觸發 | 說明 |
+|-------|------|------|------|
+| [session-analyzer](skills/session-analyzer/) | v1.0.0 | `/session-analyzer` | 分析 Claude Code session 的 token 用量、時間、sub-agent 明細 |
 
 > 各 skill 的流程圖與詳細說明請見各自資料夾下的 README。
 
 ---
 
-### spec-digest-flow → spec-tasking
+### 通用型 SKILL 完整流程
 
 ```mermaid
 graph TD
-    subgraph DIGEST["spec-digest-flow — 於 SA 資料夾執行"]
+    subgraph P1["P1 spec-digest-flow — SA 資料夾"]
         direction LR
-        S0["Step 0 AI — DOCX 轉 MD（選用）"]
-        S1["Step 1 AI — 規格統計"]
-        S2["Step 2 AI — 釐清清單"]
-        S3["Step 3 PG — 篩選回覆 + 問 SA"]
-        S4["Step 4 AI — 整合 + 二次審查"]
+        S0["S0 DOCX→MD"]
+        S1["S1 規格統計"]
+        S2["S2 釐清清單"]
+        S3["S3 PG 回覆"]
+        S4["S4 整合+二審"]
         S0 --> S1 --> S2 --> S3 --> S4
         S4 -.有新問題.-> S3
     end
 
-    HANDOFF["最終規格 + UI 截圖<br/>複製到專案 repo"]
+    HANDOFF["最終規格 + UI 截圖<br/>搬入專案 repo"]
 
-    subgraph TASKING["spec-tasking — 於專案 repo 執行"]
+    subgraph P2["P2 spec-tasking — 專案 repo"]
         direction LR
-        T1["讀專案 CLAUDE.md<br/>+ 既有 pattern"]
-        T2["產出前端 / 後端 / 測試清單"]
+        T1["讀 CLAUDE.md 索引<br/>→ 讀規範文件"]
+        T2["產出前端/後端/測試清單"]
         T1 --> T2
     end
 
-    DIGEST --> HANDOFF --> TASKING
+    SESSION1["另起 session"]
 
-    style DIGEST fill:none,stroke:#64b5f6
+    subgraph P3["P3 spec-implementing — 專案 repo"]
+        direction LR
+        I1["SG1 確認載入"]
+        I2["TDD Red-Green 迴圈<br/>SG2 測試清單審 → SG3 審閱"]
+        I3["全部 task 完成"]
+        I1 --> I2 --> I3
+    end
+
+    SESSION2["另起 session（獨立裁判）"]
+
+    subgraph P4["P4a spec-uat 或 P4b spec-e2e — 專案 repo"]
+        direction LR
+        U1["P4a: UAT checklist<br/>PG 手動驗收"]
+        U2["P4b: Playwright spec<br/>自動化 + 自我修復"]
+    end
+
+    P1 --> HANDOFF --> P2 --> SESSION1 --> P3 --> SESSION2 --> P4
+
+    style P1 fill:none,stroke:#64b5f6
     style HANDOFF fill:none,stroke:#ffa726
-    style TASKING fill:none,stroke:#81c784
+    style P2 fill:none,stroke:#81c784
+    style SESSION1 fill:none,stroke:#9e9e9e
+    style P3 fill:none,stroke:#ce93d8
+    style SESSION2 fill:none,stroke:#9e9e9e
+    style P4 fill:none,stroke:#ef9a9a
 ```
 
 ## 相關 Skill 專案
@@ -108,3 +146,4 @@ graph TD
 - **信噪比 > 總量** — conventions 和 templates 按需載入，不一次全灌
 - **回饋迴路決定自主上限** — 測試、lint、型別檢查提供 pass/fail 信號
 - **研究 → Skill 直接推導** — 不設中間抽象層，減少語義漂移
+- **讀規範、不掃 code** — 專案 context 來自 CLAUDE.md 索引指向的規範文件（deterministic），不掃 code 歸納 pattern（AI 行為會漂移）

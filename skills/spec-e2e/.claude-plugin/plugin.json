@@ -1,0 +1,11 @@
+{
+  "name": "spec-e2e",
+  "version": "1.0.0",
+  "description": "Playwright 自動化 E2E 測試：讀 P2 的 test_cases.md + CLAUDE.md E2E 規範，產 Playwright spec + 自我修復 + 三層防護。",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./"
+  ]
+}

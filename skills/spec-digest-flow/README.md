@@ -79,10 +79,13 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 │                                                         │
 │  於專案 repo 目錄執行 /tasking                          │
 │  輸入：最終版規格統計 + UI 截圖（複製進專案）           │
-│  先讀：專案 CLAUDE.md、既有 component、API pattern      │
+│  先讀：CLAUDE.md 索引 → 規範文件                        │
 │  輸出：前端清單 + 後端清單 + 測試清單                   │
 │  存放：使用者每次指定（依專案慣例決定）                 │
 │  歸檔：SA 原始材料 → SA document/（留在原 SA 資料夾）   │
+│                                                         │
+│  → P3 spec-implementing（TDD 實作 + 單元測試）          │
+│  → P4a spec-uat 或 P4b spec-e2e（驗收測試）             │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -194,18 +197,20 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 2. AI 直接更新釐清清單（補上狀態與實作決策）+ 產出**最終版規格統計**
 3. 若 AI 發現新問題 → 回 Step 3
 
-### 6. 接續：spec-tasking SKILL（於專案 repo 執行）
+### 6. 接續：通用型 SKILL P2–P4（於專案 repo 執行）
 
 1. 將 `{編號}_規格統計_最終版.md` 與 UI 截圖複製到專案 repo
-2. 切換工作目錄至專案 repo 後，執行 `/tasking`
-3. AI 會先讀取專案 CLAUDE.md、既有 component、API pattern，再產出前後端與測試清單
-4. 完成後將 SA 工作目錄的原始材料移至 `SA document/` 歸檔
+2. 切換工作目錄至專案 repo 後，依序執行：
+   - **P2** `/tasking` — 讀 CLAUDE.md 索引 → 產出前後端與測試清單
+   - **P3** `/impl` — 另起 session，TDD 驅動實作 + 單元測試
+   - **P4a** `/uat` 或 **P4b** `/e2e` — 再起 session，獨立裁判驗收
+3. 完成後將 SA 工作目錄的原始材料移至 `SA document/` 歸檔
 
 ---
 
-## 待改進
+## 已完成的改進
 
-| 項目 | 現況 | 改進方向 |
-|------|------|---------|
-| 測試清單利用 | 產出測試清單但僅手動測試 | 加入自動化測試環節，或讓 AI 同步產出測試程式碼 |
-| ~~流程 Skill 化~~ | ~~純文件模板~~ | ✅ 已完成，可透過 `/spec` 觸發 |
+| 項目 | 狀態 |
+|------|------|
+| ~~流程 Skill 化~~ | ✅ 已完成，可透過 `/spec` 觸發 |
+| ~~測試清單利用~~ | ✅ 已完成 — P3 `spec-implementing` 讀清單做 TDD 實作；P4a `spec-uat` / P4b `spec-e2e` 讀清單做驗收 |
