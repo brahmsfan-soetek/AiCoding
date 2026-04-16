@@ -99,6 +99,7 @@ graph TD
 | [01 摘要](01_摘要.md) | 上述研究的萃取摘要 |
 | [02 Skill 設計原則](02_Skill設計原則_Thariq_Anthropic.md) | Anthropic 工程師 Thariq 的 9 項 Skill 設計原則 |
 | [03 Harness Engineering](03_Harness_Engineering_HumanLayer.md) | HumanLayer 的 7 項 Harness Engineering 原則 + 反模式 |
+| [04 通用型 SKILL 架構設計](04_通用型SKILL架構設計.md) | 5 SKILL 架構（P1–P4b）+ 11 項設計決策記錄 + CLAUDE.md 契約 |
 | [review/](review/) | Skills 的多輪交叉審查報告 |
 
 ## 設計原則
