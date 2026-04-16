@@ -115,33 +115,15 @@ spec-digest-flow/
 │   └── plugin.json                        ← Plugin 清單檔
 ├── docx2md.py                             ← DOCX → MD 轉換腳本（Step 0）
 │
-├── templates/
-│   ├── prompts/                           ← AI 的 Prompt 模板
-│   │   ├── step1_規格統計_prompt.md
-│   │   ├── step2_釐清清單_prompt.md
-│   │   └── step4_釐清整合_prompt.md
-│   │
-│   └── outputs/                           ← AI 輸出的格式模板
-│       ├── 規格統計模板.md
-│       └── 釐清清單模板.md
-│
-└── examples/
-    └── IM004/                             ← 完整實例（庫存異動單）
-        ├── spec/                          ← 最終產出
-        │   ├── IM004_規格統計.md
-        │   ├── IM004_frontend_tasks.md
-        │   ├── IM004_backend_tasks.md
-        │   ├── IM004_test_cases.md
-        │   └── ui/
-        ├── process/                       ← 過程產物
-        │   ├── IM004_規格統計-30.md
-        │   ├── IM004_實作前釐清清單-30.md
-        │   ├── 釐清回覆清單.txt
-        │   └── IM004_釐清清單_SA回覆整合.md
-        └── input/                         ← SA 原始交付物
-            ├── SA_IM004_庫存異動單.md
-            ├── IM004_庫存異動單.html
-            └── 最新規格確認.txt
+└── templates/
+    ├── prompts/                           ← AI 的 Prompt 模板
+    │   ├── step1_規格統計_prompt.md
+    │   ├── step2_釐清清單_prompt.md
+    │   └── step4_釐清整合_prompt.md
+    │
+    └── outputs/                           ← AI 輸出的格式模板
+        ├── 規格統計模板.md
+        └── 釐清清單模板.md
 ```
 
 ### 執行時的工作目錄結構
@@ -218,18 +200,6 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 2. 切換工作目錄至專案 repo 後，執行 `/tasking`
 3. AI 會先讀取專案 CLAUDE.md、既有 component、API pattern，再產出前後端與測試清單
 4. 完成後將 SA 工作目錄的原始材料移至 `SA document/` 歸檔
-
----
-
-## 參考實例
-
-`examples/IM004/` 包含庫存異動單（IM004）的完整流程產物：
-
-| 子目錄 | 說明 | 對應 Step |
-|--------|------|-----------|
-| `input/` | SA 原始交付的規格書、HTML、規格修正 | 流程輸入 |
-| `process/` | 規格統計初版、釐清清單、回覆清單、SA 回覆整合 | Step 1~4 |
-| `spec/` | 最終版規格統計、前後端任務清單、測試清單、UI 截圖 | Step 4~5 |
 
 ---
 
