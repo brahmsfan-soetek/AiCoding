@@ -1,13 +1,13 @@
 ---
-name: spec-tasking
-description: 在專案內依據最終版規格統計產出前後端與測試任務清單。觸發於 /tasking 或提到任務清單、前後端清單、tasking 等關鍵字。與 spec-digest-flow 接軌：在 SA 資料夾完成 S0–S4 後，把最終規格與 UI 截圖搬進專案，於此處執行。
+name: spec-p2-tasking
+description: 在專案內依據最終版規格統計產出前後端與測試任務清單。觸發於 /tasking 或提到任務清單、前後端清單、tasking 等關鍵字。與 spec-p1-digest-flow 接軌：在 SA 資料夾完成 S0–S4 後，把最終規格與 UI 截圖搬進專案，於此處執行。
 ---
 
 # Spec Tasking — 專案內任務清單產出
 
 在專案 repo 目錄下執行，根據最終版規格統計與專案 `CLAUDE.md` 索引揭露的規範文件，產出可直接被實作 session 讀取的前端、後端、測試三份任務清單。
 
-## 為何獨立於 spec-digest-flow
+## 為何獨立於 spec-p1-digest-flow
 
 S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 資料夾執行即可。
 但任務清單必須貼合專案的既有規範與慣例——這些資訊記錄在專案 `CLAUDE.md` 索引指向的規範文件中。因此把任務清單階段從原流程拆出，改為在專案目錄下執行。
@@ -20,7 +20,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 ## 前置條件
 
 使用者已完成以下事項：
-1. 在 SA 資料夾透過 `spec-digest-flow` 完成 S0–S4，產出 `{程式編號}_規格統計_最終版.md`
+1. 在 SA 資料夾透過 `spec-p1-digest-flow` 完成 S0–S4，產出 `{程式編號}_規格統計_最終版.md`
 2. 將最終規格 + UI 截圖（PNG）搬入當前專案目錄
 
 ## Execution Flow
@@ -47,7 +47,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
    - `{程式編號}_frontend_tasks.md`
    - `{程式編號}_backend_tasks.md`
    - `{程式編號}_test_cases.md`
-8. 完成後提示：使用者可另起 session，在 repo 內直接讀取這三份清單進行實作（使用 `spec-implementing` SKILL）。
+8. 完成後提示：使用者可另起 session，在 repo 內直接讀取這三份清單進行實作（使用 `spec-p3-implementing` SKILL）。
 
 ## 核心原則
 

@@ -1,5 +1,5 @@
 ---
-name: spec-e2e
+name: spec-p4b-e2e
 description: Playwright 自動化 E2E 測試 SKILL：讀 P2 的 test_cases.md + 專案 CLAUDE.md E2E 規範，產 Playwright spec + 自我修復（安全類別自動修、禁止類別 STOP）+ 三層防護。觸發於 /e2e 或提到 E2E、Playwright、端對端測試等關鍵字。
 ---
 
@@ -20,8 +20,8 @@ description: Playwright 自動化 E2E 測試 SKILL：讀 P2 的 test_cases.md + 
 
 ## 前置條件
 
-1. 已完成 P2 `spec-tasking`，產出 `{程式編號}_test_cases.md`
-2. 已完成 P3 `spec-implementing`，實作程式碼已就緒可測試
+1. 已完成 P2 `spec-p2-tasking`，產出 `{程式編號}_test_cases.md`
+2. 已完成 P3 `spec-p3-implementing`，實作程式碼已就緒可測試
 3. 專案 `CLAUDE.md` 索引有指向 E2E 規範（框架設定、執行流程、測試目錄結構）
 4. **另起新 session** — 不在 P3 session 中繼續（獨立裁判原則）
 

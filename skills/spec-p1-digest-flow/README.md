@@ -1,8 +1,8 @@
-# AI Coding Workflow — spec-digest-flow
+# AI Coding Workflow — spec-p1-digest-flow
 
 PG 接到 SA 規格書後，透過 AI 輔助完成從規格解析到最終版規格統計的標準作業流程（S0–S4）。
 
-> 任務清單階段（原 S5）已獨立為 **`spec-tasking`** SKILL，於專案 repo 內執行以貼合專案既有慣例。完成本流程 S4 後，將最終規格與 UI 截圖複製到專案 repo，切換目錄後使用 `/tasking` 繼續。
+> 任務清單階段（原 S5）已獨立為 **`spec-p2-tasking`** SKILL，於專案 repo 內執行以貼合專案既有慣例。完成本流程 S4 後，將最終規格與 UI 截圖複製到專案 repo，切換目錄後使用 `/tasking` 繼續。
 
 ---
 
@@ -34,7 +34,7 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 
 ── 切換到專案 repo ──
 
-[spec-tasking SKILL]  任務清單（前端+後端+測試）
+[spec-p2-tasking SKILL]  任務清單（前端+後端+測試）
 ```
 
 ### 流程圖
@@ -75,7 +75,7 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 └───────────────────────────────────────┘
                   │
                   ▼
-┌──────────── 任務拆解階段（spec-tasking SKILL）────────┐
+┌──────────── 任務拆解階段（spec-p2-tasking SKILL）────────┐
 │                                                         │
 │  於專案 repo 目錄執行 /tasking                          │
 │  輸入：最終版規格統計 + UI 截圖（複製進專案）           │
@@ -84,8 +84,8 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 │  存放：使用者每次指定（依專案慣例決定）                 │
 │  歸檔：SA 原始材料 → SA document/（留在原 SA 資料夾）   │
 │                                                         │
-│  → P3 spec-implementing（TDD 實作 + 單元測試）          │
-│  → P4a spec-uat 或 P4b spec-e2e（驗收測試）             │
+│  → P3 spec-p3-implementing（TDD 實作 + 單元測試）        │
+│  → P4a spec-p4a-uat 或 P4b spec-p4b-e2e（驗收測試）             │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -104,14 +104,14 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 
 > 所有輸出檔案皆放在工作目錄根，不另建子資料夾。
 >
-> **任務清單階段請改用 `spec-tasking` SKILL**（`/tasking`），於專案 repo 目錄執行。
+> **任務清單階段請改用 `spec-p2-tasking` SKILL**（`/tasking`），於專案 repo 目錄執行。
 
 ---
 
 ## 目錄結構
 
 ```
-spec-digest-flow/
+spec-p1-digest-flow/
 ├── README.md                              ← 本文件
 ├── SKILL.md                               ← Claude Code Skill 定義
 ├── .claude-plugin/
@@ -146,7 +146,7 @@ spec-digest-flow/
     └── ...
 ```
 
-> `{編號}_frontend_tasks.md`、`{編號}_backend_tasks.md`、`{編號}_test_cases.md` 由 `spec-tasking` SKILL 於**專案 repo 目錄**產出，不在此流程內。
+> `{編號}_frontend_tasks.md`、`{編號}_backend_tasks.md`、`{編號}_test_cases.md` 由 spec-p2-tasking SKILL 於**專案 repo 目錄**產出，不在此流程內。
 
 ---
 
@@ -213,4 +213,4 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 | 項目 | 狀態 |
 |------|------|
 | ~~流程 Skill 化~~ | ✅ 已完成，可透過 `/spec` 觸發 |
-| ~~測試清單利用~~ | ✅ 已完成 — P3 `spec-implementing` 讀清單做 TDD 實作；P4a `spec-uat` / P4b `spec-e2e` 讀清單做驗收 |
+| ~~測試清單利用~~ | ✅ 已完成 — P3 `spec-p3-implementing` 讀清單做 TDD 實作；P4a `spec-p4a-uat` / P4b `spec-p4b-e2e` 讀清單做驗收 |

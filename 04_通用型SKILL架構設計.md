@@ -5,7 +5,7 @@
 
 ## 背景與動機
 
-AiCoding 專案已有 2 個 SKILL（spec-digest-flow v1.2.0、spec-tasking v1.0.0），以及 3 個暫停的特化 SKILL（eap-agentic-coding、eap-agentic-coding-lite、serp-agentic-coding）。
+AiCoding 專案已有 2 個 SKILL（spec-p1-digest-flow v1.2.0、spec-p2-tasking v1.0.0），以及 3 個暫停的特化 SKILL（eap-agentic-coding、eap-agentic-coding-lite、serp-agentic-coding）。
 
 特化 SKILL 的問題：
 - 模板寫死了技術棧（Vue 3 + Quarkus + MSSQL + LOV Processor）
@@ -46,28 +46,28 @@ AiCoding 專案已有 2 個 SKILL（spec-digest-flow v1.2.0、spec-tasking v1.0.
 
 | # | SKILL 名 | 定位 | 觸發 | 工作目錄 | 狀態 |
 |---|---------|------|------|---------|------|
-| P1 | spec-digest-flow | 規格消化 S0–S4 | `/spec` | SA 資料夾 | 現有，已通用，不動 |
-| P2 | spec-tasking | 任務清單產出 | `/tasking` | 專案 repo | 現有，需通用化改造 |
-| P3 | spec-implementing | TDD 實作 + 單元測試 | `/impl` | 專案 repo | 新建 |
-| P4a | spec-uat | 人工驗收測試 | `/uat` | 專案 repo | 新建 |
-| P4b | spec-e2e | Playwright 自動化驗證 | `/e2e` | 專案 repo | 新建 |
+| P1 | spec-p1-digest-flow | 規格消化 S0–S4 | `/spec` | SA 資料夾 | 現有，已通用，不動 |
+| P2 | spec-p2-tasking | 任務清單產出 | `/tasking` | 專案 repo | 現有，需通用化改造 |
+| P3 | spec-p3-implementing | TDD 實作 + 單元測試 | `/impl` | 專案 repo | 新建 |
+| P4a | spec-p4a-uat | 人工驗收測試 | `/uat` | 專案 repo | 新建 |
+| P4b | spec-p4b-e2e | Playwright 自動化驗證 | `/e2e` | 專案 repo | 新建 |
 
 ### 銜接圖
 
 ```
-┌── P1 spec-digest-flow（SA 資料夾）
+┌── P1 spec-p1-digest-flow（SA 資料夾）
 │   S0→S4，輸出規格統計最終版
 └───┬──── 把規格 + UI 搬進專案 repo
     ▼
-┌── P2 spec-tasking（專案 repo）
+┌── P2 spec-p2-tasking（專案 repo）
 │   讀 CLAUDE.md 索引 → 讀規範文件 → 產 3 份清單
 └───┬──── 另起 session
     ▼
-┌── P3 spec-implementing（專案 repo）
+┌── P3 spec-p3-implementing（專案 repo）
 │   TDD 迴圈 + stop gates
 └───┬──── 另起 session（裁判）
     ▼
-┌── P4a spec-uat  或  P4b spec-e2e（專案 repo）
+┌── P4a spec-p4a-uat  或  P4b spec-p4b-e2e（專案 repo）
 │   讀 test_cases.md → 人工 UAT 或 Playwright
 └───
 ```
@@ -76,7 +76,7 @@ AiCoding 專案已有 2 個 SKILL（spec-digest-flow v1.2.0、spec-tasking v1.0.
 
 ## 各 SKILL 詳細設計
 
-### P1 — spec-digest-flow（現有，不動）
+### P1 — spec-p1-digest-flow（現有，不動）
 
 | 欄位 | 內容 |
 |------|------|
@@ -86,7 +86,7 @@ AiCoding 專案已有 2 個 SKILL（spec-digest-flow v1.2.0、spec-tasking v1.0.
 
 Workflow: S0 DOCX→MD → S1 規格統計 → S2 釐清清單 → S3 PG 回覆 → S4 整合+二審
 
-### P2 — spec-tasking（需通用化改造）
+### P2 — spec-p2-tasking（需通用化改造）
 
 | 欄位 | 內容 |
 |------|------|
@@ -109,7 +109,7 @@ Workflow:
   - 不分 auto/manual 欄位（軌道分派是 P4 的事）
 - **不掃 code 歸納 pattern** — 改讀 CLAUDE.md 索引揭露的規範文件
 
-### P3 — spec-implementing（新建）
+### P3 — spec-p3-implementing（新建）
 
 | 欄位 | 內容 |
 |------|------|
@@ -157,7 +157,7 @@ Workflow:
 2. **git diff 對照測試檔 self-check** — 規避 test-to-fit。`git diff` 是客觀事實，不靠 agent 紀律
 3. **Red-Green 強制順序** — 寫測試 → 確認失敗 → 寫實作 → 確認通過，不可跳步
 
-### P4a — spec-uat（新建）
+### P4a — spec-p4a-uat（新建）
 
 | 欄位 | 內容 |
 |------|------|
@@ -171,7 +171,7 @@ Workflow:
 → [STOP] PG 跑 → 回填結果 → 彙總報告
 ```
 
-### P4b — spec-e2e（新建）
+### P4b — spec-p4b-e2e（新建）
 
 | 欄位 | 內容 |
 |------|------|

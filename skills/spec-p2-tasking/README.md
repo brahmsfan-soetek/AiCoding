@@ -1,8 +1,8 @@
-# AI Coding Workflow — spec-tasking (v2.0.0)
+# AI Coding Workflow — spec-p2-tasking (v2.0.0)
 
 在專案 repo 目錄下執行，根據最終版規格統計與 `CLAUDE.md` 索引指向的規範文件，產出可直接被實作 session 讀取的**前端**、**後端**、**測試**三份任務清單。
 
-本 SKILL 接續 [`spec-digest-flow`](../spec-digest-flow/) S0–S4 之後的流程：在 SA 資料夾完成規格消化後，把最終規格與 UI 截圖搬到專案 repo，切換目錄執行 `/tasking`。
+本 SKILL 接續 [`spec-p1-digest-flow`](../spec-p1-digest-flow/) S0–S4 之後的流程：在 SA 資料夾完成規格消化後，把最終規格與 UI 截圖搬到專案 repo，切換目錄執行 `/tasking`。
 
 ---
 
@@ -40,7 +40,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 
 使用者已完成以下事項：
 
-1. 在 SA 資料夾透過 `spec-digest-flow` 完成 S0–S4，產出 `{程式編號}_規格統計_最終版.md`
+1. 在 SA 資料夾透過 `spec-p1-digest-flow` 完成 S0–S4，產出 `{程式編號}_規格統計_最終版.md`
 2. 將最終規格 + UI 截圖（PNG）搬入當前專案目錄
 3. 當前工作目錄為**專案 repo**（非 SA 資料夾）
 
@@ -114,7 +114,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 ## 目錄結構
 
 ```
-spec-tasking/
+spec-p2-tasking/
 ├── README.md                              ← 本文件
 ├── SKILL.md                               ← Claude Code Skill 定義
 ├── .claude-plugin/
@@ -168,8 +168,8 @@ spec-tasking/
 ### 5. 後續流程
 
 完成 P2 後，依序進入：
-- **P3 [`spec-implementing`](../spec-implementing/)** — 另起 session，TDD 驅動實作
-- **P4a [`spec-uat`](../spec-uat/)** 或 **P4b [`spec-e2e`](../spec-e2e/)** — 再起 session，獨立裁判驗收
+- **P3 [`spec-p3-implementing`](../spec-p3-implementing/)** — 另起 session，TDD 驅動實作
+- **P4a [`spec-p4a-uat`](../spec-p4a-uat/)** 或 **P4b [`spec-p4b-e2e`](../spec-p4b-e2e/)** — 再起 session，獨立裁判驗收
 
 ---
 
@@ -188,8 +188,8 @@ spec-tasking/
 
 ## 相關連結
 
-- [`spec-digest-flow`](../spec-digest-flow/) — P1 規格消化流程
-- [`spec-implementing`](../spec-implementing/) — P3 TDD 驅動實作
-- [`spec-uat`](../spec-uat/) — P4a 人工驗收測試
-- [`spec-e2e`](../spec-e2e/) — P4b Playwright 自動化 E2E
+- [`spec-p1-digest-flow`](../spec-p1-digest-flow/) — P1 規格消化流程
+- [`spec-p3-implementing`](../spec-p3-implementing/) — P3 TDD 驅動實作
+- [`spec-p4a-uat`](../spec-p4a-uat/) — P4a 人工驗收測試
+- [`spec-p4b-e2e`](../spec-p4b-e2e/) — P4b Playwright 自動化 E2E
 - [主 README](../../README.md) — Skill catalog 與設計原則

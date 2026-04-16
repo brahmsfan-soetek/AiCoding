@@ -19,11 +19,11 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 
 | Skill | 版本 | 觸發 | 說明 |
 |-------|------|------|------|
-| [spec-digest-flow](skills/spec-digest-flow/) | v1.2.0 | `/spec` | P1 — SA 規格書消化 S0–S4：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合 |
-| [spec-tasking](skills/spec-tasking/) | v2.0.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引取得規範，依最終版規格統計產出前後端與測試任務清單 |
-| [spec-implementing](skills/spec-implementing/) | v1.0.0 | `/impl` | P3 — TDD 驅動實作：Red-Green 迴圈逐 task 實作 + 單元測試，三道 stop gate 確保品質 |
-| [spec-uat](skills/spec-uat/) | v1.0.0 | `/uat` | P4a — 人工驗收測試：讀 test_cases.md 產 UAT checklist，PG 逐項勾選，彙總報告 |
-| [spec-e2e](skills/spec-e2e/) | v1.0.0 | `/e2e` | P4b — Playwright 自動化 E2E：產 Playwright spec + 自我修復 + 三層防護 |
+| [spec-p1-digest-flow](skills/spec-p1-digest-flow/) | v1.2.0 | `/spec` | P1 — SA 規格書消化 S0–S4：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合 |
+| [spec-p2-tasking](skills/spec-p2-tasking/) | v2.0.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引取得規範，依最終版規格統計產出前後端與測試任務清單 |
+| [spec-p3-implementing](skills/spec-p3-implementing/) | v1.0.0 | `/impl` | P3 — TDD 驅動實作：Red-Green 迴圈逐 task 實作 + 單元測試，三道 stop gate 確保品質 |
+| [spec-p4a-uat](skills/spec-p4a-uat/) | v1.0.0 | `/uat` | P4a — 人工驗收測試：讀 test_cases.md 產 UAT checklist，PG 逐項勾選，彙總報告 |
+| [spec-p4b-e2e](skills/spec-p4b-e2e/) | v1.0.0 | `/e2e` | P4b — Playwright 自動化 E2E：產 Playwright spec + 自我修復 + 三層防護 |
 
 ### 暫停的特化 SKILL
 
@@ -47,7 +47,7 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 
 ```mermaid
 graph TD
-    subgraph P1["P1 spec-digest-flow — SA 資料夾"]
+    subgraph P1["P1 spec-p1-digest-flow — SA 資料夾"]
         direction LR
         S0["S0 DOCX→MD"]
         S1["S1 規格統計"]
@@ -60,7 +60,7 @@ graph TD
 
     HANDOFF["最終規格 + UI 截圖<br/>搬入專案 repo"]
 
-    subgraph P2["P2 spec-tasking — 專案 repo"]
+    subgraph P2["P2 spec-p2-tasking — 專案 repo"]
         direction LR
         T1["讀 CLAUDE.md 索引<br/>→ 讀規範文件"]
         T2["產出前端/後端/測試清單"]
@@ -69,7 +69,7 @@ graph TD
 
     SESSION1["另起 session"]
 
-    subgraph P3["P3 spec-implementing — 專案 repo"]
+    subgraph P3["P3 spec-p3-implementing — 專案 repo"]
         direction LR
         I1["SG1 確認載入"]
         I2["TDD Red-Green 迴圈<br/>SG2 測試清單審 → SG3 審閱"]
@@ -79,7 +79,7 @@ graph TD
 
     SESSION2["另起 session（獨立裁判）"]
 
-    subgraph P4["P4a spec-uat 或 P4b spec-e2e — 專案 repo"]
+    subgraph P4["P4a spec-p4a-uat 或 P4b spec-p4b-e2e — 專案 repo"]
         direction LR
         U1["P4a: UAT checklist<br/>PG 手動驗收"]
         U2["P4b: Playwright spec<br/>自動化 + 自我修復"]

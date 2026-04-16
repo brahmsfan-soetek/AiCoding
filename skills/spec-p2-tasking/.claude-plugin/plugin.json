@@ -1,0 +1,11 @@
+{
+  "name": "spec-p2-tasking",
+  "version": "2.0.0",
+  "description": "於專案 repo 內依最終版規格統計產出前後端與測試任務清單。讀 CLAUDE.md 索引取得專案規範，不掃 code 歸納 pattern。接續 spec-p1-digest-flow S0–S4。",
+  "author": {
+    "name": "soetek"
+  },
+  "skills": [
+    "./"
+  ]
+}
