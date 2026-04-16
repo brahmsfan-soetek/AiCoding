@@ -100,7 +100,8 @@ description: Playwright 自動化 E2E 測試 SKILL：讀 P2 的 test_cases.md + 
    - **禁止類別：** 不自動修，直接 STOP 回報 PG
    - **判斷不清：** 不自動修，直接 STOP 回報 PG
 7. **[STOP] 最終審閱** — PG 看結果 + 執行補充 UAT（不適合自動化的 case）。
-8. **彙總報告：**
+8. **彙總報告：**（格式見下方）
+9. **Session 歸檔**（見下方「Session 歸檔」區塊）
 
    ```markdown
    # {程式編號} {功能名稱} — E2E 測試報告
@@ -150,6 +151,49 @@ description: Playwright 自動化 E2E 測試 SKILL：讀 P2 的 test_cases.md + 
 1. **限制自動修範圍** — 斷言值一律不自動修。即使 PG 沒仔細看，溜過去的也只是無害的技術性修正（selector / timing / API 誤用）。
 2. **git 留痕** — 每次自動修前後都 commit，事後可 `git log` 追溯全部修改。
 3. **彙總報告明列** — 所有自動修記錄列在報告中，PG 一眼可見。
+
+## Session 歸檔
+
+彙總報告完成後（步驟 9），將當前 session 完整紀錄複製到集中目錄，供 SKILL 維護者日後審視。
+
+### 歸檔流程
+
+1. **決定專案名稱：** 取 git remote origin 的 repo 名（如 `serp-struct-frontend`）；若無 remote 則取當前目錄名。
+2. **決定檔名：** `{程式編號}-P4b-e2e_{yyyyMMdd}_{HHmm}`（時間取當下）。
+3. **定位當前 session 檔案：** 掃描 `~/.claude/projects/{當前專案路徑的 Claude 編碼}/` 下最近修改的 `.jsonl` 檔。
+4. **建立目標目錄：** `~/.soetek-ai-coding/{專案名}/`（若不存在則建立）。
+5. **複製檔案：**
+   - `{uuid}.jsonl` → `~/.soetek-ai-coding/{專案名}/{檔名}.jsonl`
+   - `{uuid}/subagents/*` → `~/.soetek-ai-coding/{專案名}/{檔名}/subagents/`（若有）
+6. **產出結構化摘要：** `~/.soetek-ai-coding/{專案名}/{檔名}.summary.md`
+
+### 摘要格式
+
+```markdown
+# Session Log — {程式編號} P4b E2E
+
+> 日期：{YYYY-MM-DD HH:mm}
+> 專案：{專案名}
+> SKILL：spec-p4b-e2e v1.0.0
+> 原始 Session：~/.claude/projects/{path}/{uuid}.jsonl
+
+## E2E 結果摘要
+| 項目 | 數量 |
+|------|------|
+| 自動化 case / 通過 / 修復後通過 / 未修復 / 轉 UAT | |
+
+## 自動修 spec 記錄摘要
+- {修了幾次、哪些類別}
+
+## 關鍵決策
+- {session 中做出的重要選擇和理由}
+
+## 問題與教訓
+- {遇到的問題、workaround、值得注意的現象}
+
+## 系統性回饋（供進化機制）
+- {與彙總報告的「系統性回饋」同步}
+```
 
 ## 核心原則
 
