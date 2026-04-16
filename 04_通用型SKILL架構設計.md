@@ -33,8 +33,9 @@ AiCoding 專案已有 2 個 SKILL（spec-p1-digest-flow v1.2.0、spec-p2-tasking
 
 ### 獨立性：session 分離取代 multi-agent
 
-- 不使用 subagent 寫程式碼
-  - 前例教訓：session-791acadc 中 subagent 收到的 prompt 與模板嚴重矛盾，4 個 Vue 檔案全錯
+- Subagent 不產出進 git 的檔案（實作 / 測試程式碼必須由主 session 撰寫）
+  - 前例教訓：session-791acadc 中 subagent 寫程式碼時 prompt 與模板矛盾，4 個 Vue 檔案全錯
+  - 可委託 subagent 的操作：跑 lint / typecheck / test 指令、搜尋既有程式碼參考、P4b 分析失敗原因歸類
 - P3 完工後另起 session 跑 P4，天然獨立觀點
 - 回饋迴路（test pass/fail、lint、typecheck）> multi-agent 複雜度
 
@@ -102,7 +103,9 @@ Workflow:
 
 **改造要點：**
 - 拔掉寫死的 A-F / A-E 區塊（前端六大區塊、後端五大區塊均為 eap 專案特化分類）
-- 改成：讀專案 `CLAUDE.md` 索引指向的規範文件取得分類慣例；若無，fallback 到通用骨架（資料層 / 介面層 / 業務邏輯 / 整合點 / 驗證）
+- 改成：讀專案 `CLAUDE.md` 索引指向的規範文件取得分類慣例；若無，fallback 到通用骨架：
+  - 前端：資料層（型別/服務）→ 介面層（頁面/元件）→ 業務邏輯（連動/計算）→ 整合點（路由/i18n）→ 驗證
+  - 後端：資料層（Entity/Domain）→ 介面層（API 端點）→ 業務邏輯（核心流程拆分）→ 整合點（外部服務/SP）→ 驗證
 - 輸出模板只規範 header + 必要欄位（task id / 描述 / 依賴 / 驗收條件）
 - `test_cases.md` 格式統一：`| # | 測試案例 | 前置條件 | 執行步驟 | 預期結果 |`
   - 「執行步驟」必須人類可讀 + 結構化到能轉 Playwright spec
@@ -156,6 +159,7 @@ Workflow:
 1. **測試清單先審、再寫 test code** — 在測試代碼產出之前讓 PG 審「AI 打算測什麼」，覆蓋度遺漏在這關抓
 2. **git diff 對照測試檔 self-check** — 規避 test-to-fit。`git diff` 是客觀事實，不靠 agent 紀律
 3. **Red-Green 強制順序** — 寫測試 → 確認失敗 → 寫實作 → 確認通過，不可跳步
+4. **Checkpoint 容錯** — 每完成一個 task 更新 `{程式編號}_progress.md`（狀態 + commit hash），session 中斷或 `/clear` 後可 resume。SG1 偵測到 progress 檔時自動提出 resume。
 
 ### P4a — spec-p4a-uat（新建）
 
@@ -218,6 +222,10 @@ Workflow:
 
 **核心原則：** P4b 只能修自己產的 Playwright spec，**絕不能碰 P3 產的實作 code，也不能改 P2 產的 test_cases.md**。否則失去「獨立裁判」身份。
 
+### 進化機制（P4 → P2 回饋迴路）
+
+P4a / P4b 的彙總報告包含「系統性回饋」區塊，記錄驗收中發現的跨個案系統性問題（如 P2 總是漏掉空值邊界測試、P3 錯誤處理未對齊規範等）。此區塊留在各專案內作為紀錄。SKILL 維護者定期從各專案蒐集這些回饋，回到 AiCoding 專案集中審視，將教訓納入 `lessons_learned.md` 並更新 SKILL（P2 prompt 自檢清單、P3 規則等）。
+
 ---
 
 ## 關鍵設計決策記錄
@@ -228,7 +236,7 @@ Workflow:
 | D2 | 通用化路線 | (a) 流程骨架 / (b) 模板通用 | (a) 流程骨架 | 模板通用在 P3 幾乎不可能，技術棧差一點就崩 |
 | D3 | P3 自動化程度 | 全自動 / 半自動 / 手動輔助 | 半自動 | 全自動 context rot + 品質漂移；手動輔助失去 SKILL 價值 |
 | D4 | P3 單元測試定位 | QA 驗證 / 開發 feedback | 開發 feedback | 基本程式邏輯 + 瑣碎邊界，真正 QA 在 P4 |
-| D5 | P3 架構 | 單 session TDD / test-agent subagent / 三方交叉驗證 | 單 session TDD + 強 stop gate | 回饋迴路 > multi-agent；session-791acadc 前例教訓 |
+| D5 | P3 架構 | 單 session TDD / test-agent subagent / 三方交叉驗證 | 單 session TDD + 強 stop gate；subagent 限「不產出進 git 的檔案」（跑指令、搜尋可委託）| 實作需完整 context + 回饋迴圈；session-791acadc 前例教訓 |
 | D6 | P3 球員兼裁判 | P3 內部分離 / P4 做裁判 | P4 做裁判 | P4 session 分離天然獨立觀點，成本比 multi-agent 低 |
 | D7 | P4 拆分 | 1 個 SKILL / 2 個 SKILL | 2 個（spec-uat + spec-e2e）| workflow、stop gate、錯誤處理差異太大；單一職責原則 |
 | D8 | P4 軌道分派 | 混合分派 / 選項式二擇一 | 選項式二擇一 | 簡化 mental model，PG 在 session 層級選路而非 case 層級 |

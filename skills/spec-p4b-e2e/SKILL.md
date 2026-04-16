@@ -95,7 +95,8 @@ description: Playwright 自動化 E2E 測試 SKILL：讀 P2 的 test_cases.md + 
      2. 自動修正 spec
      3. `git commit` 修正版 spec（留痕）
      4. 重跑 Playwright
-     5. 單 case 上限 3 次自動修，超過則 STOP 回報 PG
+     5. 單 case 上限 3 次自動修，超過則歸類為「自動修失敗」，STOP 回報 PG，列入彙總報告「失敗項目明細」。
+        PG 可選擇：手動修 spec / 轉為 P4a 人工驗證 / 標記為已知問題跳過。
    - **禁止類別：** 不自動修，直接 STOP 回報 PG
    - **判斷不清：** 不自動修，直接 STOP 回報 PG
 7. **[STOP] 最終審閱** — PG 看結果 + 執行補充 UAT（不適合自動化的 case）。
@@ -133,6 +134,15 @@ description: Playwright 自動化 E2E 測試 SKILL：讀 P2 的 test_cases.md + 
    ## 建議
 
    （由 AI 根據結果產出）
+
+   ## 系統性回饋（供 P2 演進）
+
+   | 回饋對象 | 類型 | 描述 |
+   |---------|------|------|
+   | {P2 test_cases / P2 frontend_tasks / P3 實作} | {遺漏 / 粒度 / 品質} | {具體描述} |
+
+   <!-- 此區塊記錄 P4 驗收中發現的系統性問題（非個案 bug），留在專案內作為紀錄。
+        SKILL 維護者定期從各專案蒐集此區塊，回到 AiCoding 專案集中審視並更新 SKILL。 -->
    ```
 
 ## 三層防護機制（應對 PG 偷懶風險）
