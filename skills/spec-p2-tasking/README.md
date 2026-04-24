@@ -1,31 +1,58 @@
-# AI Coding Workflow — spec-p2-tasking (v2.0.0)
+# AI Coding Workflow — spec-p2-tasking (v3.0.0)
 
-在專案 repo 目錄下執行，根據最終版規格統計與 `CLAUDE.md` 索引指向的規範文件，產出可直接被實作 session 讀取的**前端**、**後端**、**測試**三份任務清單。
+在專案 repo 目錄下執行，根據最終版規格統計與 `CLAUDE.md` 索引指向的規範文件，產出三份 artifact：
 
-本 SKILL 接續 [`spec-p1-digest-flow`](../spec-p1-digest-flow/) S0–S4 之後的流程：在 SA 資料夾完成規格消化後，把最終規格與 UI 截圖搬到專案 repo，切換目錄執行 `/tasking`。
+1. **`{編號}_frontend_tasks.md`** — 前端任務清單，每個 task 標類型 tag（`[service]` / `[store-map]` / `[store-action]` / `[types]` / `[page]` / `[dialog]` / `[i18n]` / `[router]`）
+2. **`{編號}_backend_tasks.md`** — 後端任務清單，每個 task 標類型 tag（`[validator]` / `[processor]` / `[sql]` / `[entity]` / `[spi]`），`[processor]` 類額外填「選填欄位」清單
+3. **`{編號}_test_cases.md`** — 手測 checklist（含「狀態」欄供 PG 勾選 ☐/✅/❌/⚠️）
+
+本 SKILL 接續 [`spec-p1-digest-flow`](../spec-p1-digest-flow/) S0–S4 之後：在 SA 資料夾完成規格消化後，把最終規格與 UI 截圖搬到專案 repo，切換目錄執行 `/tasking`。
 
 ---
 
-## 為何獨立於 spec-digest-flow
+## 為何獨立於 spec-p1-digest-flow
 
 S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 資料夾就能完成。
 但任務清單必須貼合專案既有規範——這些資訊記錄在專案 `CLAUDE.md` 索引指向的規範文件中。因此把任務清單階段從原流程拆出，改於專案目錄下執行。
 
 ---
 
+## 類型 tag 的用途
+
+類型 tag 是 **P3 分流測試策略的唯一依據**。
+
+### 後端 tag
+
+| Tag | 含義 | P3-backend 測試策略 |
+|---|---|---|
+| `[validator]` | 驗證器 / 純函式 / 演算法 / 狀態機 | 完整 TDD |
+| `[processor]` | API Processor | 完整 TDD + SG2 強制覆蓋選填欄位 null/""/空白 |
+| `[sql]` | SQL YAML / DDL | 無 P3 測試（手測涵蓋） |
+| `[entity]` | Entity / Domain | 無測試 |
+| `[spi]` | SPI 介面 | 無測試 |
+
+### 前端 tag
+
+| Tag | 含義 | P3-frontend 測試策略 |
+|---|---|---|
+| `[service]` | API 服務層 | 契約測試（mock fetch） |
+| `[store-map]` | Store mapping helper | 契約測試（後端 shape → 前端 shape） |
+| `[store-action]` | Store action | 無測試 |
+| `[types]` | TypeScript type | 無測試（typecheck 已蓋） |
+| `[page]` / `[dialog]` | UI 元件 | 無測試（PG 手測） |
+| `[i18n]` / `[router]` | 靜態資料 | 無測試 |
+
+---
+
 ## 核心原則
 
-1. **規格統計 = 唯一權威來源（Single Source of Truth）**
-   UI 截圖僅供排版參考，欄位與邏輯衝突時以規格統計為準。
-
-2. **讀規範、不掃 code**
-   專案 context 來自 `CLAUDE.md` 索引指向的規範文件（deterministic），不掃 code 歸納 pattern（AI 行為會漂移）。
-
-3. **輸出位置由使用者決定**
-   不同專案有不同的文件擺放慣例，每次執行皆詢問並由使用者確認，不得寫死於模板。
-
-4. **PG 是品質守門人**
-   AI 產出後需 PG 審閱再進入實作。
+1. **規格統計 = 唯一權威來源** — UI 截圖僅供排版參考，衝突時以規格統計為準。
+2. **讀規範、不掃 code** — 專案 context 來自 CLAUDE.md 索引（deterministic），不掃 code 歸納 pattern。
+3. **類型 tag 必填** — 每個 task 必須標 tag。
+4. **Processor 必列選填欄位** — 供 P3-backend SG2 覆蓋度檢核。
+5. **test_cases.md = 手測 checklist** — 不是自動化 spec，而是 PG 照著對的清單。
+6. **Artifact 即 commit** — 產出後立即 commit，避免 working tree 丟失。
+7. **PG 是品質守門人** — AI 產出後需 PG 審閱再進入實作。
 
 ---
 
@@ -38,8 +65,6 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 
 ## 前置條件
 
-使用者已完成以下事項：
-
 1. 在 SA 資料夾透過 `spec-p1-digest-flow` 完成 S0–S4，產出 `{程式編號}_規格統計_最終版.md`
 2. 將最終規格 + UI 截圖（PNG）搬入當前專案目錄
 3. 當前工作目錄為**專案 repo**（非 SA 資料夾）
@@ -50,64 +75,53 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 
 ```
 ┌──────────── 專案 Context 建立（不可省略）────────────┐
-│                                                       │
-│  [AI] 讀取專案根 CLAUDE.md                           │
-│  [AI] 依 CLAUDE.md 索引讀取規範文件：                │
-│       → 前端規範（元件命名、目錄結構、共用元件等）   │
-│       → 後端規範（Entity/API 命名、目錄結構等）      │
-│       → 測試規範（框架、撰寫格式、目錄結構）         │
+│  [AI] 讀 CLAUDE.md 索引 + 規範文件                   │
+│       前端規範 / 後端規範 / 測試規範                 │
 │  [AI] 不掃 code 歸納 pattern                         │
 │                                                       │
 │  若無 CLAUDE.md → fallback 通用骨架分類              │
-│  （資料層/介面層/業務邏輯/整合點/驗證）              │
-│                                                       │
 └───────────────────────────────────────────────────────┘
                       │
                       ▼
 ┌──────────── 辨識輸入材料 ────────────┐
-│                                       │
-│  [AI] 讀取當前工作目錄下的：          │
+│  [AI] 讀取當前目錄的：                │
 │       - {編號}_規格統計_最終版.md     │
 │       - UI 截圖 PNG                   │
-│                                       │
 └───────────────────────────────────────┘
                       │
                       ▼
 ┌──────────── PG 確認 ─────────────────┐
-│                                       │
 │  [PG] 確認程式編號                    │
-│  [PG] 確認輸出位置（建議預設          │
-│       docs/specs/{程式編號}/，        │
-│       可按 Enter 確認或覆寫）         │
-│                                       │
+│  [PG] 確認輸出位置                    │
+│       （建議預設 Docs/spec/{程式編號}/plan/）│
 └───────────────────────────────────────┘
                       │
                       ▼
 ┌──────────── 任務清單產出 ────────────┐
-│                                       │
-│  [AI] 依三份模板同時產出：            │
-│       - {編號}_frontend_tasks.md      │
-│       - {編號}_backend_tasks.md       │
-│       - {編號}_test_cases.md          │
-│                                       │
+│  [AI] 同時產出三份 artifact：          │
+│       - frontend_tasks.md（含 tag）   │
+│       - backend_tasks.md（含 tag +    │
+│         Processor 選填欄位）          │
+│       - test_cases.md（手測 checklist │
+│         含「狀態」欄）                 │
 └───────────────────────────────────────┘
                       │
                       ▼
-      PG 審閱 → 另起 session 進入 P3 實作
+       Commit artifact → PG 審閱 → 
+       另起 session：/impl-be → /impl-fe → /data → PG 手測
 ```
 
 ---
 
 ## 輸出產物
 
-| 檔名 | 內容 | 模板分類 |
-|------|------|---------|
-| `{編號}_frontend_tasks.md` | 前端任務清單 | 資料層 / 介面層 / 業務邏輯 / 整合點 / 驗證（或依 CLAUDE.md 前端規範分類） |
-| `{編號}_backend_tasks.md` | 後端任務清單 | 資料層 / 介面層 / 業務邏輯 / 整合點 / 驗證（或依 CLAUDE.md 後端規範分類） |
-| `{編號}_test_cases.md` | 測試清單 | 基礎 CRUD / 驗證規則 / 業務流程 / 整合點 / 邊界與併發（或依 CLAUDE.md 測試規範分類） |
+| 檔名 | 內容 |
+|------|------|
+| `{編號}_frontend_tasks.md` | 前端清單，每個 task 標類型 tag |
+| `{編號}_backend_tasks.md` | 後端清單，每個 task 標類型 tag，`[processor]` 類額外填「選填欄位」 |
+| `{編號}_test_cases.md` | 手測 checklist，6 欄：# / 測試案例 / 前置條件 / 執行步驟 / 預期結果 / 狀態 |
 
-每個 task 包含：**task id / 描述 / 依賴 / 驗收條件**。
-測試清單每個案例包含 5 欄：**# / 測試案例 / 前置條件 / 執行步驟 / 預期結果**。
+建議放 `Docs/spec/{程式編號}/plan/` 子目錄（對齊 P3 的 `log/` 子目錄結構）。
 
 ---
 
@@ -118,13 +132,13 @@ spec-p2-tasking/
 ├── README.md                              ← 本文件
 ├── SKILL.md                               ← Claude Code Skill 定義
 ├── .claude-plugin/
-│   └── plugin.json                        ← Plugin 清單檔
+│   └── plugin.json
 │
 └── templates/
-    ├── prompts/                           ← AI 的 Prompt 模板
+    ├── prompts/
     │   └── 任務清單_prompt.md
     │
-    └── outputs/                           ← AI 輸出的格式模板
+    └── outputs/
         ├── 前端任務清單模板.md
         ├── 後端任務清單模板.md
         └── 測試清單模板.md
@@ -142,54 +156,57 @@ spec-p2-tasking/
 ### 2. 於專案 repo 目錄執行
 
 ```
-/tasking IM004
+/tasking AR004
 ```
-
-不帶程式編號時，AI 會嘗試從檔名推斷，若無法推斷則詢問。
 
 ### 3. AI 執行步驟
 
 1. 讀取專案 `CLAUDE.md` 索引
-2. 依索引讀取規範文件（前端/後端/測試規範）
+2. 依索引讀取前端 / 後端 / 測試規範文件
 3. 辨識當前目錄的規格統計檔與 UI 截圖
-4. 詢問輸出位置（建議預設 `docs/specs/{程式編號}/`）
-5. 一次產出三份任務清單
+4. 詢問輸出位置（建議預設 `Docs/spec/{程式編號}/plan/`）
+5. 一次產出三份 artifact，每個 task 標類型 tag
 
-若專案無 `CLAUDE.md`，AI 會告知並使用通用骨架分類作為 fallback。
-
-### 4. PG 審閱 → 另起 session 進入 P3 實作
+### 4. PG 審閱 → Commit → 另起 session 進入 P3
 
 審閱重點：
-- 分類與命名是否與 CLAUDE.md 索引指向的規範文件一致
-- 規格統計中每個 API、業務邏輯子步驟是否都有對應任務
-- 測試清單每個案例的「前置條件」和「執行步驟」是否完整
+- 每個 task 是否都正確標註類型 tag
+- 每個 `[processor]` 是否都列出「選填欄位」清單（無選填欄位時填「無」明示）
+- 測試清單每個案例的執行步驟是否具體到可直接照做
 - 任何標記 ⚠️ 的項目是否已確認
 
 ### 5. 後續流程
 
-完成 P2 後，依序進入：
-- **P3 [`spec-p3-implementing`](../spec-p3-implementing/)** — 另起 session，TDD 驅動實作
-- **P4a [`spec-p4a-uat`](../spec-p4a-uat/)** 或 **P4b [`spec-p4b-e2e`](../spec-p4b-e2e/)** — 再起 session，獨立裁判驗收
+- **P3-backend** [`spec-p3-backend`](../spec-p3-backend/)  `/impl-be`
+- **P3-frontend** [`spec-p3-frontend`](../spec-p3-frontend/) `/impl-fe`
+- **P3-data** [`spec-p3-data`](../spec-p3-data/) `/data`
+- **PG 手測** — 開瀏覽器照 `test_cases.md` 勾選，ad hoc 派修
 
 ---
 
-## v2.0.0 改版重點
+## 版本歷史
 
-| 項目 | v1.0.0 | v2.0.0 |
-|------|--------|--------|
-| 專案 context | 掃描 code 歸納 pattern | 讀 CLAUDE.md 索引 → 讀規範文件 |
-| 前端分類 | A-F 六大區塊（eap 特化） | 通用五層骨架（或依 CLAUDE.md 規範） |
-| 後端分類 | A-E 五大區塊（eap 特化） | 通用五層骨架（或依 CLAUDE.md 規範） |
-| 測試分類 | A-I 九大區塊（eap 特化） | 通用五層骨架（或依 CLAUDE.md 規範） |
-| 測試清單欄位 | 3 欄（# / 案例 / 結果） | 5 欄（# / 案例 / 前置條件 / 執行步驟 / 結果） |
-| task 欄位 | 3 欄（# / 項目 / 說明） | 含依賴 + 驗收條件 |
+### v3.0.0（2026-04-24）
+
+- **新增類型 tag** — 每個 task 必標，供 P3 分流測試策略
+- **Processor 新增「選填欄位」欄** — 供 P3-backend SG2 覆蓋度檢核，對齊 AR003 F7 教訓
+- **test_cases.md 改為手測 checklist 格式** — 新增「狀態」欄供 PG 勾選（配合廢除 P4a/P4b）
+- **輸出位置建議改為 `Docs/spec/{程式編號}/plan/`** — 配合 P3 `log/` 子目錄
+- **artifact 即 commit 原則**
+
+### v2.0.0（2026-04-16）
+
+- 專案 context 改讀 CLAUDE.md 索引，不再掃 code
+- 通用五層骨架分類取代 eap 特化的 A-F / A-E / A-I 分類
+- 測試清單 5 欄格式（# / 案例 / 前置條件 / 執行步驟 / 結果）
+- task 欄位含依賴 + 驗收條件
 
 ---
 
 ## 相關連結
 
 - [`spec-p1-digest-flow`](../spec-p1-digest-flow/) — P1 規格消化流程
-- [`spec-p3-implementing`](../spec-p3-implementing/) — P3 TDD 驅動實作
-- [`spec-p4a-uat`](../spec-p4a-uat/) — P4a 人工驗收測試
-- [`spec-p4b-e2e`](../spec-p4b-e2e/) — P4b Playwright 自動化 E2E
+- [`spec-p3-backend`](../spec-p3-backend/) — P3 後端 tag 分流 TDD
+- [`spec-p3-frontend`](../spec-p3-frontend/) — P3 前端契約測試 + demo
+- [`spec-p3-data`](../spec-p3-data/) — P3 權限 + 測資 SQL
 - [主 README](../../README.md) — Skill catalog 與設計原則

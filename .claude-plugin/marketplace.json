@@ -11,8 +11,8 @@
     {
       "name": "spec-workflow",
       "source": "./",
-      "description": "規格驅動開發全流程：P1 規格消化 → P2 任務分解 → P3 TDD 實作 → P4a UAT → P4b E2E",
-      "version": "1.0.0"
+      "description": "規格驅動開發全流程：P1 規格消化 → P2 任務分解 → P3 前後端實作（TDD 後端 + 契約前端）→ P3-data 權限與測資",
+      "version": "2.0.0"
     },
     {
       "name": "eap-agentic-coding",

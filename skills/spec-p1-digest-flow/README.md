@@ -80,12 +80,14 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 │  於專案 repo 目錄執行 /tasking                          │
 │  輸入：最終版規格統計 + UI 截圖（複製進專案）           │
 │  先讀：CLAUDE.md 索引 → 規範文件                        │
-│  輸出：前端清單 + 後端清單 + 測試清單                   │
-│  存放：使用者每次指定（依專案慣例決定）                 │
+│  輸出：前端/後端清單（含類型 tag）+ 手測 checklist      │
+│  存放：建議 Docs/spec/{程式編號}/plan/                  │
 │  歸檔：SA 原始材料 → SA document/（留在原 SA 資料夾）   │
 │                                                         │
-│  → P3 spec-p3-implementing（TDD 實作 + 單元測試）        │
-│  → P4a spec-p4a-uat 或 P4b spec-p4b-e2e（驗收測試）             │
+│  → P3-backend spec-p3-backend（/impl-be，tag 分流 TDD）│
+│  → P3-frontend spec-p3-frontend（/impl-fe，契約測試）  │
+│  → P3-data spec-p3-data（/data，權限 + 測資 SQL）      │
+│  → PG 手測（照 test_cases.md 勾選）                    │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -197,13 +199,15 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 2. AI 直接更新釐清清單（補上狀態與實作決策）+ 產出**最終版規格統計**
 3. 若 AI 發現新問題 → 回 Step 3
 
-### 6. 接續：通用型 SKILL P2–P4（於專案 repo 執行）
+### 6. 接續：通用型 SKILL P2–P3（於專案 repo 執行）
 
 1. 將 `{編號}_規格統計_最終版.md` 與 UI 截圖複製到專案 repo
 2. 切換工作目錄至專案 repo 後，依序執行：
-   - **P2** `/tasking` — 讀 CLAUDE.md 索引 → 產出前後端與測試清單
-   - **P3** `/impl` — 另起 session，TDD 驅動實作 + 單元測試
-   - **P4a** `/uat` 或 **P4b** `/e2e` — 再起 session，獨立裁判驗收
+   - **P2** `/tasking` — 讀 CLAUDE.md 索引 → 產出前後端清單（含類型 tag）+ 手測 checklist
+   - **P3-backend** `/impl-be` — 另起 session，tag 分流（validator/processor TDD，sql/entity/spi 無測試）
+   - **P3-frontend** `/impl-fe` — 另起 session，契約測試（service/store-map），UI 類 task 無測試
+   - **P3-data** `/data` — 產 permission + seed SQL，PG 授權後執行
+   - **PG 手測** — 開瀏覽器照 `test_cases.md` 逐條勾選，發現 bug ad hoc 派 AI 修
 3. 完成後將 SA 工作目錄的原始材料移至 `SA document/` 歸檔
 
 ---
@@ -213,4 +217,4 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 | 項目 | 狀態 |
 |------|------|
 | ~~流程 Skill 化~~ | ✅ 已完成，可透過 `/spec` 觸發 |
-| ~~測試清單利用~~ | ✅ 已完成 — P3 `spec-p3-implementing` 讀清單做 TDD 實作；P4a `spec-p4a-uat` / P4b `spec-p4b-e2e` 讀清單做驗收 |
+| ~~測試清單利用~~ | ✅ 已完成 — P3-backend / P3-frontend 讀 task list 實作；test_cases.md 作為手測 checklist 由 PG 照對 |
