@@ -35,21 +35,21 @@
 |:--:|---|---|
 | 1 | spec-p1-digest-flow source-mapping + coverage 反向 mapping + 解讀確認類別（5 個檔案 11 個 Edit） | ef69531 |
 | 2 | API contract 表升級為 spec-p2 一級產出 + spec-p3-backend 啟動先 DESCRIBE 真 DB（含 MCP MySQL DESCRIBE step、`api_contract.md` 第四份產出、Artifact 合一 commit 規約） | 4079842 |
-| 3 | 測試策略瘦身 A 方案：BE 拔 Processor mock test、FE 拔 store-map contract test，SG2 改走「api_contract A## + current_schema」對照規則 | （本 commit）|
+| 3 | 測試策略瘦身 A 方案：BE 拔 Processor mock test、FE 拔 store-map contract test，SG2 改走「api_contract A## + current_schema」對照規則 | d4ce9c6 |
+| 5 | SKILL 結束點明確化（完工三條件：task done + 收尾報告 + 維護期 hand-off append）+ bug 修復不入 SKILL 規約 + Session Log 加「維護期 hand-off」段骨架（上線前必補 / 技術債兩類） | （本 commit）|
 | 6（半）| MCP MySQL Server DB-first 驗證已在 spec-p2 落地；spec-p3-data 改用 MCP 待動 | 4079842 |
 
-預期擋下：AR003「規則 A」漏看、SA §10「第 1 名」誤解、AR002 LOV 誤植、AR003 BUG-A1（schema 漂移）、AR003 BUG-P4b-R4-CONTRACT（4 支 API 跨層欄位不一致）、SO0062 mapper camelCase、Processor mock test 套套邏輯 token 浪費等。
+預期擋下：AR003「規則 A」漏看、SA §10「第 1 名」誤解、AR002 LOV 誤植、AR003 BUG-A1（schema 漂移）、AR003 BUG-P4b-R4-CONTRACT（4 支 API 跨層欄位不一致）、SO0062 mapper camelCase、Processor mock test 套套邏輯 token 浪費、SKILL 結束模糊導致 progress.md / session_log.md 在維護期持續膨脹（正名「AR002 主輪後 ad hoc 沒紀錄是健康狀態」）、上線前必補的洞 / 技術債散落多個 session 沒收口等。
 
 ### 待動（傳給下批）
 
 依槓桿排：
 
 1. 第一元件 milestone stop + 自訂 CSS regex 守則 + 強制讀 CLAUDE.md（切入點 4）
-2. SKILL 結束點明確化 + bug 修復不入 SKILL 規約（切入點 5）
-3. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
-4. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
-5. Hooks PostToolUse 自動 typecheck / grep（切入點 8，與 3 連動把 SG2 對照規則部分自動化）
-6. CLAUDE.md 補 5 條規約（切入點 9）
+2. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
+3. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
+4. Hooks PostToolUse 自動 typecheck / grep（切入點 8，與 3 連動把 SG2 對照規則部分自動化）
+5. CLAUDE.md 補 5 條規約（切入點 9）
 
 ## 引用清單
 
@@ -63,9 +63,13 @@
 ## 動到的 skill 檔案（本批 commit 範圍）
 
 ```
-skills/spec-p1-digest-flow/templates/outputs/規格統計模板.md
-skills/spec-p1-digest-flow/templates/outputs/釐清清單模板.md
-skills/spec-p1-digest-flow/templates/prompts/step1_規格統計_prompt.md
-skills/spec-p1-digest-flow/templates/prompts/step2_釐清清單_prompt.md
-skills/spec-p1-digest-flow/templates/prompts/step4_釐清整合_prompt.md
+skills/spec-p1-digest-flow/templates/outputs/規格統計模板.md        # 切入點 1
+skills/spec-p1-digest-flow/templates/outputs/釐清清單模板.md        # 切入點 1
+skills/spec-p1-digest-flow/templates/prompts/step1_規格統計_prompt.md  # 切入點 1
+skills/spec-p1-digest-flow/templates/prompts/step2_釐清清單_prompt.md  # 切入點 1
+skills/spec-p1-digest-flow/templates/prompts/step4_釐清整合_prompt.md  # 切入點 1
+skills/spec-p2-tasking/SKILL.md                                       # 切入點 2（api_contract + MCP DESCRIBE）
+skills/spec-p3-backend/SKILL.md                                       # 切入點 2 / 3 / 5
+skills/spec-p3-frontend/SKILL.md                                      # 切入點 3 / 5
+skills/spec-p3-data/SKILL.md                                          # 切入點 5
 ```

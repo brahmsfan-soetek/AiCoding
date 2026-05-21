@@ -13,6 +13,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 - **輸出：** 前端實作 code + git commits（無 mock-based 契約測試）
 - **契約對照的定位：** SG2 強制列「實作意圖 ↔ api_contract A##」對照表給 PG 審，作為「後端傳來的資料有沒有被正確解析 / 轉換」的靜態檢查；不從 sibling FE code 推測 shape，不從 BE Java/Processor code 直接讀。UI 顯示、UX 互動、樣式、文字由 PG 完工後開瀏覽器整體手測（照 `test_cases.md`）。
 - **與 P3-backend 的關係：** 本 SKILL 只處理前端 task；後端另起 session 用 `/impl-be`。兩 session 共用同一份 `progress.md` 與 `session_log.md`（task prefix `B*` / `F*` 區分），共用同一份 `api_contract.md`。
+- **SKILL 邊界：** 本 SKILL 結束點 = 前端 task 全部 done + 收尾報告 + 維護期 hand-off append（見步驟 7「完工三條件」）。**不負責**整合手測、UI 微調、手測發現的 bug 修復、上線部署、維運監控；後續 bug 走 ad hoc 派修，**不寫入 progress.md / session_log.md**（避免文件膨脹失焦）。
 
 ## 觸發方式
 
@@ -92,13 +93,19 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 │         （可降密度：每 N task 一次）            │
 └────────────────────────────────────────────────┘
          ↓
-[AI]  彙總報告（不另開 commit）
-[AI]  完工報告：
-      - 契約測試通過數
+[AI]  完工判定（三條件全成立才算 SKILL 結束）
+      - (1) 前端 task 全 done
+      - (2) 收尾報告產出
+      - (3) 維護期 hand-off 已 append 至 session_log（含 AI 初稿，於最後一個 task commit 內）
+[AI]  收尾報告（純 console，不另開 commit）
+      - 完成 task 清單 / SG2 偏離 warning
+      - hand-off 初稿摘要,提醒 PG 過目
       - 建議 PG 下一步：
         1. 另起 session 執行 /data（若尚未做）
-        2. 確認 /data 跑完後，開瀏覽器照 test_cases.md 整體手測
-        3. 手測發現 bug → ad hoc 派 AI 修（不走 SKILL）
+        2. /data 跑完後開瀏覽器照 test_cases.md 整體手測
+[AI]  SKILL 邊界宣示
+      - 手測 bug + UI 微調 → ad hoc 派修
+      - 不寫進 progress.md / session_log.md（避免膨脹失焦）
 [AI]  Session 歸檔
 ```
 
@@ -147,19 +154,46 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
       - lint + typecheck
 
    c. 更新 progress.md
-   d. 若為本 session 預期收尾的最後一個 task → 同步 append session_log.md 本 session 的「關鍵決策」「問題與教訓」「下 session 注意」區塊
+   d. 若為本 session 預期收尾的最後一個 task → 同步 append session_log.md：
+      - 本 session 的「關鍵決策」「問題與教訓」「下 session 注意」區塊
+      - **若為本 SKILL 全部前端 task 的最後一個** → 同步 append 「## 維護期 hand-off」段（見步驟 7 詳述）；初稿由 AI 從 progress.md 備註欄、本檔「下 session 注意」、SG2 對照表偏離項自動歸納（特別關注：i18n 暫用 namespace、CSS workaround、UI 暫用 stub、組件 emit 限制等）
    e. commit：code + progress.md（+ session_log.md，若為最後一個 task）一起
       - **不獨立 commit** progress / session_log；附在實作 code 的 commit 範圍內
       - commit 標題格式：`{type}({模組}): {動作描述}`（如 `feat(ar003): wire customer store mapping`、`fix(ar003): align credit field rename`）
       - **commit 標題禁止含 `F01` / `F08` 等 task id**；task id 可放 commit body 內描述
    f. **[STOP] SG3：** PG 審閱（繼續 / 回修 / 停止），可降密度
-7. **全部前端 task 完成後：**
-   - session_log.md 已於最後一個 task 的 commit 內 append 完成 → **不另開 commit**
-   - 彙總報告：完成 task 清單、契約測試通過數（純 console 報告，不寫檔）
+7. **全部前端 task 完成後（SKILL 完工判定）：**
+
+   **完工三條件**（全部成立才算 SKILL 結束）：
+   - (1) 前端 task 全部 `done`（`progress.md` 的 `F*` 沒有 `wip` / `todo`）
+   - (2) 收尾報告產出（純 console，不寫檔）
+   - (3) 維護期 hand-off 已 append 至 `session_log.md`（含 AI 初稿，PG 修）
+
+   **維護期 hand-off（在最後一個 task 的 commit 範圍內 append session_log.md）：**
+   - 寫入固定段「`## 維護期 hand-off`」（格式見 `spec-p3-backend` SKILL Session Log 範例）
+   - 兩類分項：
+     - **上線前必補（blocker）**：留空殼 / 暫用 stub / 未實作的必要 UI 或互動
+     - **技術債（non-blocker）**：i18n 暫用 namespace、CSS workaround、組件 emit 限制、未來 refactor 候選
+   - 初稿來源（AI 自動歸納）：
+     - `progress.md` 備註欄出現的 warning / skip
+     - 本 session `session_log.md`「下 session 注意」中與「驗收 / 上線 / 維護」相關的條目
+     - 各 task 的 SG2 對照表偏離項（PG 過了但仍是 hand-off 候選）
+   - 每項註明來源：`{task id 或 session 章節}：{描述}`
+   - **若無項目可歸納 → 兩類都列「（無）」，不可省略段落**
+
+   **收尾報告（純 console，不另開 commit）：**
+   - 完成 task 清單（按類型 tag 分類計數）
+   - 任何 SG2 偏離 warning
+   - hand-off 初稿摘要（提醒 PG 過目修改）
    - 建議 PG 下一步：
      1. 另起 session 執行 `/data`（產權限 + seed SQL）
      2. `/data` 跑完後開瀏覽器照 `test_cases.md` **整體手測**
-     3. 手測發現 bug → ad hoc 派 AI 修（不走本 SKILL 流程）
+
+   **SKILL 邊界**（完工後不入本 SKILL 的事，落到此 SKILL 之外）：
+   - 整合手測（PG 開瀏覽器照 `test_cases.md` 跑）
+   - 手測發現的 bug 修復 + UI 微調 → ad hoc 派 AI 修，**不寫入 `progress.md` / `session_log.md`**（避免文件膨脹失焦；ad hoc 修走 git log + commit message 自身紀錄）
+   - 上線部署、維運監控
+
 8. **Session 歸檔**
 
 ## Stop Gate 設計
@@ -187,7 +221,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 3. **Subagent 不產出進 git 的檔案**。
 4. **讀規範、不掃 code**。
 5. **前後端分 session** — 共用 progress.md / session_log.md / api_contract.md，但實作不互相影響。
-6. **SKILL 結束 ≠ 驗證結束** — 本 SKILL 結束後仍有 `/data` + PG 手測兩步才算真正完工。
+6. **SKILL 結束 = 完工三條件（task done + 收尾報告 + hand-off append）** — SKILL 結束後仍有 `/data` + PG 整體手測兩步才算真正可上線；整合手測 / UI 微調 / bug 修復走 ad hoc 派修，不寫進 progress.md / session_log.md。AR002 主輪後 ad hoc 沒紀錄是健康狀態而非缺失：SKILL 該結束就結束，後面是維護期。
 
 ## Checkpoint / Session Log
 
