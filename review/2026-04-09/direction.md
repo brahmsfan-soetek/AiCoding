@@ -16,7 +16,7 @@
 | 6 | MCP MySQL Server：DB-first 驗證內建 | 全 skill（特別 spec-p3-backend / spec-p3-data）| 根除「Claude 從 sibling code 推 schema」這類型錯誤；也是切入點 2「DESCRIBE 真 DB」的實作方式 | ⚠️ **半實作**（spec-p2 MCP DESCRIBE 已落地；spec-p3-data 待動）|
 | 7 | Scope-lock prompt pattern：restate deliverable + out-of-scope 後才動手 | 全 skill 開頭 + ad hoc 請求 | 直擊 Insight 報告的 35 wrong_approach + 12 excessive_changes 友擦 | ⏳ 待動 |
 | 8 | commit-time hook（PreToolUse + Bash + `git commit` filter）自動 typecheck + module test | settings.json 層級 | 自動化測試執行；連動切入點 3 測試策略瘦身 + TDD Red-first 紀律外部化 | ✅ **本輪已實作**（spike 3：typecheck + module test on commit；spike 1/2 替代設計骨架）|
-| 9 | CLAUDE.md 補 5 條規約（DB-first / 不擴張 scope / 金融約定 / git worktree / i18n namespace）| 專案 CLAUDE.md | 落地 Insight 建議的 5 條 CLAUDE.md additions | ⏳ 待動 |
+| 9 | CLAUDE.md 補 5 條規約（DB-first / 不擴張 scope / 金融約定 / git worktree / i18n namespace）| 專案 CLAUDE.md | 落地 Insight 建議的 5 條 CLAUDE.md additions | 🚫 **撤回**（重新歸類；CLAUDE.md 屬 target project，spec-workflow SKILL 不該管）|
 
 ---
 
@@ -425,28 +425,27 @@ Wait for my confirmation.
 
 ---
 
-## 待動：切入點 9 — CLAUDE.md 補 5 條規約
+## 撤回：切入點 9 — CLAUDE.md 補 5 條規約（2026-05-21 重新歸類）
 
-### 來源
+### 撤回理由
 
-Insight Report 「Suggested CLAUDE.md Additions」5 條，直接落地：
+PG 觀察：**CLAUDE.md 是 target project 的事**，spec-workflow SKILL 跑在 target project 內時自然會讀 target 的 `CLAUDE.md`，SKILL 不該回過頭去改 target 的 CLAUDE.md。
 
-1. **Database Investigation**：查 SP / schema / DB 行為時，直接查 DB DDL/definition，不要從 sibling Java/SP code 推
-2. **Working Style**：narrowly scoped；不擴張到相鄰重構、不加未請求的 feature、不寫廣泛實作計劃；擴張前先問
-3. **AR002 / Financial Conventions**：currency precision 由 currency code 決定（不靠 decimals prop）；historical base-amount 不能用 current FX rate 重算；credit note 符號 convention 先驗
-4. **Git Workflow**：worktree 時確認寫入目標路徑；git amend/rebase 前確認 target commit
-5. **Frontend / i18n**：i18n 新增字串加進既有 default `cv.json`，不創新 prefix namespace（除非明示）
+切入點 9 提的 5 條規約重新拆解後，沒有任何一條應由 spec-workflow SKILL 直接落地：
 
-### 落地方式
+| 條目 | 性質 | 真正歸屬 | 現況 |
+|---|---|---|---|
+| 1. **DB-first**（不從 sibling code 推 schema）| 跨專案普適 | spec-workflow SKILL | **已 cover** — spec-p3-backend SKILL.md 核心原則 2 + 防護機制 4（current_schema 對齊；切入點 2 落地時已寫進）|
+| 2. **Working Style**（narrowly scoped 不擴張）| 跨專案普適 | spec-workflow SKILL | **歸併到切入點 7**（Scope-lock prompt pattern：restate deliverable / list out-of-scope，待落地時統一處理）|
+| 3. **AR002 / Financial Conventions** | **serp / AR002 專屬** | serp 專案 `CLAUDE.md` | SKILL 不該管，由 PG 在 target project 自行加 |
+| 4. **Git Workflow**（worktree path / amend confirm）| 跨專案 / 個人習慣 | `~/.claude/CLAUDE.md` 全域 or target | 屬個人工作風格，spec-workflow SKILL 不直接管 |
+| 5. **Frontend / i18n**（不創新 prefix namespace、用 default `cv.json`）| **serp 專屬** | serp 專案 `CLAUDE.md` | SKILL 不該管 |
 
-每條都是 1-2 句話的「行為規約」，加進 `CLAUDE.md` 對應章節（DB / Working Style / AR2 / Git / Frontend）；若該章節不存在就建立。
+### 對未來批次的啟示
 
-### 預期效果
-
-- 規約直接擋下 Insight 報告中的具體 friction 案例
-- AR002 跨 session 重複糾正（decimals split / base-amount / ANCV sign）一次性收斂
-- Git worktree path / amend 失誤類事件減少
-- i18n namespace 暴增的問題收斂
+- spec-workflow SKILL 的責任邊界 = **跨專案普適的流程 / 規約 / Stop Gate**；target project specific 的業務 / 命名 / framework 慣例 = target project CLAUDE.md
+- Insight Report 給的「Suggested CLAUDE.md Additions」是針對 PG 在過去三個專案中觀察到的 friction，落地對象應是 PG 在各專案的 CLAUDE.md，不是 SKILL bundle
+- 切入點 9 的條目 1 / 2 / 4 已分別在切入點 2 / 7（待動）/ SKILL 既有規範中處理
 
 ---
 

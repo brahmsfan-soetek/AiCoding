@@ -49,7 +49,8 @@
 1. 第一元件 milestone stop + 自訂 CSS regex 守則 + 強制讀 CLAUDE.md（切入點 4）
 2. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
 3. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
-4. CLAUDE.md 補 5 條規約（切入點 9）
+
+切入點 9（CLAUDE.md 補 5 條規約）已撤回 — CLAUDE.md 屬 target project，spec-workflow SKILL 不該管；5 條規約已分別歸併到切入點 2（DB-first，已 cover）/ 切入點 7（Working Style）/ target project CLAUDE.md（Financial / i18n）/ 個人工作風格（Git worktree）。詳見 direction.md「撤回：切入點 9」段。
 
 ## 引用清單
 
