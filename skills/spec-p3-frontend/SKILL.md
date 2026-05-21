@@ -60,7 +60,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 [AI]  讀 progress.md / session_log.md（若存在）
 [AI]  統計 task 類型分佈
       （service N / store-map M / store-action K / types J / page I / dialog H / i18n G / router F）
-[STOP] SG1: PG 確認載入、類型分佈、起始 task
+[STOP] SG1: PG 確認載入、類型分佈、commit-time hook 安裝（未裝 → 提示安裝 spike 3）、起始 task
          ↓
 ┌─── 每個 task loop ───────────────────────────┐
 │  [AI]  讀當前 task + 類型 tag                   │
@@ -126,9 +126,23 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
    - 檢查 `Docs/spec/{程式編號}/log/{程式編號}_progress.md`
    - 若存在 → 讀取進度，報告前端（`F*`）task 狀態
    - 若不存在 → 建立空檔
-5. **[STOP] SG1：**
+5. **[STOP] SG1 — 確認載入 + hook 安裝：**
    - 報告載入清單（含 frontend_tasks.md + api_contract.md 的 {N} 支 API）、規範文件、測試 / lint / typecheck 指令
    - **報告 task 類型分佈**，並列出每個 `[service]` / `[store-map]` task 對應的 api_contract A## 小節
+   - **檢查 commit-time hook**（切入點 8 A path）：
+     - 偵測 target project `.claude/settings.local.json` / `.claude/settings.json` 是否引用 `typecheck-test-on-commit.ps1`（或其他等效 PreToolUse Bash + git commit filter hook）
+     - **已裝** → 報告「✓ hook 已安裝」
+     - **未裝** → 報告「⚠️ commit-time hook 未安裝；切入點 8 落地：每次 `git commit` 自動跑 `npm run typecheck` + `npx vitest related --run <staged>`，失敗 block commit 並要求 AI 通知 PG（不自動修）」，引用 `<skill-dir>/templates/hooks/README.md` 給 PG 看設計脈絡，詢問 PG：
+       - (a) 安裝 spike 3（typecheck + vitest related，預設推薦）→ SKILL：
+         - 複製 `<skill-dir>/templates/hooks/typecheck-test-on-commit.ps1` 到 target `.claude/hooks/`
+         - 讀 target `.claude/settings.local.json`（無則建空 JSON）→ 用 ConvertFrom-Json / ConvertTo-Json 合併 `settings.local.json.tmpl` 的 PreToolUse 區塊（保留現有 `permissions` 等）→ 寫回
+         - 報告：file watcher 自動 reload，下次 `git commit` 即觸發；`/hooks` 可確認 load 狀態
+       - (b) 跳過 → 本 session 不再詢問；PG 可日後手動裝
+       - (c) Spike 1（typecheck only）/ Spike 2（+ eslint）替代設計 → 按 README 骨架自行調整
+     - **觸發頻率**：只在 AI 跑 `git commit` 時觸發；Edit / Write 不擋（不切碎 UI 微調的 AI flow）
+     - **block 後 AI 行為**：reason 內含「⚠️ Do NOT auto-fix in-place. Notify PG.」，AI 看 reason 後回報 PG，**不原地反覆嘗試 commit**；PG 決定 retry / rollback / hand off
+     - **target project package.json 需有 `typecheck` 或 `type-check` script**，否則 hook 自動跳過 typecheck（只跑 vitest）；SKILL 報告若 script 缺則提示 PG 在 package.json 補
+     - hook 寫入 `.claude/settings.local.json`（gitignored，個人試用），不寫共用 `.claude/settings.json`
    - 詢問 PG：起始 task
 6. **Task Loop（每個 task）：**
    a. 讀取 task + 類型 tag
@@ -200,7 +214,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|---------|
-| SG1 | session 啟動後 | 確認載入正確、類型分佈、起始 task | 不建議 |
+| SG1 | session 啟動後 | 確認載入正確、類型分佈、commit-time hook 安裝狀態（PreToolUse Bash + git commit filter；未裝時可由 SKILL 寫入 `.claude/settings.local.json`）、起始 task | 不建議 |
 | SG2 | `[service]` / `[store-map]` 寫實作前 | 「實作意圖 ↔ api_contract A##」對照表審（契約對齊防護） | **不可省略**（契約對照 task）|
 | SG3 | task 結束 | 審閱繼續/回修 | 可降密度 |
 
@@ -213,6 +227,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 3. **契約偏離 → 停手** — 實作必須偏離 api_contract 時，**不可自行改契約**，必須停下來由 PG 決策。
 4. **完工後整體手測** — 避免 session 中途頻繁 demo 打斷節奏，讓 AI 一氣呵成做完前端，PG 最後一次看。
 5. **Artifact 合一 commit、commit 標題乾淨** — progress.md / session_log.md 與實作 code 同一 commit；session_log.md 在最後一個 task 的 commit 內 append。commit 標題禁止 task id（`F01` / `F08` 等）。
+6. **commit-time hook 自動 typecheck + vitest related（外部化 TDD Red-first 紀律）** — AI 跑 `git commit` 時自動跑 `npm run typecheck` + `npx vitest related --run <staged>`，失敗時透過 stdout JSON `{"decision":"block","reason":"..."}` block commit；reason 內含「⚠️ Do NOT auto-fix in-place. Notify PG.」要求 AI 不自動修、通知 PG。範本：`<skill-dir>/templates/hooks/typecheck-test-on-commit.ps1` + `settings.local.json.tmpl`（PreToolUse + matcher: Bash + script 內過濾 `git commit`）；SG1 提示 PG 安裝（spike 3 預設；spike 1 typecheck only / spike 2 + eslint 為替代設計骨架）。對應切入點 8（review/2026-04-09 A path）。設計理由：Edit / Write 每次跑切碎 AI flow（UI 微調如 `class="xxx"` 也卡 vue-tsc）；commit 時跑天然對齊 task 收尾（SG3 已是 typecheck stop gate，本 hook 補位「AI 跳過跑」極端），且 vitest related 在 commit 跑只挑相依 test 速度可接受。
 
 ## 核心原則
 
