@@ -25,34 +25,31 @@
 針對 spec-workflow bundle（spec-p1-digest-flow / spec-p2-tasking / spec-p3-backend / spec-p3-frontend / spec-p3-data）做整體 review。
 
 - `problems.md` — 三專案概覽、PG 5 個觀察點、5 個 skill 的洞、Insight 補強的觀察點 6、log 事件附錄
-- `direction.md` — 9 個切入點優先順序、本批已實作的 spec-p1 source-mapping 改造（5 個檔案 11 個 Edit）、待動 8 個切入點詳述
+- `direction.md` — 9 個切入點優先順序、本批已實作的 3 項（spec-p1 source-mapping / 切入點 2 API contract + current_schema / 切入點 3 測試策略瘦身 A 方案）、切入點 6 半實作、其餘 5 個切入點待動
 
 ## 主要結論
 
 ### 已實作（本批）
 
-**spec-p1-digest-flow source-mapping 改造**（5 個檔案）：
+| 切入點 | 內容 | commit |
+|:--:|---|---|
+| 1 | spec-p1-digest-flow source-mapping + coverage 反向 mapping + 解讀確認類別（5 個檔案 11 個 Edit） | ef69531 |
+| 2 | API contract 表升級為 spec-p2 一級產出 + spec-p3-backend 啟動先 DESCRIBE 真 DB（含 MCP MySQL DESCRIBE step、`api_contract.md` 第四份產出、Artifact 合一 commit 規約） | 4079842 |
+| 3 | 測試策略瘦身 A 方案：BE 拔 Processor mock test、FE 拔 store-map contract test，SG2 改走「api_contract A## + current_schema」對照規則 | （本 commit）|
+| 6（半）| MCP MySQL Server DB-first 驗證已在 spec-p2 落地；spec-p3-data 改用 MCP 待動 | 4079842 |
 
-| 改造 | 動到 |
-|---|---|
-| 改 1：規格統計加「規格出處」欄 | `規格統計模板.md` 3 張主表 + `step1_prompt.md` |
-| 改 2：釐清清單加「解讀確認」第五類 | `step2_prompt.md` + `釐清清單模板.md` |
-| 改 3：S4 章節 coverage 反向 mapping | `step4_prompt.md` + `規格統計模板.md` 文件開頭 |
-
-預期擋下 AR003「規則 A」漏看、SA §10「第 1 名」誤解、AR002 LOV 誤植等。
+預期擋下：AR003「規則 A」漏看、SA §10「第 1 名」誤解、AR002 LOV 誤植、AR003 BUG-A1（schema 漂移）、AR003 BUG-P4b-R4-CONTRACT（4 支 API 跨層欄位不一致）、SO0062 mapper camelCase、Processor mock test 套套邏輯 token 浪費等。
 
 ### 待動（傳給下批）
 
 依槓桿排：
 
-1. API contract 表升級為 spec-p2 一級產出 + spec-p3-backend DESCRIBE 真 DB（切入點 2）
-2. 測試策略瘦身：拔 Processor mock test、加跨層 schema 一致性測試（切入點 3）
-3. 第一元件 milestone stop + 自訂 CSS regex 守則 + 強制讀 CLAUDE.md（切入點 4）
-4. SKILL 結束點明確化 + bug 修復不入 SKILL 規約（切入點 5）
-5. MCP MySQL Server：DB-first 驗證內建（切入點 6，與 2 連動）
-6. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
-7. Hooks PostToolUse 自動 typecheck / mvn test（切入點 8，與 3 連動）
-8. CLAUDE.md 補 5 條規約（切入點 9）
+1. 第一元件 milestone stop + 自訂 CSS regex 守則 + 強制讀 CLAUDE.md（切入點 4）
+2. SKILL 結束點明確化 + bug 修復不入 SKILL 規約（切入點 5）
+3. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
+4. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
+5. Hooks PostToolUse 自動 typecheck / grep（切入點 8，與 3 連動把 SG2 對照規則部分自動化）
+6. CLAUDE.md 補 5 條規約（切入點 9）
 
 ## 引用清單
 

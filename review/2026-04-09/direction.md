@@ -9,11 +9,11 @@
 | # | 切入點 | 影響的 skill | 槓桿來源 | 狀態 |
 |:--:|---|---|---|:--:|
 | 1 | 規格統計 source-mapping + coverage 反向檢查 + 解讀確認類別 | spec-p1-digest-flow | 規格統計是整條流程的上游，這裡擋住等於擋下游所有錯 | ✅ **本輪已實作** |
-| 2 | API contract 表升級為 spec-p2 一級產出 + spec-p3-backend 啟動先 DESCRIBE 真 DB | spec-p2 / spec-p3-backend | 直擊 AR003 BUG-A1 / R4-CONTRACT 兩個跨層 schema 漂移 | ⏳ 待動 |
-| 3 | 測試策略瘦身（拔 Processor mock test）+ 加跨層 schema 一致性測試 | spec-p3-backend / spec-p3-frontend | 直接影響 token 成本與實作速度；改變 SG2 的擴張規則 | ⏳ 待動 |
+| 2 | API contract 表升級為 spec-p2 一級產出 + spec-p3-backend 啟動先 DESCRIBE 真 DB | spec-p2 / spec-p3-backend | 直擊 AR003 BUG-A1 / R4-CONTRACT 兩個跨層 schema 漂移 | ✅ **已實作**（commit 4079842）|
+| 3 | 測試策略瘦身（拔 Processor mock test）+ 跨層 schema 對照規則 | spec-p3-backend / spec-p3-frontend | 直接影響 token 成本與實作速度；改變 SG2 的擴張規則 | ✅ **本輪已實作** |
 | 4 | 第一元件 milestone stop + 自訂 CSS regex 守則 + 強制讀 CLAUDE.md 對照 | spec-p3-frontend | UI 微調量減少；CLAUDE.md 規範守住 | ⏳ 待動 |
 | 5 | SKILL 結束點明確化 + bug 修復不入 SKILL 規約 | spec-p3-* 全體 | 解釋 AR002 ad hoc 階段為何不入 SKILL | ⏳ 待動 |
-| 6 | MCP MySQL Server：DB-first 驗證內建 | 全 skill（特別 spec-p3-backend / spec-p3-data）| 根除「Claude 從 sibling code 推 schema」這類型錯誤；也是切入點 2「DESCRIBE 真 DB」的實作方式 | ⏳ 待動 |
+| 6 | MCP MySQL Server：DB-first 驗證內建 | 全 skill（特別 spec-p3-backend / spec-p3-data）| 根除「Claude 從 sibling code 推 schema」這類型錯誤；也是切入點 2「DESCRIBE 真 DB」的實作方式 | ⚠️ **半實作**（spec-p2 MCP DESCRIBE 已落地；spec-p3-data 待動）|
 | 7 | Scope-lock prompt pattern：restate deliverable + out-of-scope 後才動手 | 全 skill 開頭 + ad hoc 請求 | 直擊 Insight 報告的 35 wrong_approach + 12 excessive_changes 友擦 | ⏳ 待動 |
 | 8 | Hooks（PostToolUse）自動 typecheck / mvn test | settings.json 層級 | 自動化測試執行；連動切入點 3 測試策略瘦身 + TDD Red-first 紀律外部化 | ⏳ 待動 |
 | 9 | CLAUDE.md 補 5 條規約（DB-first / 不擴張 scope / 金融約定 / git worktree / i18n namespace）| 專案 CLAUDE.md | 落地 Insight 建議的 5 條 CLAUDE.md additions | ⏳ 待動 |
@@ -110,29 +110,58 @@ FE / BE task 開寫前都讀這份，作為跨層共讀來源。
 
 ---
 
-## 待動：切入點 3 — 測試策略瘦身
+## 已實作：切入點 3 — 測試策略瘦身 A 方案 + SG2 對照規則（2026-05-21）
 
-### 三選一（建議 B 折衷）
+### 方案決定（從 A/B/C 三方案選 A 激進）
 
-| 方案 | 內容 | 適用情境 |
+| 方案 | 內容 | 結果 |
+|:--:|---|:--:|
+| A 激進 | BE 完全拔 Processor mock test、FE 拔 store-map mapper contract test；新增「跨層 schema 對照規則」（不寫 JUnit/Vitest） | **本輪採用** |
+| B 折衷（原 review 推薦） | 同 A 拔 BE Processor mock test，但 FE Mapper contract test 保留 | — |
+| C 保守 | 保留 SG2 規則，僅縮限預設條目 | — |
+
+選 A 的理由：
+
+- 切入點 2 已落地 `api_contract.md` 共讀契約 + spec-p3-frontend SG2「assertion 對齊 api_contract A##」規則，FE Mapper contract test 邊際價值已被吸收
+- Mock test 抓 typo OK，但 AR003 BUG-P4b-R4-CONTRACT + SO0062 mapper camelCase 兩個案例都是 fixture 對但實際 API 已 rename / camelCase 不一致的跨層漂移，contract test 沒擋下
+- Mock-based Processor test 是「mock 設成預期再驗自己」的套套邏輯，token 高 ROI 低（problems.md §5 估 AR003 117/324/134 個 mock 測試攔到 bug 比例不到三成）
+
+### 跨層 schema 對照的形式
+
+選「**SG2 對照規則**」（不寫 JUnit / Vitest 測試）。理由：切入點 2 已落地 `current_schema_{程式編號}.md`，SG2 階段直接由 PG 審「對照表」即可，比寫測試輕量；CI 端的自動化（Hooks PostToolUse 自動 grep）留給切入點 8 落地。
+
+### 改造方案
+
+| 改 | 目的 | 動到的檔案 |
 |:--:|---|---|
-| A 激進 | P3 完全不寫 mock-based Processor 測試；只寫純函式邊界 + 跨層 schema 一致性；Processor 整合靠 P4 E2E | 願意賭 P4 E2E 完整度的團隊 |
-| **B 折衷（推薦）** | 保留純函式 SG2；保留 Mapper contract test；**拔掉 Processor mock-based 單元測試**；強制產出「跨層 schema 一致性測試」作為新類別 | 平衡 ROI 與安全網 |
-| C 保守 | 保留現狀，但把 SG2 預設條目從「所有測試」降為「**僅對純函式 / validator**」，Processor 類預設不出 SG2 案例 | 不想動既有產出但承認 token 成本 |
+| 改 1：spec-p3-backend `[processor]` 走雙對照、無單元測試 | 拔 mock-based Processor test 的套套邏輯成本；SG2 改為「`api_contract A##` ↔ response shape」+「`current_schema` ↔ SQL/Entity 欄位」雙對照表審 | `spec-p3-backend/SKILL.md` |
+| 改 2：spec-p3-frontend `[service]` / `[store-map]` 走 api_contract 對照、無契約測試 | 拔 mock-based contract test 的 fixture 漂移風險；SG2 改為「實作意圖 ↔ api_contract A##」對照表審 | `spec-p3-frontend/SKILL.md` |
 
-### 新測試類別「跨層 schema 一致性」
+### 影響檔案清單
 
-對應 AR003 BUG-A1 後補的測試類型：
+| 檔案 | 改動類型 |
+|---|---|
+| `skills/spec-p3-backend/SKILL.md` | frontmatter description、定位段、類型 tag 表（`[processor]` 從「TDD + 強制 null/""/空白」改「無 mock test + 雙對照」）、Execution Flow box、詳細步驟 6.b（拆 `[validator]` / `[processor]` / `[sql,entity,spi]` 三分支）、SG2 stop gate 表、關鍵防護機制、核心原則 |
+| `skills/spec-p3-frontend/SKILL.md` | frontmatter description、定位段、類型 tag 表、段落「為什麼只測契約層」改寫為「為什麼只做契約對照」、設計原則 1、Execution Flow box、詳細步驟 6.b、SG2 stop gate 表、關鍵防護機制、核心原則 |
 
-- `ArRecordsDdlConsistencyTest`：驗 DDL 檔含預期欄位 / Entity `@Column.name` 都能在 DDL 找到
-- `arNamespaceParity.test.ts`：驗 zh-TW / en-US namespace 對稱
-- `ar003TemplateKeyCoverage.test.ts`：驗 AR003 元件所有 `$t(...)` key 在兩邊 JSON 都能解析
+### 預期擋下的事件（基於 log 反推）
 
-這類測試「治本」，目前 SKILL 沒系統性產出，但 AR003 補完後是 P4b 修復的關鍵防線。
+| 事件 | 改 1 (BE) | 改 2 (FE) |
+|---|:---:|:---:|
+| AR003 BUG-P4b-R4-CONTRACT（4 支 View2 API 欄位與前端型別不一致）| ✓ | ✓ |
+| AR003 BUG-A1（schema 漂移 17 欄 vs DDL 15 欄）| ✓ | — |
+| SO0062 mapper camelCase 寫完 28 個 contract test 才發現 | — | ✓ |
+| Processor mock test 的 token 成本（AR003 117/324/134 個套套邏輯）| ✓ | ✓ |
 
-### memory 連動
+### 整合測試工具（未來再評）
 
-PG 已記 `feedback_integration_test_tool.md`（PG 對 Testcontainers 的傾向）；本方向可順手把 Processor 整合測試挪到 P3.5 / P4 走 Testcontainers，與 mock-based 切割。
+Processor 整合測試走什麼工具（Testcontainers / 直連 dev DB / 其他）目前未定，本方向不寫死；切入點 3 落地後若 SG2 拔 mock test 暴露 feedback loop 缺口，再另案決定。
+
+### 後續驗證建議
+
+1. 拿 AR003 既有規格跑一次新版 `/impl-be`，看 `[processor]` SG2 雙對照表是否真能擋下契約 / schema 漂移
+2. 跑一次 `/impl-fe`，看 `[service]` / `[store-map]` SG2 對照表是否能在 SO0062 那種 camelCase 改名情境抓到問題
+3. 若驗證通過 → 接著推切入點 8（Hooks PostToolUse 自動 grep）把 SG2 對照規則部分自動化
 
 ---
 

@@ -1,17 +1,17 @@
 ---
 name: spec-p3-frontend
-description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.md，以 task 類型 tag 分流測試策略（service/store-map 寫契約測試，types/store-action/page/dialog/i18n/router 無測試由 PG 完工後整體手測）。觸發於 /impl-fe 或提到前端實作、frontend impl 等關鍵字。
+description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.md，以 task 類型 tag 分流測試 / 對照策略（service/store-map 走 api_contract A## 對照表審，無 mock-based 契約測試；types/store-action/page/dialog/i18n/router 無測試由 PG 完工後整體手測）。觸發於 /impl-fe 或提到前端實作、frontend impl 等關鍵字。
 ---
 
-# Spec P3 Frontend — 前端實作（契約層測試）
+# Spec P3 Frontend — 前端實作（契約層對照）
 
 在專案 repo 目錄下執行，讀取 P2 產的 `{程式編號}_frontend_tasks.md` 與專案 `CLAUDE.md`，依 task 類型 tag 分流：**契約層（`[service]` / `[store-map]`）寫測試、UI 層（`[page]` / `[dialog]` 等）無測試由 PG 完工後整體手測**。
 
 ## 定位
 
 - **輸入：** P2 產的 `{程式編號}_frontend_tasks.md` + `{程式編號}_api_contract.md`（FE/BE 共讀契約）+ 專案 `CLAUDE.md`
-- **輸出：** 前端實作 code + 契約測試 + git commits
-- **契約測試的定位：** 只測「後端傳來的資料有沒有被正確解析 / 轉換」這一層，且 assertion 對齊 `api_contract.md` 的 A## 小節（不從 sibling FE code 推測 shape，不從 BE Java/Processor code 直接讀）。UI 顯示、UX 互動、樣式、文字由 PG 完工後開瀏覽器整體手測（照 `test_cases.md`）。
+- **輸出：** 前端實作 code + git commits（無 mock-based 契約測試）
+- **契約對照的定位：** SG2 強制列「實作意圖 ↔ api_contract A##」對照表給 PG 審，作為「後端傳來的資料有沒有被正確解析 / 轉換」的靜態檢查；不從 sibling FE code 推測 shape，不從 BE Java/Processor code 直接讀。UI 顯示、UX 互動、樣式、文字由 PG 完工後開瀏覽器整體手測（照 `test_cases.md`）。
 - **與 P3-backend 的關係：** 本 SKILL 只處理前端 task；後端另起 session 用 `/impl-be`。兩 session 共用同一份 `progress.md` 與 `session_log.md`（task prefix `B*` / `F*` 區分），共用同一份 `api_contract.md`。
 
 ## 觸發方式
@@ -30,8 +30,8 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 
 | Tag | 測試策略 | 備註 |
 |---|---|---|
-| `[service]` | **契約測試**（mock fetch，驗 path / method / payload / response shape） | API 服務層 |
-| `[store-map]` | **契約測試**（輸入後端 shape → 輸出前端 shape） | Store mapping helper |
+| `[service]` | **無 mock-based 測試**；SG2 對照 api_contract A##（path / method / payload / response shape 靜態檢查） | API 服務層 |
+| `[store-map]` | **無 mock-based 測試**；SG2 對照 api_contract A##（後端 shape → 前端 shape mapping 靜態檢查） | Store mapping helper |
 | `[store-action]` | **無測試** | ROI 低，手測涵蓋 |
 | `[types]` | **無測試** | typecheck 已蓋 |
 | `[page]` | **無測試** | UI/UX 由 PG 完工後手測 |
@@ -39,11 +39,11 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 | `[i18n]` | **無測試** | 靜態資料 |
 | `[router]` | **無測試** | 靜態資料 |
 
-**為什麼只測契約層：** AR003 教訓顯示後端欄位 rename 或 shape 調整時，前端 mapping helper 若無測試，bug 會延到手測階段才被發現（例如 backend 回 `creditAmt`、frontend 讀 `creditLimit` 全空）。契約測試是前端唯一 ROI 夠高的測試範圍。UI 類寫測試耗時遠高於 PG 手測 1 秒看出問題的速度。
+**為什麼改為「只做契約對照」而非「契約測試」：** AR003 教訓顯示後端欄位 rename 或 shape 調整時，前端 mapping helper 若無防線，bug 會延到手測階段才被發現（例如 backend 回 `creditAmt`、frontend 讀 `creditLimit` 全空）。但 mock-based contract test 抓 typo OK，**BUG-P4b-R4-CONTRACT 跨層欄位名不一致完全沒擋下**（SO0062 mapper camelCase 同樣是寫完 28 個 contract test 才發現後端落地與測試 fixture 不一致）。本輪改走「SG2 對照 api_contract A##（共讀契約）」這層靜態檢查 — 與寫 mock test 比，省 token、無 fixture 與真實 BE 漂移風險、PG 在 SG2 就能一眼看出對齊問題。UI 類寫測試耗時遠高於 PG 手測 1 秒看出問題的速度。
 
 ## 設計原則
 
-1. **半自動** — 有測試的 task 走 SG2/SG3、無測試的 task 只走 SG3 純審閱。
+1. **半自動** — `[service]` / `[store-map]` task 走 SG2 對照確認 + SG3 純審閱；其他類純走 SG3。
 2. **Subagent 不產出進 git 的檔案** — 實作 / 測試 code 必須由主 session 撰寫。跑 lint / typecheck / test 指令、搜尋既有元件參考可委託 subagent。
 3. **讀規範、不掃 code** — 專案 context 來自 `CLAUDE.md` 索引指向的規範文件。
 4. **Artifact 合一 commit** — progress.md / session_log.md 必須跟著實作 code 一起 commit，**不獨立 commit**。task loop 中：code + progress.md 一起；收尾時：最後一個 task 的 commit 範圍納入 session_log.md，不另開 commit。
@@ -66,10 +66,17 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 │                                                 │
 │  分支依類型 tag：                                │
 │  ┌─[service] / [store-map] 分支─────────────┐  │
-│  │  [AI]  列契約測試清單                      │  │
-│  │  [STOP] SG2: PG 快審測試清單               │  │
-│  │  [AI]  寫測試 → Red → 寫實作 → Green        │  │
-│  │  [AI]  lint + typecheck + git diff 自檢     │  │
+│  │  [AI]  列「api_contract A## ↔ 預計      │  │
+│  │        實作 / mapping shape」對照表       │  │
+│  │        (path / method / payload /         │  │
+│  │         response → 前端欄位)              │  │
+│  │  [STOP] SG2: PG 審對照表                 │  │
+│  │         （契約對齊防護，不可省略；        │  │
+│  │           不寫 mock-based test）          │  │
+│  │  [AI]  寫實作（無 mock test）            │  │
+│  │  [AI]  lint + typecheck                   │  │
+│  │  [AI]  自檢實作是否偏離 api_contract      │  │
+│  │        偏離 → 停手由 PG 決策              │  │
 │  └─────────────────────────────────────────────┘  │
 │  ┌─其他類（types/store-action/page/dialog/     ┐  │
 │  │  i18n/router）分支                          │  │
@@ -120,19 +127,20 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
    a. 讀取 task + 類型 tag
    b. 分支：
 
-      **`[service]` / `[store-map]` → 契約測試流程：**
+      **`[service]` / `[store-map]` → 契約對照流程（無 mock-based test）：**
       - **先載入 api_contract.md 對應的 A## 小節**，列出該 API 的 path / method / Request shape / Response shape（含巢狀層）
-      - 列出契約測試清單（assertion 必須對齊 A## 小節）：
-        - `[service]`：測 API path 對、HTTP method 對、payload shape 對齊 Request、response 解析對齊 Response shape
-        - `[store-map]`：以 api_contract 的 Response shape 作為 fixture 輸入，驗 mapping 出的前端 shape；至少覆蓋三類 case：
-          - 正常欄位（依 api_contract 的 type / 巢狀層）→ 轉成前端欄位
-          - 後端欄位 null / undefined（依 api_contract 標 nullable 的欄位）→ 前端預設值
+      - 產出對照表：
+        - `[service]`：`api_contract A##` ↔ `預計實作的 fetch 呼叫`（path / method / payload 欄位 / response 解析欄位）
+        - `[store-map]`：`api_contract A## Response shape` ↔ `預計 mapping 出的前端 shape`；涵蓋三類欄位處理：
+          - 正常欄位（依 api_contract 的 type / 巢狀層）→ 對應前端欄位
+          - 後端欄位 null / undefined（依 api_contract 標 nullable 的欄位）→ 前端預設值處理
           - 後端有多餘欄位 → 前端忽略
-      - **[STOP] SG2 測試清單快審**：附上「測試 assertion ↔ api_contract A## 對照表」，PG 可一眼確認對齊
-      - 寫測試 → Red → 寫實作 → Green
+      - **[STOP] SG2 對照表審**：向 PG 展示「實作意圖 ↔ api_contract A##」對照表，PG 一眼確認對齊
+        - **不可省略**
+        - 不寫 mock-based 契約測試（mock fixture 與真實 BE 落地容易漂移，AR003 BUG-P4b-R4-CONTRACT + SO0062 mapper camelCase 都是 fixture 對但實際 API 已 rename / camelCase 不一致的案例；contract test 抓 typo OK，但這類跨層漂移擋不下來）
+      - 寫實作（無 mock test）
       - lint + typecheck
-      - `git diff` 自檢測試檔
-      - 自檢：mapping 出的前端欄位名 / 型別是否與既有 store / page 元件用到的一致；若實作必須偏離 api_contract → **不可自行改契約**，停下來告知 PG
+      - 自檢：mapping 出的前端欄位名 / 型別是否與既有 store / page 元件用到的一致；實作是否與 api_contract A## 完全對齊；若實作必須偏離 api_contract → **不可自行改契約**，停下來告知 PG
 
       **`[types]` / `[store-action]` / `[page]` / `[dialog]` / `[i18n]` / `[router]` → 純實作：**
       - 寫實作（無測試）
@@ -159,23 +167,23 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|---------|
 | SG1 | session 啟動後 | 確認載入正確、類型分佈、起始 task | 不建議 |
-| SG2 | `[service]` / `[store-map]` 寫測試前 | 契約覆蓋度防護 | **不可省略**（有測試的 task）|
+| SG2 | `[service]` / `[store-map]` 寫實作前 | 「實作意圖 ↔ api_contract A##」對照表審（契約對齊防護） | **不可省略**（契約對照 task）|
 | SG3 | task 結束 | 審閱繼續/回修 | 可降密度 |
 
 **無 Demo Gate** — UI 類 task 不逐批停，全部前端 task 做完後由 PG 整體手測（見步驟 7）。
 
 ## 關鍵防護機制
 
-1. **SG2 契約測試清單審** — 特別是 `[store-map]` 必須覆蓋 rename / null / 多餘欄位三類 case（對齊 AR003 BUG-P4b-R4-CONTRACT 教訓）。
-2. **`[service]` / `[store-map]` 對齊 api_contract** — 測試 assertion 必須以 api_contract A## 小節為基準；不從 sibling FE code 推、不直接讀 BE Java/Processor 推（對齊 SO0062 mapper camelCase 教訓：寫完 28 個 contract test 才發現後端 camelCase）。
+1. **SG2 「實作意圖 ↔ api_contract A##」對照表審** — `[service]` / `[store-map]` 寫實作前必先列對照表，PG 過了才寫實作。`[store-map]` 對照表必須涵蓋 rename / null / 多餘欄位三類欄位處理（對齊 AR003 BUG-P4b-R4-CONTRACT 教訓）。**不寫 mock-based 契約測試**（fixture 與真實 BE 漂移風險高，SO0062 mapper camelCase 是反例：28 個 contract test fixture 對但實際後端已 camelCase；contract test 抓 typo OK，跨層漂移擋不下來）。
+2. **`[service]` / `[store-map]` 對齊 api_contract** — 實作必須以 api_contract A## 小節為基準；不從 sibling FE code 推、不直接讀 BE Java/Processor 推。
 3. **契約偏離 → 停手** — 實作必須偏離 api_contract 時，**不可自行改契約**，必須停下來由 PG 決策。
 4. **完工後整體手測** — 避免 session 中途頻繁 demo 打斷節奏，讓 AI 一氣呵成做完前端，PG 最後一次看。
 5. **Artifact 合一 commit、commit 標題乾淨** — progress.md / session_log.md 與實作 code 同一 commit；session_log.md 在最後一個 task 的 commit 內 append。commit 標題禁止 task id（`F01` / `F08` 等）。
 
 ## 核心原則
 
-1. **只測契約層** — UI / UX / 樣式 / 文字由 PG 手測比寫測試快 10 倍。
-2. **契約來源 = api_contract.md** — `[service]` / `[store-map]` 測試 assertion 與 mapper 實作均對齊 `api_contract.md` 的 A## 小節；不從 sibling code 推、不從 BE Java/Processor 直接讀；偏離 → 停手由 PG 決策。
+1. **契約層走靜態對照、UI 層走手測** — `[service]` / `[store-map]` 走 SG2 對照 api_contract（無 mock-based test）；UI / UX / 樣式 / 文字由 PG 手測比寫測試快 10 倍。
+2. **契約來源 = api_contract.md** — `[service]` / `[store-map]` 對照表與 mapper 實作均對齊 `api_contract.md` 的 A## 小節；不從 sibling code 推、不從 BE Java/Processor 直接讀；偏離 → 停手由 PG 決策。
 3. **Subagent 不產出進 git 的檔案**。
 4. **讀規範、不掃 code**。
 5. **前後端分 session** — 共用 progress.md / session_log.md / api_contract.md，但實作不互相影響。
