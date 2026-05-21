@@ -36,6 +36,7 @@
 | 1 | spec-p1-digest-flow source-mapping + coverage 反向 mapping + 解讀確認類別（5 個檔案 11 個 Edit） | ef69531 |
 | 2 | API contract 表升級為 spec-p2 一級產出 + spec-p3-backend 啟動先 DESCRIBE 真 DB（含 MCP MySQL DESCRIBE step、`api_contract.md` 第四份產出、Artifact 合一 commit 規約） | 4079842 |
 | 3 | 測試策略瘦身 A 方案：BE 拔 Processor mock test、FE 拔 store-map contract test，SG2 改走「api_contract A## + current_schema」對照規則 | d4ce9c6 |
+| 4 | spec-p3-frontend SG1 列前端硬守則清單（target CLAUDE.md + memory，分可 grep / 意圖兩類）+ UI 類 task SG3 自動 grep 守則驗證（只報不擋）；規約內容由 target 提供，SKILL 不預設；動作 2 第一元件 milestone stop 經評估 skip | （本 commit）|
 | 5 | SKILL 結束點明確化（完工三條件：task done + 收尾報告 + 維護期 hand-off append）+ bug 修復不入 SKILL 規約 + Session Log 加「維護期 hand-off」段骨架（上線前必補 / 技術債兩類） | 6c4ef8a |
 | 6（半）| MCP MySQL Server DB-first 驗證已在 spec-p2 落地；spec-p3-data 改用 MCP 待動 | 4079842 |
 | 8 | commit-time hook 自動 typecheck + module test（PreToolUse + Bash matcher + `git commit` filter，spike 3 預設 + spike 1/2 替代骨架）；SKILL SG1 hook 偵測與安裝流程（PG 選擇 → SKILL 寫入 target `.claude/settings.local.json` + 複製 .ps1）；block 後 AI 通知 PG 不自動修 | （本 commit）|
@@ -46,9 +47,10 @@
 
 依槓桿排：
 
-1. 第一元件 milestone stop + 自訂 CSS regex 守則 + 強制讀 CLAUDE.md（切入點 4）
-2. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
-3. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
+1. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
+2. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
+
+切入點 4 動作 2「第一元件 milestone stop」已評估 skip，目前先靠動作 1（SG1 列守則）+ 動作 3（SG3 grep）兩段機制；若實際 target project 跑後仍出現「連跑後一次驗收 → 全部偏」事件再回頭評估。
 
 切入點 9（CLAUDE.md 補 5 條規約）已撤回 — CLAUDE.md 屬 target project，spec-workflow SKILL 不該管；5 條規約已分別歸併到切入點 2（DB-first，已 cover）/ 切入點 7（Working Style）/ target project CLAUDE.md（Financial / i18n）/ 個人工作風格（Git worktree）。詳見 direction.md「撤回：切入點 9」段。
 
@@ -71,7 +73,7 @@ skills/spec-p1-digest-flow/templates/prompts/step2_釐清清單_prompt.md  # 切
 skills/spec-p1-digest-flow/templates/prompts/step4_釐清整合_prompt.md  # 切入點 1
 skills/spec-p2-tasking/SKILL.md                                       # 切入點 2（api_contract + MCP DESCRIBE）
 skills/spec-p3-backend/SKILL.md                                       # 切入點 2 / 3 / 5 / 8
-skills/spec-p3-frontend/SKILL.md                                      # 切入點 3 / 5 / 8
+skills/spec-p3-frontend/SKILL.md                                      # 切入點 3 / 4 / 5 / 8
 skills/spec-p3-data/SKILL.md                                          # 切入點 5
 skills/spec-p3-backend/templates/hooks/typecheck-test-on-commit.ps1   # 切入點 8（新建，commit-time hook）
 skills/spec-p3-backend/templates/hooks/settings.local.json.tmpl       # 切入點 8（新建，PreToolUse Bash matcher）

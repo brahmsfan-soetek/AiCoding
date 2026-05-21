@@ -60,7 +60,8 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 [AI]  讀 progress.md / session_log.md（若存在）
 [AI]  統計 task 類型分佈
       （service N / store-map M / store-action K / types J / page I / dialog H / i18n G / router F）
-[STOP] SG1: PG 確認載入、類型分佈、commit-time hook 安裝（未裝 → 提示安裝 spike 3）、起始 task
+[STOP] SG1: PG 確認載入、類型分佈、前端硬守則清單（target CLAUDE.md + memory）、
+            commit-time hook 安裝（未裝 → 提示安裝 spike 3）、起始 task
          ↓
 ┌─── 每個 task loop ───────────────────────────┐
 │  [AI]  讀當前 task + 類型 tag                   │
@@ -90,7 +91,8 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 │  [AI]  commit: code + progress.md                │
 │        (+ session_log.md 若為最後一個 task)      │
 │  [STOP] SG3: PG 審閱 → 繼續 / 回修 / 停止      │
-│         （可降密度：每 N task 一次）            │
+│         UI 類 task 報告含 grep 守則違規        │
+│         （只報不擋；可降密度：每 N task）       │
 └────────────────────────────────────────────────┘
          ↓
 [AI]  完工判定（三條件全成立才算 SKILL 結束）
@@ -129,6 +131,15 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 5. **[STOP] SG1 — 確認載入 + hook 安裝：**
    - 報告載入清單（含 frontend_tasks.md + api_contract.md 的 {N} 支 API）、規範文件、測試 / lint / typecheck 指令
    - **報告 task 類型分佈**，並列出每個 `[service]` / `[store-map]` task 對應的 api_contract A## 小節
+   - **列前端硬守則清單**（target CLAUDE.md + PG memory 對齊防護，對應切入點 4 動作 1）：
+     - 從步驟 3 讀到的 target 前端 `CLAUDE.md` 抽取本次 session 將遵守的前端硬守則；同時參考 PG 個人 memory（若 AI 載入的記憶系統中有與前端規約相關的條目，如「feedback_frontend_style」這類條目）
+     - 守則整理成兩類報告：
+       - **可 grep 驗證類**（規約寫法明確、可 regex 對應）— 每條附對應 grep pattern，作為 SG3 自動驗證依據。例：禁 inline style → `style="`；禁 `<style>` 自訂 CSS → `<style`；組件命名前綴 → `^export\s+const\s+[特定前綴]`
+       - **意圖類**（不可機械驗證，屬 PG 手測階段審）— 例：組件式拆分、樣式參考某 GL 元件、i18n namespace 規範
+     - 報告：兩類各列條目，每條註明來源（target `CLAUDE.md` 段落 / PG memory 名稱）
+     - **若 target `CLAUDE.md` 無前端硬守則段、PG memory 也無相關條目** → 報告「無前端硬守則，本 session 跳過守則對齊」；SG3 自動 grep 步驟亦跳過
+     - **不可預設 / 不可硬編** 任何具體規約（如「零自訂 CSS」）；SKILL 只負責**機制**（讀 + 列 + 驗證），規約**內容**由 target project 提供（對齊切入點 9 撤回啟示：target project CLAUDE.md 才是規約權威）
+     - PG 過了清單（或補上漏掉的、移除不適用的、調整 grep pattern 的）才繼續
    - **檢查 commit-time hook**（切入點 8 A path）：
      - 偵測 target project `.claude/settings.local.json` / `.claude/settings.json` 是否引用 `typecheck-test-on-commit.ps1`（或其他等效 PreToolUse Bash + git commit filter hook）
      - **已裝** → 報告「✓ hook 已安裝」
@@ -176,6 +187,13 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
       - commit 標題格式：`{type}({模組}): {動作描述}`（如 `feat(ar003): wire customer store mapping`、`fix(ar003): align credit field rename`）
       - **commit 標題禁止含 `F01` / `F08` 等 task id**；task id 可放 commit body 內描述
    f. **[STOP] SG3：** PG 審閱（繼續 / 回修 / 停止），可降密度
+      - **UI 類 task（`[page]` / `[dialog]` 等視覺輸出類）SG3 報告加守則 grep 驗證**（對應切入點 4 動作 3）：
+        - 對 SG1 列的「可 grep 驗證類」守則，AI 自動跑 grep 掃本 task commit 範圍內變動的 `.vue` / `.tsx` / 其他相關前端檔（以 `git diff --name-only HEAD~1 HEAD` 或 `git show --stat HEAD` 取檔案清單）
+        - 報告每條守則的違規結果：守則名稱 → 違規 0 / N 處（含檔名 + 行號 + 對應原文片段）
+        - **只報告、不擋**；PG 看到違規後決定 retry / 修 / 接受（與 commit-time hook 失敗 block 機制不同：grep 屬「審美 / 風格」層面，由 PG 判斷；hook 屬「typecheck / test」層面，自動 block）
+        - **SG1 守則清單為空（即「無前端硬守則」） → 跳過 grep，SG3 走原邏輯**
+        - **`[service]` / `[store-map]` / `[types]` / `[i18n]` / `[router]` / `[store-action]` 等非視覺輸出類 task → 跳過 grep**（守則主要針對 UI 層；契約層由 SG2 對照、靜態檔由 typecheck 蓋）
+        - grep 結果不寫進 progress.md / session_log.md（屬 SG3 即時對話內容，PG 已過則不留檔；若 PG 決定當作技術債 → append 至 session_log 維護期 hand-off 段）
 7. **全部前端 task 完成後（SKILL 完工判定）：**
 
    **完工三條件**（全部成立才算 SKILL 結束）：
@@ -214,9 +232,9 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|---------|
-| SG1 | session 啟動後 | 確認載入正確、類型分佈、commit-time hook 安裝狀態（PreToolUse Bash + git commit filter；未裝時可由 SKILL 寫入 `.claude/settings.local.json`）、起始 task | 不建議 |
+| SG1 | session 啟動後 | 確認載入正確、類型分佈、**前端硬守則清單**（target CLAUDE.md + memory，分可 grep / 意圖兩類；切入點 4 動作 1）、commit-time hook 安裝狀態（PreToolUse Bash + git commit filter；未裝時可由 SKILL 寫入 `.claude/settings.local.json`）、起始 task | 不建議 |
 | SG2 | `[service]` / `[store-map]` 寫實作前 | 「實作意圖 ↔ api_contract A##」對照表審（契約對齊防護） | **不可省略**（契約對照 task）|
-| SG3 | task 結束 | 審閱繼續/回修 | 可降密度 |
+| SG3 | task 結束 | 審閱繼續/回修；**UI 類 task（`[page]` / `[dialog]`）報告含 grep 守則違規清單**（只報不擋；切入點 4 動作 3） | 可降密度 |
 
 **無 Demo Gate** — UI 類 task 不逐批停，全部前端 task 做完後由 PG 整體手測（見步驟 7）。
 
@@ -228,6 +246,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 4. **完工後整體手測** — 避免 session 中途頻繁 demo 打斷節奏，讓 AI 一氣呵成做完前端，PG 最後一次看。
 5. **Artifact 合一 commit、commit 標題乾淨** — progress.md / session_log.md 與實作 code 同一 commit；session_log.md 在最後一個 task 的 commit 內 append。commit 標題禁止 task id（`F01` / `F08` 等）。
 6. **commit-time hook 自動 typecheck + vitest related（外部化 TDD Red-first 紀律）** — AI 跑 `git commit` 時自動跑 `npm run typecheck` + `npx vitest related --run <staged>`，失敗時透過 stdout JSON `{"decision":"block","reason":"..."}` block commit；reason 內含「⚠️ Do NOT auto-fix in-place. Notify PG.」要求 AI 不自動修、通知 PG。範本：`<skill-dir>/templates/hooks/typecheck-test-on-commit.ps1` + `settings.local.json.tmpl`（PreToolUse + matcher: Bash + script 內過濾 `git commit`）；SG1 提示 PG 安裝（spike 3 預設；spike 1 typecheck only / spike 2 + eslint 為替代設計骨架）。對應切入點 8（review/2026-04-09 A path）。設計理由：Edit / Write 每次跑切碎 AI flow（UI 微調如 `class="xxx"` 也卡 vue-tsc）；commit 時跑天然對齊 task 收尾（SG3 已是 typecheck stop gate，本 hook 補位「AI 跳過跑」極端），且 vitest related 在 commit 跑只挑相依 test 速度可接受。
+7. **SG1 前端硬守則清單 + SG3 自動 grep 守則驗證（CLAUDE.md 對齊防護）** — SG1 從 target 前端 `CLAUDE.md` + PG memory 抽取本次 session 將遵守的前端硬守則，分「可 grep 驗證類」（附 regex pattern）與「意圖類」（由 PG 手測階段審）兩類列給 PG 確認；UI 類 task（`[page]` / `[dialog]`）SG3 報告附「對 commit 變動檔自動跑 grep pattern」的違規清單（檔名 + 行號 + 原文），**只報不擋**（與 commit-time hook 自動 block 機制互補：grep 屬風格 / 審美層，PG 判斷；hook 屬 typecheck / test 層，自動擋）。對應切入點 4 動作 1 + 動作 3（review/2026-04-09）。**規約內容由 target CLAUDE.md / PG memory 提供，SKILL 只負責「讀 + 列 + 驗證」機制，不預設任何具體規約**（如「零自訂 CSS」這類 PG 個人 / 專案專屬風格，SKILL 不該硬編；對齊切入點 9 撤回啟示）。設計理由：AR003 F20–F27 八個元件 1 commit / AR002 dialog 18+ session 微調這類「連跑後一次驗收 → 全部偏」事件，本機制在 SG1 對齊意圖、SG3 自動驗證落地，攔截擴散；若 target 沒有可 grep 規約 → 兩段都跳過，不增加干擾。
 
 ## 核心原則
 
