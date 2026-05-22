@@ -72,14 +72,16 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 
 ## 下游 SKILL 如何使用類型 tag
 
-| Tag | 下游 SKILL | 測試策略 |
+| Tag | 下游 SKILL | 測試 / 對照策略 |
 |---|---|---|
-| `[validator]` / `[processor]` | spec-p3-backend | TDD（Mockito / JUnit）完整 Red-Green |
-| `[sql]` / `[entity]` / `[spi]` | spec-p3-backend | 無 P3 測試 |
-| `[service]` / `[store-map]` | spec-p3-frontend | 契約測試（mock fetch / shape 斷言） |
+| `[validator]` | spec-p3-backend | 完整 TDD（JUnit / Mockito）Red-Green 迴圈 |
+| `[processor]` | spec-p3-backend | **無 mock-based 單元測試**；SG2 走 api_contract A## + current_schema 雙對照表（靜態檢查）|
+| `[sql]` / `[entity]` | spec-p3-backend | 無 P3 測試；SG2 對照 current_schema 欄位 / 型別 / nullable |
+| `[spi]` | spec-p3-backend | 無測試 |
+| `[service]` / `[store-map]` | spec-p3-frontend | **無 mock-based 測試**；SG2 對照 api_contract A## 對照表（path / method / payload / response shape）|
 | `[store-action]` / `[types]` / `[page]` / `[dialog]` / `[i18n]` / `[router]` | spec-p3-frontend | 無測試（UI 由 PG 手測） |
 
-**`[processor]` 額外要求：** task 必須列出「選填欄位」清單，供 P3-backend SG2 強制產生每個欄位的 null / `""` / 空白三種測試案例，對應 `:param IS NULL OR ... = :param` SQL pattern。
+**`[processor]` 額外要求：** task 必須列出「選填欄位」清單 + 對應的 `api_contract.md` A## 小節，供 P3-backend SG2 雙對照表審。對應的 SQL pattern `:param IS NULL OR ... = :param` 在選填欄位傳 `""` 時的行為由 PG 手測涵蓋（不再由 P3 mock test 擋）。
 
 ## 核心原則
 

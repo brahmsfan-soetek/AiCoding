@@ -23,20 +23,20 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 
 ### 後端 tag
 
-| Tag | 含義 | P3-backend 測試策略 |
+| Tag | 含義 | P3-backend 測試 / 對照策略 |
 |---|---|---|
-| `[validator]` | 驗證器 / 純函式 / 演算法 / 狀態機 | 完整 TDD |
-| `[processor]` | API Processor | 完整 TDD + SG2 強制覆蓋選填欄位 null/""/空白 |
-| `[sql]` | SQL YAML / DDL | 無 P3 測試（手測涵蓋） |
-| `[entity]` | Entity / Domain | 無測試 |
+| `[validator]` | 驗證器 / 純函式 / 演算法 / 狀態機 | 完整 TDD（JUnit / Mockito 純函式）|
+| `[processor]` | API Processor | 無 mock-based 單元測試；SG2 走 api_contract A## + current_schema 雙對照表（靜態檢查） |
+| `[sql]` | SQL YAML / DDL | 無 P3 測試；SG2 對照 current_schema 欄位 / 型別 |
+| `[entity]` | Entity / Domain | 無測試；SG2 對照 current_schema 欄位 / 型別 / nullable |
 | `[spi]` | SPI 介面 | 無測試 |
 
 ### 前端 tag
 
-| Tag | 含義 | P3-frontend 測試策略 |
+| Tag | 含義 | P3-frontend 測試 / 對照策略 |
 |---|---|---|
-| `[service]` | API 服務層 | 契約測試（mock fetch） |
-| `[store-map]` | Store mapping helper | 契約測試（後端 shape → 前端 shape） |
+| `[service]` | API 服務層 | 無 mock-based 測試；SG2 對照 api_contract A##（path / method / payload / response shape） |
+| `[store-map]` | Store mapping helper | 無 mock-based 測試；SG2 對照 api_contract A##（後端 shape → 前端 shape mapping） |
 | `[store-action]` | Store action | 無測試 |
 | `[types]` | TypeScript type | 無測試（typecheck 已蓋） |
 | `[page]` / `[dialog]` | UI 元件 | 無測試（PG 手測） |
@@ -212,7 +212,7 @@ spec-p2-tasking/
 ## 相關連結
 
 - [`spec-p1-digest-flow`](../spec-p1-digest-flow/) — P1 規格消化流程
-- [`spec-p3-backend`](../spec-p3-backend/) — P3 後端 tag 分流 TDD
-- [`spec-p3-frontend`](../spec-p3-frontend/) — P3 前端契約測試 + demo
+- [`spec-p3-backend`](../spec-p3-backend/) — P3 後端 tag 分流（validator TDD / processor 雙對照表）
+- [`spec-p3-frontend`](../spec-p3-frontend/) — P3 前端 tag 分流（service/store-map SG2 對照 api_contract）
 - [`spec-p3-data`](../spec-p3-data/) — P3 權限 + 測資 SQL
 - [主 README](../../README.md) — Skill catalog 與設計原則

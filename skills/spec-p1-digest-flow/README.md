@@ -84,8 +84,10 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 │  存放：建議 Docs/spec/{程式編號}/plan/                  │
 │  歸檔：SA 原始材料 → SA document/（留在原 SA 資料夾）   │
 │                                                         │
-│  → P3-backend spec-p3-backend（/impl-be，tag 分流 TDD）│
-│  → P3-frontend spec-p3-frontend（/impl-fe，契約測試）  │
+│  → P3-backend spec-p3-backend（/impl-be，tag 分流：    │
+│    validator TDD / processor 雙對照表）                │
+│  → P3-frontend spec-p3-frontend（/impl-fe，service/   │
+│    store-map SG2 對照 api_contract，無 mock test）     │
 │  → P3-data spec-p3-data（/data，權限 + 測資 SQL）      │
 │  → PG 手測（照 test_cases.md 勾選）                    │
 │                                                         │
@@ -204,8 +206,8 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 1. 將 `{編號}_規格統計_最終版.md` 與 UI 截圖複製到專案 repo
 2. 切換工作目錄至專案 repo 後，依序執行：
    - **P2** `/tasking` — 讀 CLAUDE.md 索引 → 產出前後端清單（含類型 tag）+ 手測 checklist
-   - **P3-backend** `/impl-be` — 另起 session，tag 分流（validator/processor TDD，sql/entity/spi 無測試）
-   - **P3-frontend** `/impl-fe` — 另起 session，契約測試（service/store-map），UI 類 task 無測試
+   - **P3-backend** `/impl-be` — 另起 session，tag 分流（validator 完整 TDD；processor 走 api_contract + current_schema 雙對照表，無 mock test；sql/entity/spi 對照 current_schema 後實作無測試）
+   - **P3-frontend** `/impl-fe` — 另起 session，service/store-map 走 SG2 對照 api_contract A##（無 mock-based test），UI 類 task 無測試
    - **P3-data** `/data` — 產 permission + seed SQL，PG 授權後執行
    - **PG 手測** — 開瀏覽器照 `test_cases.md` 逐條勾選，發現 bug ad hoc 派 AI 修
 3. 完成後將 SA 工作目錄的原始材料移至 `SA document/` 歸檔
