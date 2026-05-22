@@ -1,6 +1,6 @@
 ---
 name: spec-p3-backend
-description: 後端 TDD 驅動實作 SKILL：讀 P2 的 backend_tasks.md + 專案 CLAUDE.md，以 task 類型 tag 分流測試 / 對照策略（validator 完整 TDD；processor 走 api_contract A## + current_schema 雙對照表審,無 mock-based 單元測試；sql/entity/spi 對照 current_schema 後寫實作無測試）。觸發於 /impl-be 或提到後端實作、backend impl 等關鍵字。
+description: 依 backend_tasks.md 類型 tag 分流後端實作：validator TDD、processor 雙對照、其餘無測試。
 ---
 
 # Spec P3 Backend — 後端 TDD 實作

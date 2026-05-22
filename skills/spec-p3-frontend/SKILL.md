@@ -1,6 +1,6 @@
 ---
 name: spec-p3-frontend
-description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.md,以 task 類型 tag 分流測試 / 對照策略（service/store-map 走 api_contract A## 對照表審,無 mock-based 契約測試；types/store-action/page/dialog/i18n/router 無測試由 PG 完工後整體手測）。觸發於 /impl-fe 或提到前端實作、frontend impl 等關鍵字。
+description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store-map 走契約對照、其餘 PG 手測。
 ---
 
 # Spec P3 Frontend — 前端實作（契約層對照）

@@ -1,6 +1,6 @@
 ---
 name: spec-p3-data
-description: 權限 SQL + 測試資料 SQL 產出與執行 SKILL：讀最終版規格統計 + test_cases.md 前置條件 + DB schema,產 permission SQL 和 seed SQL,PG 授權後執行。觸發於 /data 或提到 permission、seed、測試資料、權限 SQL 等關鍵字。
+description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + seed SQL，PG 授權後執行。
 ---
 
 # Spec P3 Data — 權限與測試資料準備

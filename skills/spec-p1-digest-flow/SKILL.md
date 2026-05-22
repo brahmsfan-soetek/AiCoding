@@ -1,6 +1,6 @@
 ---
 name: spec-p1-digest-flow
-description: SA 規格書消化流程（S0–S4）：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合。在 SA 資料夾隔離執行，純文件作業。完成後接 spec-p2-tasking 於專案內產任務清單。觸發於 /spec 或提到規格統計、規格消化、釐清清單、spec digest 等關鍵字。
+description: DOCX 規格書 → 規格統計 → 釐清清單 → 整合 SA 回覆。
 ---
 
 # Spec Digest Flow — SA 規格書消化流程

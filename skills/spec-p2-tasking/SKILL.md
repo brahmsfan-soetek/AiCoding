@@ -1,6 +1,6 @@
 ---
 name: spec-p2-tasking
-description: 在專案內依據最終版規格統計產出前後端與手測 checklist 三份清單，並為每個 task 標註類型 tag（供 P3 分流測試策略）。觸發於 /tasking 或提到任務清單、前後端清單、tasking 等關鍵字。與 spec-p1-digest-flow 接軌：在 SA 資料夾完成 S0–S4 後，把最終規格與 UI 截圖搬進專案，於此處執行。
+description: 依規格統計產前後端、API 契約、手測 checklist 四份任務清單，每 task 標類型 tag 供 P3 分流。
 ---
 
 # Spec Tasking — 專案內任務清單產出
