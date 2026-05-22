@@ -1,8 +1,8 @@
-# 批次 2026-04-09 ~ 2026-05-21
+# 批次 2026-04-09 ~ 2026-05-22
 
 > 本批起點：2026-04-09（Anthropic Insight Report 統計區間起始日）
-> 本批終點：2026-05-21（spec-workflow review 完成日）
-> 下批起點：2026-05-22（目錄 `review/2026-05-22/` 啟用後接續）
+> 本批終點：2026-05-22（切入點 6 完整落地日）
+> 下批起點：2026-05-23（目錄 `review/2026-05-23/` 啟用後接續）
 
 ## 本批內容
 
@@ -25,7 +25,7 @@
 針對 spec-workflow bundle（spec-p1-digest-flow / spec-p2-tasking / spec-p3-backend / spec-p3-frontend / spec-p3-data）做整體 review。
 
 - `problems.md` — 三專案概覽、PG 5 個觀察點、5 個 skill 的洞、Insight 補強的觀察點 6、log 事件附錄
-- `direction.md` — 9 個切入點優先順序、本批已實作的 3 項（spec-p1 source-mapping / 切入點 2 API contract + current_schema / 切入點 3 測試策略瘦身 A 方案）、切入點 6 半實作、其餘 5 個切入點待動
+- `direction.md` — 9 個切入點優先順序、本批已實作 7 項（切入點 1/2/3/4/5/6/8）、撤回 1 項（切入點 9）、剩 1 項待動（切入點 7）
 
 ## 主要結論
 
@@ -38,19 +38,20 @@
 | 3 | 測試策略瘦身 A 方案：BE 拔 Processor mock test、FE 拔 store-map contract test，SG2 改走「api_contract A## + current_schema」對照規則 | d4ce9c6 |
 | 4 | spec-p3-frontend SG1 列前端硬守則清單（target CLAUDE.md + memory，分可 grep / 意圖兩類）+ UI 類 task SG3 自動 grep 守則驗證（只報不擋）；規約內容由 target 提供，SKILL 不預設；動作 2 第一元件 milestone stop 經評估 skip | （本 commit）|
 | 5 | SKILL 結束點明確化（完工三條件：task done + 收尾報告 + 維護期 hand-off append）+ bug 修復不入 SKILL 規約 + Session Log 加「維護期 hand-off」段骨架（上線前必補 / 技術債兩類） | 6c4ef8a |
-| 6（半）| MCP MySQL Server DB-first 驗證已在 spec-p2 落地；spec-p3-data 改用 MCP 待動 | 4079842 |
-| 8 | commit-time hook 自動 typecheck + module test（PreToolUse + Bash matcher + `git commit` filter，spike 3 預設 + spike 1/2 替代骨架）；SKILL SG1 hook 偵測與安裝流程（PG 選擇 → SKILL 寫入 target `.claude/settings.local.json` + 複製 .ps1）；block 後 AI 通知 PG 不自動修 | （本 commit）|
+| 6 | MCP MySQL Server 完整落地：spec-p2 MCP DESCRIBE → spec-p3-backend 讀 current_schema → spec-p3-data schema 對齊讀 current_schema + 對帳走 MCP read-only / 寫入走 mysql CLI（A 方案，PG 選擇） | 4079842 + （本 commit）|
+| 8 | commit-time hook 自動 typecheck + module test（PreToolUse + Bash matcher + `git commit` filter，spike 3 預設 + spike 1/2 替代骨架）；SKILL SG1 hook 偵測與安裝流程（PG 選擇 → SKILL 寫入 target `.claude/settings.local.json` + 複製 .ps1）；block 後 AI 通知 PG 不自動修 | 59265a3 + 920e3d3 |
 
-預期擋下：AR003「規則 A」漏看、SA §10「第 1 名」誤解、AR002 LOV 誤植、AR003 BUG-A1（schema 漂移）、AR003 BUG-P4b-R4-CONTRACT（4 支 API 跨層欄位不一致）、SO0062 mapper camelCase、Processor mock test 套套邏輯 token 浪費、SKILL 結束模糊導致 progress.md / session_log.md 在維護期持續膨脹（正名「AR002 主輪後 ad hoc 沒紀錄是健康狀態」）、上線前必補的洞 / 技術債散落多個 session 沒收口、AR002 B03 / AR003 B21 / F11 「寫完才跑 typecheck」事件（hook 自動跑 + 失敗 block）等。
+預期擋下：AR003「規則 A」漏看、SA §10「第 1 名」誤解、AR002 LOV 誤植、AR003 BUG-A1（schema 漂移）、AR003 BUG-P4b-R4-CONTRACT（4 支 API 跨層欄位不一致）、SO0062 mapper camelCase、Processor mock test 套套邏輯 token 浪費、SKILL 結束模糊導致 progress.md / session_log.md 在維護期持續膨脹（正名「AR002 主輪後 ad hoc 沒紀錄是健康狀態」）、上線前必補的洞 / 技術債散落多個 session 沒收口、AR002 B03 / AR003 B21 / F11 「寫完才跑 typecheck」事件（hook 自動跑 + 失敗 block）、spec-p3-data 對帳 mysql CLI escape 風險（中文 / 特殊字元）、三 SKILL 對 DB schema 認知不一致等。
 
 ### 待動（傳給下批）
 
 依槓桿排：
 
-1. MCP MySQL Server：spec-p3-data 改用 MCP（切入點 6 剩餘半）
-2. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
+1. Scope-lock prompt pattern：restate deliverable + out-of-scope（切入點 7）
 
 切入點 4 動作 2「第一元件 milestone stop」已評估 skip，目前先靠動作 1（SG1 列守則）+ 動作 3（SG3 grep）兩段機制；若實際 target project 跑後仍出現「連跑後一次驗收 → 全部偏」事件再回頭評估。
+
+切入點 6 spec-p3-data 端本批完整落地（A 方案：MCP 唯讀做 schema 對齊 + COUNT 對帳，寫入仍走 mysql CLI）；若 PG 觀察「對帳 escape 風險」仍頻繁，再評估升級為 write-enabled MCP。
 
 切入點 9（CLAUDE.md 補 5 條規約）已撤回 — CLAUDE.md 屬 target project，spec-workflow SKILL 不該管；5 條規約已分別歸併到切入點 2（DB-first，已 cover）/ 切入點 7（Working Style）/ target project CLAUDE.md（Financial / i18n）/ 個人工作風格（Git worktree）。詳見 direction.md「撤回：切入點 9」段。
 
@@ -74,7 +75,8 @@ skills/spec-p1-digest-flow/templates/prompts/step4_釐清整合_prompt.md  # 切
 skills/spec-p2-tasking/SKILL.md                                       # 切入點 2（api_contract + MCP DESCRIBE）
 skills/spec-p3-backend/SKILL.md                                       # 切入點 2 / 3 / 5 / 8
 skills/spec-p3-frontend/SKILL.md                                      # 切入點 3 / 4 / 5 / 8
-skills/spec-p3-data/SKILL.md                                          # 切入點 5
+skills/spec-p3-data/SKILL.md                                          # 切入點 5 / 6（schema 切 current_schema、對帳走 MCP、寫入 mysql CLI）
+skills/spec-p3-data/README.md                                         # 切入點 6（同步）
 skills/spec-p3-backend/templates/hooks/typecheck-test-on-commit.ps1   # 切入點 8（新建，commit-time hook）
 skills/spec-p3-backend/templates/hooks/settings.local.json.tmpl       # 切入點 8（新建，PreToolUse Bash matcher）
 skills/spec-p3-backend/templates/hooks/README.md                      # 切入點 8（新建）

@@ -13,7 +13,7 @@
 | 3 | 測試策略瘦身（拔 Processor mock test）+ 跨層 schema 對照規則 | spec-p3-backend / spec-p3-frontend | 直接影響 token 成本與實作速度；改變 SG2 的擴張規則 | ✅ **本輪已實作** |
 | 4 | SG1 列前端硬守則清單（target CLAUDE.md + memory）+ UI 類 task SG3 自動 grep 守則驗證 | spec-p3-frontend | UI 微調量減少；CLAUDE.md 規範守住 | ✅ **本輪已實作**（動作 1+3；動作 2 第一元件 milestone stop 經評估 skip）|
 | 5 | SKILL 結束點明確化 + bug 修復不入 SKILL 規約 | spec-p3-* 全體 | 解釋 AR002 ad hoc 階段為何不入 SKILL | ✅ **本輪已實作** |
-| 6 | MCP MySQL Server：DB-first 驗證內建 | 全 skill（特別 spec-p3-backend / spec-p3-data）| 根除「Claude 從 sibling code 推 schema」這類型錯誤；也是切入點 2「DESCRIBE 真 DB」的實作方式 | ⚠️ **半實作**（spec-p2 MCP DESCRIBE 已落地；spec-p3-data 待動）|
+| 6 | MCP MySQL Server：DB-first 驗證內建 | 全 skill（特別 spec-p3-backend / spec-p3-data）| 根除「Claude 從 sibling code 推 schema」這類型錯誤；也是切入點 2「DESCRIBE 真 DB」的實作方式 | ✅ **本輪已完整落地**（spec-p2 MCP DESCRIBE → spec-p3-backend 讀 current_schema → spec-p3-data schema 對齊讀 current_schema + 對帳走 MCP read-only / 寫入走 mysql CLI）|
 | 7 | Scope-lock prompt pattern：restate deliverable + out-of-scope 後才動手 | 全 skill 開頭 + ad hoc 請求 | 直擊 Insight 報告的 35 wrong_approach + 12 excessive_changes 友擦 | ⏳ 待動 |
 | 8 | commit-time hook（PreToolUse + Bash + `git commit` filter）自動 typecheck + module test | settings.json 層級 | 自動化測試執行；連動切入點 3 測試策略瘦身 + TDD Red-first 紀律外部化 | ✅ **本輪已實作**（spike 3：typecheck + module test on commit；spike 1/2 替代設計骨架）|
 | 9 | CLAUDE.md 補 5 條規約（DB-first / 不擴張 scope / 金融約定 / git worktree / i18n namespace）| 專案 CLAUDE.md | 落地 Insight 建議的 5 條 CLAUDE.md additions | 🚫 **撤回**（重新歸類；CLAUDE.md 屬 target project，spec-workflow SKILL 不該管）|
@@ -312,34 +312,79 @@ AR003 N01-N09 / SO0062 員工 LOV 撤回這類「最終版定稿後 SA 補新需
 
 ---
 
-## 待動：切入點 6 — MCP MySQL Server（DB-first 驗證內建）
+## 已實作：切入點 6 — MCP MySQL Server 完整落地（2026-05-22）
+
+### 落地軌跡
+
+| 階段 | SKILL | MCP 用途 | 落地 commit |
+|---|---|---|---|
+| P2 | `spec-p2-tasking` | DESCRIBE 真 DB → 產 `current_schema_{程式編號}.md`（唯一 schema 來源） | 4079842 |
+| P3-backend | `spec-p3-backend` | 讀 `current_schema_{程式編號}.md`（不重複 DESCRIBE） | 4079842 |
+| P3-data | `spec-p3-data` | (1) Schema 對齊讀 `current_schema`；(2) 對帳走 MCP read-only SELECT；(3) 必要時對特定表重跑 `DESCRIBE` 補驗 stale | **本 commit** |
 
 ### 設計概念
 
-裝 `@modelcontextprotocol/server-mysql`，讓 Claude 能直接查 DB schema / SP definition / table data，不再走 Bash → mysql CLI → 文字 parsing 路線。
+裝 `@modelcontextprotocol/server-mysql`（或同等實作），讓 Claude 能直接查 DB schema / table data，不再走 Bash → mysql CLI → 文字 parsing 路線。
 
 ```bash
 claude mcp add mysql -- npx -y @modelcontextprotocol/server-mysql --host localhost --user dev --database SERP
 ```
 
-### 與切入點 2 的關係
+### 寫入路徑的決策（spec-p3-data 端 friction）
 
-切入點 2 的「DESCRIBE 真 DB」原本要靠 Bash mysql 指令，現在改走 MCP：
+spec-p3-data 同時要做**讀**（schema 驗證、COUNT 對帳）與**寫**（PERMISSION/SEED INSERT）。為維持 MCP 唯讀原則，最終設計：
 
-- spec-p3-backend SG1 之前：AI 直接透過 MCP 對相關表跑 metadata 查詢
-- spec-p3-data：DB schema 驗證走 MCP，不靠 PowerShell + mysql CLI 的 escape 風險
+| 互動 | 路徑 | 理由 |
+|---|---|---|
+| Schema 對齊（讀） | 讀 `current_schema_{程式編號}.md` | 與 spec-p3-backend 對稱；P2 已透過 MCP DESCRIBE 落地 |
+| COUNT 對帳（讀） | MCP read-only SELECT | 避免 mysql CLI 對中文 / 特殊字元 escape 風險 |
+| PERMISSION/SEED INSERT（寫） | mysql CLI（PG 授權後） | MCP 唯讀無寫權；寫入需 PG SG2 授權，風險可控 |
 
-### 預期擋下
+PG 在落地時明示選 A 方案（保持 mysql CLI 寫入 / 唯讀 MCP 原則），不另設 write-enabled MCP。
 
-- AR003 BUG-A1（schema 漂移）
-- IM004 系列 Claude 從 GL010 推 SP signature 的事件
-- SO0062 mapper 寫完才發現後端 camelCase（FE 端 MCP 同樣可查 backend processor schema 對齊）
+### 改造方案（spec-p3-data）
+
+| 改 | 目的 | 動到的檔案 |
+|:--:|---|---|
+| 改 1：定位段 + 前置條件 + Execution Flow 改 schema 來源 | DB schema 來源從 `Docs/DDL/*.sql` 切到 `current_schema_{程式編號}.md` | `spec-p3-data/SKILL.md` 定位段 / 前置條件 / Execution Flow box / 步驟 4 |
+| 改 2：步驟 9 拆寫入/對帳兩路徑 | 寫入走 mysql CLI、對帳走 MCP read-only；MCP 失敗 fallback 對帳走 mysql CLI 並記 hand-off | `spec-p3-data/SKILL.md` 步驟 9 |
+| 改 3：前置條件加 MCP 唯讀連線（與 spec-p2 對稱） | 與既有 MCP 落地共用配置；明示對帳 / DESCRIBE 補驗用 | `spec-p3-data/SKILL.md` 前置條件第 5 條 |
+| 改 4：Stop Gate 表 SG1/SG2 同步 | SG1 schema 對齊註明讀 current_schema；SG2 註明「寫入 mysql CLI / 對帳 MCP」雙路徑 | `spec-p3-data/SKILL.md` Stop Gate 表 |
+| 改 5：關鍵防護機制加 3 條（5/6/7）+ 核心原則加 2 條（5/6） | 把 MCP 唯讀 + schema 來源唯一化 + 雙路徑寫進規約 | `spec-p3-data/SKILL.md` 關鍵防護機制 / 核心原則 |
+| 改 6：README.md 同步 | 定位 / 前置條件 / 流程總覽 / 快速開始步驟 / 核心原則 / 關鍵防護機制 全面對齊 SKILL.md | `spec-p3-data/README.md` |
+
+### 影響檔案清單
+
+| 檔案 | 改動類型 |
+|---|---|
+| `skills/spec-p3-data/SKILL.md` | 定位段「輸入」段；前置條件第 5 條（MCP 唯讀）；Execution Flow box「讀 schema」+「對帳」兩段；步驟 4（讀 current_schema + 缺檔處理 + stale 重 DESCRIBE）；步驟 9（寫入/對帳兩路徑 + MCP failure fallback）；Stop Gate 表 SG1/SG2；關鍵防護機制加 5/6/7；核心原則加 5/6 |
+| `skills/spec-p3-data/README.md` | 定位「輸入」；核心原則加 6/7；前置條件第 5 條；流程總覽圖（schema 來源 + 雙路徑執行）；快速開始步驟 3/5；關鍵防護機制加 5/6 |
+
+### 預期擋下的事件（基於 log 反推）
+
+| 事件 | 改 1 (schema 切 current_schema) | 改 2 (對帳走 MCP) |
+|---|:---:|:---:|
+| AR003 BUG-A1（Entity 假設 17 欄但 DDL 只 15 欄）— spec-p3-data 階段 | ✓（schema 來源已是 MCP DESCRIBE 結果） | — |
+| SO0062 對帳 COUNT 在 mysql CLI 中文 escape 出錯 | — | ✓（MCP 直接傳 binary params 不過 shell escape） |
+| spec-p3-data 從 `Docs/DDL/*.sql` 讀 stale schema 推 INSERT 缺欄 | ✓ | — |
+| spec-p3-data 與 spec-p3-backend / spec-p2 schema 認知不一致 | ✓（三 SKILL 共用同一份 `current_schema`） | — |
 
 ### 風險 / 注意
 
-- MCP 連線到 dev DB 需要 PG 預先配置帳密
+- MCP 連線到 dev DB 需要 PG 預先配置帳密（與 spec-p2 共用配置）
 - production DB 絕對不能掛 MCP（避免 AI 不小心動）
-- 對 read-only user 也應建一份僅可 DESCRIBE / SELECT 的權限
+- 對 read-only user 應建僅可 `DESCRIBE` / `SELECT` 的權限
+- **MCP 失敗時的 fallback**：對帳路徑 fallback 走 mysql CLI 並明示告知 PG（記 session_log「下 session 注意」）；schema 對齊路徑無 fallback（缺 current_schema STOP 回 P2）
+
+### 後續驗證建議
+
+1. 在 target project 跑 `/data`，看 SKILL 是否真的讀 `current_schema_{程式編號}.md`（不是 fallback 讀 DDL）
+2. PG 授權 SG2 後，看 INSERT 是否走 mysql CLI、COUNT 對帳是否走 MCP（log 中應看到兩種工具呼叫並存）
+3. 故意把 `current_schema_{程式編號}.md` 刪掉，看 SKILL 是否真的 STOP 回報「回 P2 補」而不是自動 fallback 讀 DDL
+4. 故意把 MCP server 停掉，看對帳是否 fallback 走 mysql CLI 並記 hand-off
+5. 若驗證通過 → 收口；若 PG 觀察「對帳 escape 風險」仍頻繁，再評估升級為 write-enabled MCP（本輪選 A 方案 mysql CLI 寫入）
+
+---
 
 ---
 

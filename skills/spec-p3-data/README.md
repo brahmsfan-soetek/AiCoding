@@ -11,11 +11,11 @@
 - **輸入：**
   - `{程式編號}_規格統計_最終版.md`（權限定義、Menu / Role 需求）
   - `{程式編號}_test_cases.md`（前置條件 → 測試資料需求）
-  - DB schema（欄位對齊）
+  - `current_schema_{程式編號}.md`（spec-p2 透過 MCP MySQL 唯讀 DESCRIBE 產出；schema 對齊唯一來源）
 - **輸出：**
   - `{程式編號}_PERMISSION.sql`（Menu / Role / MenuRole 等）
   - `{程式編號}_SEED.sql`（依 test_cases 前置條件產 INSERT）
-  - 執行結果驗證（COUNT 對帳）
+  - 執行結果驗證（COUNT 對帳，透過 MCP read-only SELECT）
 - **時機：** P3-backend + P3-frontend 完成後，PG 手測前。非必須（PG 若打算在 UI 一邊建資料一邊測可以跳過）。
 
 ---
@@ -23,10 +23,12 @@
 ## 核心原則
 
 1. **權限 + 測資是為手測服務** — 目的是讓 PG 能照 test_cases.md 跑完整流程。
-2. **DB infra 由 PG 維護** — dev server / DB 啟動維護 AI 不負責。
+2. **DB infra 由 PG 維護** — dev server / DB / MCP server 啟動維護 AI 不負責。
 3. **schema 漂移 STOP 報告** — 不自行修改 DDL（對齊 AR003 教訓：Entity 假設 17 欄但 DDL 只有 15 欄的事件，必須 PG 決定是改 Entity 還是補 schema）。
 4. **執行需授權** — SG2 明示授權後才跑 SQL（DB 寫入不可回復）。
 5. **特徵碼分離** — seed 資料必須帶特徵碼（如 `creator='e2e_seed'`），與真實資料分離便於日後清理。
+6. **MCP 唯讀，寫入走 mysql CLI** — `DESCRIBE` 與 `SELECT COUNT(*)` 對帳走 MCP read-only；PERMISSION / SEED 的 INSERT 走 mysql CLI；production DB 絕對不掛 MCP。
+7. **Schema 來源 = `current_schema_{程式編號}.md`** — spec-p2 MCP DESCRIBE 產出，spec-p3-data 不再讀 `Docs/DDL/*.sql`、不推 sibling code。
 
 ---
 
@@ -39,10 +41,11 @@
 
 ## 前置條件
 
-1. 已完成 P2 `spec-p2-tasking`，產出 `{程式編號}_test_cases.md`
+1. 已完成 P2 `spec-p2-tasking`，產出 `{程式編號}_test_cases.md` 與 `current_schema_{程式編號}.md`
 2. 已完成 `/impl-be` + `/impl-fe`（實作可運行）
 3. 專案 `CLAUDE.md` 索引有指向 permission / seed 規範（若有）
 4. Dev DB 可連線（PG 啟動與維護）
+5. MCP MySQL 唯讀連線已配置（與 spec-p2 共用配置；對帳 / `DESCRIBE` 補驗用，寫入仍走 mysql CLI）
 
 ---
 
@@ -69,7 +72,9 @@
       - 標註依賴順序（主從）
       - 加特徵碼（creator='e2e_seed'）
          ↓
-[AI]  讀 DB schema → 對齊欄位
+[AI]  讀 current_schema_{程式編號}.md → 對齊欄位
+      - schema 來源 = spec-p2 MCP DESCRIBE dump（不再讀 DDL）
+      - 缺檔 → STOP 回 P2 補
       - schema 與規格不一致 → STOP 回報
          ↓
 [AI]  產 PERMISSION.sql + SEED.sql
@@ -79,9 +84,8 @@
 [STOP] SG2: PG 授權執行
          ↓
 [AI]  執行 SQL（若授權）
-      - 跑 PERMISSION.sql
-      - 跑 SEED.sql
-      - 對帳：SELECT COUNT(*) 每張表
+      - 跑 PERMISSION.sql / SEED.sql：mysql CLI（PG 授權後；MCP 唯讀，寫入不走 MCP）
+      - 對帳：MCP read-only SELECT COUNT(*) 每張表（避免 mysql CLI escape 風險）
       - 錯誤 → STOP 回報（不自主修）
          ↓
 [AI]  Commit SQL 檔
@@ -155,9 +159,9 @@ spec-p3-data/
 
 1. 讀規格統計 → 抽權限需求
 2. 讀 test_cases.md → 抽測資需求
-3. 讀 DB schema → 對齊欄位
+3. 讀 `current_schema_{程式編號}.md` → 對齊欄位（缺檔 STOP 回 P2 補）
 4. 產 PERMISSION.sql + SEED.sql
-5. SG1 審 → SG2 授權 → 執行 → 對帳
+5. SG1 審 → SG2 授權 → 執行（寫入 mysql CLI / 對帳 MCP）→ 對帳
 6. Commit SQL 檔、歸檔
 
 ### 4. 後續流程
@@ -175,6 +179,8 @@ spec-p3-data/
 2. **執行需 SG2 授權** — DB 寫入不可回復
 3. **特徵碼分離** — 便於日後清理
 4. **執行錯誤不自主修** — DB 錯誤（外鍵 / 權限 / 欄位類型）通常涉及環境，STOP 報告由 PG 決定
+5. **MCP 必須唯讀，寫入走 mysql CLI** — INSERT/UPDATE/DELETE 一律走 mysql CLI（即便 dev DB）；對帳 / `DESCRIBE` 補驗走 MCP read-only
+6. **Schema 來源唯一化** — `current_schema_{程式編號}.md`（spec-p2 / spec-p3-backend / spec-p3-data 三 SKILL 共用）
 
 ---
 
