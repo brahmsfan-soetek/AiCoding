@@ -29,6 +29,7 @@
 4. **讀規範、不掃 code**。
 5. **Artifact 即 commit**。
 6. **完工後整體手測** — 全部 task 做完後 PG 一次開瀏覽器照 `test_cases.md` 逐條勾選，bug ad hoc 派工（不走 SKILL）。
+7. **Scope-lock 動手前必跑** — SG1 第一個子段為 Scope Statement（Deliverable / 預期動到 / out-of-scope）；實作中發現需超出 scope → STOP 回報，不自行擴張。
 
 ---
 
@@ -51,7 +52,7 @@
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|:-:|
-| SG1 | session 啟動後 | 載入 + 類型分佈 + 起始 task | 不建議 |
+| SG1 | session 啟動後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope）+ 載入 + 類型分佈 + 起始 task | 不建議 |
 | SG2 | `[service]` / `[store-map]` 寫測試前 | 契約覆蓋度防護 | **不可省略**（有測試的 task）|
 | SG3 | task 結束 | 審閱繼續/回修 | 可降密度 |
 
@@ -69,7 +70,7 @@
 [AI]  讀 frontend_tasks.md + CLAUDE.md → 讀規範文件
 [AI]  讀 progress.md / session_log.md
 [AI]  統計 task 類型分佈
-[STOP] SG1: PG 確認起始 task
+[STOP] SG1: Scope Statement + PG 確認起始 task
          ↓
 ┌─ 每 task loop ─────────────────────────┐
 │  讀 task + 類型 tag                      │

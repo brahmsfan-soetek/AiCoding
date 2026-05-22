@@ -60,7 +60,8 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 [AI]  讀 progress.md / session_log.md（若存在）
 [AI]  統計 task 類型分佈
       （service N / store-map M / store-action K / types J / page I / dialog H / i18n G / router F）
-[STOP] SG1: PG 確認載入、類型分佈、前端硬守則清單（target CLAUDE.md + memory）、
+[STOP] SG1: PG 確認 Scope Statement（Deliverable / 預期動到 / out-of-scope）、載入、類型分佈、
+            前端硬守則清單（target CLAUDE.md + memory）、
             commit-time hook 安裝（未裝 → 提示安裝 spike 3）、起始 task
          ↓
 ┌─── 每個 task loop ───────────────────────────┐
@@ -128,7 +129,12 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
    - 檢查 `Docs/spec/{程式編號}/log/{程式編號}_progress.md`
    - 若存在 → 讀取進度，報告前端（`F*`）task 狀態
    - 若不存在 → 建立空檔
-5. **[STOP] SG1 — 確認載入 + hook 安裝：**
+5. **[STOP] SG1 — Scope Statement + 確認載入 + hook 安裝：**
+   - **Scope Statement（首要子段，動手前必跑）：**
+     - **Deliverable**（一句話）：本次預計跑完 `frontend_tasks.md` 內哪些 task（全部 / `F01–Fxx` 範圍 / 某類型 tag）+ 對應產出（service / store-map / page / dialog / i18n 等）
+     - **預期動到的範圍**：列實際清單，如 frontend 各層目錄下對應 `{程式編號}*` 檔（含 service / store / types / page / dialog / i18n key 等）+ `progress.md` / `session_log.md`
+     - **明示 out-of-scope**：列「本次不會動」的範圍（如「不改 `api_contract.md`」「不重構 sibling 元件」「不改全域 i18n / CSS」「不擴張到非 `{程式編號}` task」「不寫後端 code」「不改 router config 之外的全域設定」）
+     - **規約**：實作中若發現需超出 scope（如要改契約 / 全域 i18n / 順手調 dialog width / 順手重構 sibling 元件） → STOP 回報 PG，PG 決定擴張或縮回；AI 不自行擴張（對齊 Insight 報告 35 wrong_approach + 12 excessive_changes 觀察、AR002 dialog width 過度修改、AR003 F20-F27 連跑 8 元件後一次驗收偏移等事件）
    - 報告載入清單（含 frontend_tasks.md + api_contract.md 的 {N} 支 API）、規範文件、測試 / lint / typecheck 指令
    - **報告 task 類型分佈**，並列出每個 `[service]` / `[store-map]` task 對應的 api_contract A## 小節
    - **列前端硬守則清單**（target CLAUDE.md + PG memory 對齊防護，對應切入點 4 動作 1）：
@@ -232,7 +238,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|---------|
-| SG1 | session 啟動後 | 確認載入正確、類型分佈、**前端硬守則清單**（target CLAUDE.md + memory，分可 grep / 意圖兩類；切入點 4 動作 1）、commit-time hook 安裝狀態（PreToolUse Bash + git commit filter；未裝時可由 SKILL 寫入 `.claude/settings.local.json`）、起始 task | 不建議 |
+| SG1 | session 啟動後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope，切入點 7）+ 確認載入正確、類型分佈、**前端硬守則清單**（target CLAUDE.md + memory，分可 grep / 意圖兩類；切入點 4 動作 1）、commit-time hook 安裝狀態（PreToolUse Bash + git commit filter；未裝時可由 SKILL 寫入 `.claude/settings.local.json`）、起始 task | 不建議 |
 | SG2 | `[service]` / `[store-map]` 寫實作前 | 「實作意圖 ↔ api_contract A##」對照表審（契約對齊防護） | **不可省略**（契約對照 task）|
 | SG3 | task 結束 | 審閱繼續/回修；**UI 類 task（`[page]` / `[dialog]`）報告含 grep 守則違規清單**（只報不擋；切入點 4 動作 3） | 可降密度 |
 
@@ -247,6 +253,7 @@ description: 前端實作 SKILL：讀 P2 的 frontend_tasks.md + 專案 CLAUDE.m
 5. **Artifact 合一 commit、commit 標題乾淨** — progress.md / session_log.md 與實作 code 同一 commit；session_log.md 在最後一個 task 的 commit 內 append。commit 標題禁止 task id（`F01` / `F08` 等）。
 6. **commit-time hook 自動 typecheck + vitest related（外部化 TDD Red-first 紀律）** — AI 跑 `git commit` 時自動跑 `npm run typecheck` + `npx vitest related --run <staged>`，失敗時透過 stdout JSON `{"decision":"block","reason":"..."}` block commit；reason 內含「⚠️ Do NOT auto-fix in-place. Notify PG.」要求 AI 不自動修、通知 PG。範本：`<skill-dir>/templates/hooks/typecheck-test-on-commit.ps1` + `settings.local.json.tmpl`（PreToolUse + matcher: Bash + script 內過濾 `git commit`）；SG1 提示 PG 安裝（spike 3 預設；spike 1 typecheck only / spike 2 + eslint 為替代設計骨架）。對應切入點 8（review/2026-04-09 A path）。設計理由：Edit / Write 每次跑切碎 AI flow（UI 微調如 `class="xxx"` 也卡 vue-tsc）；commit 時跑天然對齊 task 收尾（SG3 已是 typecheck stop gate，本 hook 補位「AI 跳過跑」極端），且 vitest related 在 commit 跑只挑相依 test 速度可接受。
 7. **SG1 前端硬守則清單 + SG3 自動 grep 守則驗證（CLAUDE.md 對齊防護）** — SG1 從 target 前端 `CLAUDE.md` + PG memory 抽取本次 session 將遵守的前端硬守則，分「可 grep 驗證類」（附 regex pattern）與「意圖類」（由 PG 手測階段審）兩類列給 PG 確認；UI 類 task（`[page]` / `[dialog]`）SG3 報告附「對 commit 變動檔自動跑 grep pattern」的違規清單（檔名 + 行號 + 原文），**只報不擋**（與 commit-time hook 自動 block 機制互補：grep 屬風格 / 審美層，PG 判斷；hook 屬 typecheck / test 層，自動擋）。對應切入點 4 動作 1 + 動作 3（review/2026-04-09）。**規約內容由 target CLAUDE.md / PG memory 提供，SKILL 只負責「讀 + 列 + 驗證」機制，不預設任何具體規約**（如「零自訂 CSS」這類 PG 個人 / 專案專屬風格，SKILL 不該硬編；對齊切入點 9 撤回啟示）。設計理由：AR003 F20–F27 八個元件 1 commit / AR002 dialog 18+ session 微調這類「連跑後一次驗收 → 全部偏」事件，本機制在 SG1 對齊意圖、SG3 自動驗證落地，攔截擴散；若 target 沒有可 grep 規約 → 兩段都跳過，不增加干擾。
+8. **Scope-lock 動手前必跑** — SG1 第一個子段為 Scope Statement（Deliverable / 預期動到 / out-of-scope）為 stop gate；實作中發現需超出 scope（改契約 / 全域 i18n / 順手調 dialog 風格 / 重構 sibling 元件）→ STOP 回報 PG，不自行擴張（對齊切入點 7 / Insight 報告 35 wrong_approach + 12 excessive_changes 觀察、AR002 dialog width 過度修改、AR003 F20-F27 一次驗收偏移）。
 
 ## 核心原則
 

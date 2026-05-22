@@ -29,6 +29,7 @@
 5. **特徵碼分離** — seed 資料必須帶特徵碼（如 `creator='e2e_seed'`），與真實資料分離便於日後清理。
 6. **MCP 唯讀，寫入走 mysql CLI** — `DESCRIBE` 與 `SELECT COUNT(*)` 對帳走 MCP read-only；PERMISSION / SEED 的 INSERT 走 mysql CLI；production DB 絕對不掛 MCP。
 7. **Schema 來源 = `current_schema_{程式編號}.md`** — spec-p2 MCP DESCRIBE 產出，spec-p3-data 不再讀 `Docs/DDL/*.sql`、不推 sibling code。
+8. **Scope-lock 動手前必跑** — 步驟 4「讀 schema」末尾為 Scope Statement stop gate（Deliverable / 預期動到 / out-of-scope）；過程發現需超出 scope → STOP 回報。
 
 ---
 
@@ -53,6 +54,7 @@
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|:-:|
+| SG0 | 讀完 schema 後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope，切入點 7）| **不可省略** |
 | SG1 | SQL 產出後 | PG 審權限表設計、seed 覆蓋度、特徵碼設計 | **不可省略** |
 | SG2 | 執行 SQL 前 | PG 授權 AI 執行 | **不可省略**（DB 寫入不可回復）|
 
@@ -76,6 +78,10 @@
       - schema 來源 = spec-p2 MCP DESCRIBE dump（不再讀 DDL）
       - 缺檔 → STOP 回 P2 補
       - schema 與規格不一致 → STOP 回報
+         ↓
+[STOP] Scope Statement（切入點 7）
+      - Deliverable / 預期動到 / out-of-scope
+      - PG 確認後才進產 SQL
          ↓
 [AI]  產 PERMISSION.sql + SEED.sql
          ↓

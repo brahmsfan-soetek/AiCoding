@@ -53,6 +53,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 5. **test_cases.md = 手測 checklist** — 不是自動化 spec，而是 PG 照著對的清單。
 6. **Artifact 即 commit** — 產出後立即 commit，避免 working tree 丟失。
 7. **PG 是品質守門人** — AI 產出後需 PG 審閱再進入實作。
+8. **Scope-lock 動手前必跑** — 步驟 5「與使用者確認」末尾為 Scope Statement stop gate（Deliverable / 預期動到 / out-of-scope）；過程發現需超出 scope → STOP 回報。
 
 ---
 
@@ -94,6 +95,11 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 │  [PG] 確認程式編號                    │
 │  [PG] 確認輸出位置                    │
 │       （建議預設 Docs/spec/{程式編號}/plan/）│
+│  [STOP] Scope Statement              │
+│       - Deliverable（一句話）         │
+│       - 預期動到的範圍                │
+│       - 明示 out-of-scope            │
+│       PG 確認後才進 schema 建立       │
 └───────────────────────────────────────┘
                       │
                       ▼

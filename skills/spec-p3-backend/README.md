@@ -27,6 +27,7 @@
 3. **讀規範、不掃 code** — 專案 context 來自 `CLAUDE.md` 索引指向的規範文件。
 4. **Artifact 即 commit** — progress.md / session_log.md 跟 code 一起 commit。
 5. **類型 tag 驅動測試策略** — 不再逐 task 問「要 Mockito 還是 Quarkus」。
+6. **Scope-lock 動手前必跑** — SG1 第一個子段為 Scope Statement（Deliverable / 預期動到 / out-of-scope）；實作中發現需超出 scope → STOP 回報，不自行擴張。
 
 ---
 
@@ -48,7 +49,7 @@
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|:-:|
-| SG1 | session 啟動後 | 確認載入、類型分佈、起始 task | 不建議 |
+| SG1 | session 啟動後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope）+ 確認載入、類型分佈、起始 task | 不建議 |
 | SG2 | `[validator]` / `[processor]` 寫測試前 | 覆蓋度防護（Processor 強制選填欄位空值覆蓋）| **不可省略** |
 | SG3 | task 結束（commit 後） | 審閱繼續/回修 | 可降密度（每 N task 一次）|
 
@@ -64,7 +65,7 @@
 [AI]  讀 backend_tasks.md + CLAUDE.md → 讀規範文件
 [AI]  讀 progress.md / session_log.md（若存在）
 [AI]  統計 task 類型分佈
-[STOP] SG1: PG 確認起始 task
+[STOP] SG1: Scope Statement + PG 確認起始 task
          ↓
 ┌─ 每 task loop ─────────────────────────┐
 │  讀 task + 類型 tag                      │

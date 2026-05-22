@@ -40,6 +40,12 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 5. **與使用者確認**：
    - 程式編號（若檔名未明示）
    - 輸出位置：建議預設 `Docs/spec/{程式編號}/plan/`，讓使用者按 Enter 確認或覆寫。**不得將路徑寫死於模板**。
+   - **[STOP] Scope Statement（動手前必跑）：** 在進入步驟 6 前，AI 用 3 行報告 lock scope：
+     - **Deliverable**（一句話）：本次預計產出 P2 四份檔案（frontend_tasks / backend_tasks / api_contract / test_cases）+ `current_schema_{程式編號}.md`
+     - **預期動到的範圍**：列實際清單（如 `Docs/spec/{程式編號}/plan/*.md` 五份檔；MCP `DESCRIBE` 涉及的表名清單）
+     - **明示 out-of-scope**：列「本次不會動」的範圍（如「不改 sibling 程式的 task / spec」「不動 `Docs/DDL`」「不寫實作 code」「不改規範文件」「不重構既有專案結構」）
+     - PG 確認 scope 後才進入步驟 6 DB schema 建立
+     - **規約**：產出過程若發現需超出 scope（如需動到非本程式的檔案 / 改規範 / 順手重構）→ STOP 回報 PG，PG 決定擴張或縮回；AI 不自行擴張（對齊 Insight 報告 35 wrong_approach + 12 excessive_changes 觀察）
 6. **DB schema 建立**（透過 MCP MySQL 唯讀連線；不可省略，schema 是 API 契約的型別來源）：
    - 從規格統計與 UI 截圖中辨識此程式涉及的表清單（含主表、關聯表、LOV 表）
    - 向 PG 報告候選表清單，**[STOP] 等 PG 確認**（PG 可增減）
@@ -87,6 +93,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 8. **test_cases.md = 手測 checklist** — 不是自動化 spec，而是 PG 開瀏覽器照著對的清單。
 9. **PG 是品質守門人** — AI 產出後需 PG 審閱再進入實作。
 10. **Artifact 即 commit、commit 標題乾淨** — 四份產出 + current_schema 一次 commit 完成；commit 標題用語意動詞（如 `docs(ar003): add P2 tasks + API contract + test checklist`），禁止含內部 task id（`B01` / `F02` / `A01` 等）。
+11. **Scope-lock 動手前必跑** — 步驟 5 末尾 Scope Statement（Deliverable / 預期動到 / out-of-scope）為 stop gate；產出過程發現需超出 scope → STOP 回報 PG，不自行擴張。
 
 ## Output Templates
 
