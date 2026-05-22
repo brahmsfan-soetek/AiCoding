@@ -11,12 +11,12 @@
 | Tag | 測試策略 | 備註 |
 |---|---|---|
 | `[validator]` | **完整 TDD**（JUnit 純或 Mockito，Red-Green 迴圈） | 純函式 / 演算法 / 狀態機 |
-| `[processor]` | **完整 TDD**（Mockito）+ **SG2 覆蓋度強制規則** | 每個選填欄位必須覆蓋 null / `""` / 空白 |
-| `[sql]` | **無 P3 測試** | SQL 行為由 PG 手測涵蓋 |
-| `[entity]` | **無測試** | 純 POJO，無邏輯 |
+| `[processor]` | **無 mock-based 單元測試**；SG2 走 api_contract A## + current_schema 雙對照（靜態檢查） | Processor mock test 是「mock 設成預期再驗自己」的套套邏輯；整合驗證由 PG 手測涵蓋 |
+| `[sql]` | **無 P3 測試**；SG2 對照 current_schema 欄位 / 型別 | SQL 行為由 PG 手測涵蓋 |
+| `[entity]` | **無測試**；SG2 對照 current_schema 欄位 / 型別 / nullable | 純 POJO，無邏輯 |
 | `[spi]` | **無測試** | 抽象介面，無邏輯 |
 
-**SG2 `[processor]` 空值覆蓋強制規則的由來：** AR003 F7 教訓 — `:param IS NULL OR col = :param` SQL pattern 在選填欄位傳 `""` 時會讓所有 row 不 match（因為 `"" != NULL`），導致查詢永遠空結果。強制產生 null / `""` / 空白三種測試案例可在 P3 階段抓住此類 bug。
+**SG2 `[processor]` 雙對照表的由來：** AR003 BUG-P4b-R4-CONTRACT（4 支 View2 API 欄位與前端不一致 → store 永遠讀 undefined）+ AR003 BUG-A1（規格寫 17 欄、DDL 15 欄、真 DB 也缺 2 欄）。寫實作前先列 (1) `api_contract A## Response 欄位` ↔ `預計實作 response shape` 與 (2) `current_schema 表欄位` ↔ `SQL / Entity 引用欄位` 兩張對照表給 PG 審，比寫 mock-based 單元測試更能擋跨層漂移。
 
 ---
 
@@ -49,11 +49,11 @@
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|:-:|
-| SG1 | session 啟動後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope）+ 確認載入、類型分佈、起始 task | 不建議 |
-| SG2 | `[validator]` / `[processor]` 寫測試前 | 覆蓋度防護（Processor 強制選填欄位空值覆蓋）| **不可省略** |
+| SG1 | session 啟動後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope）+ 確認載入、類型分佈、commit-time hook 安裝、起始 task | 不建議 |
+| SG2 | `[validator]` 寫測試前 / `[processor]` 寫實作前 | `[validator]` 走測試清單審；`[processor]` 走 api_contract A## + current_schema 雙對照表審 | **不可省略** |
 | SG3 | task 結束（commit 後） | 審閱繼續/回修 | 可降密度（每 N task 一次）|
 
-**`[sql]` / `[entity]` / `[spi]` task** 跳過 SG2（無測試可審），只走 SG1 / SG3。
+**`[sql]` / `[entity]` / `[spi]` task** 走簡化版 SG2（對照 current_schema 欄位 / 型別 / nullable），無測試清單。
 
 ---
 
@@ -70,14 +70,21 @@
 ┌─ 每 task loop ─────────────────────────┐
 │  讀 task + 類型 tag                      │
 │                                          │
-│  [validator]/[processor]:               │
-│    列測試清單（Processor 強制空值覆蓋）  │
-│    [STOP] SG2                           │
+│  [validator]:                           │
+│    列單元測試清單                        │
+│    [STOP] SG2 測試清單審                 │
 │    寫測試 Red → 寫實作 Green             │
 │    lint + typecheck + git diff 自檢     │
 │                                          │
+│  [processor]:                           │
+│    列雙對照表（api_contract A## ↔       │
+│    response shape / current_schema ↔    │
+│    SQL/Entity 欄位）                    │
+│    [STOP] SG2 雙對照表審                 │
+│    寫實作（無 mock test）→ lint + tc    │
+│                                          │
 │  [sql]/[entity]/[spi]:                  │
-│    寫實作（無測試）                      │
+│    對照 current_schema → 寫實作（無測試）│
 │    lint + typecheck                     │
 │                                          │
 │  更新 progress.md + commit              │
@@ -91,52 +98,12 @@
 
 ---
 
-## Checkpoint 格式
+## Checkpoint / Session Log 格式
 
-`Docs/spec/{程式編號}/log/{程式編號}_progress.md`（與 p3-frontend 共用，task prefix `B*` / `F*` 區分）
+完整格式（含 progress.md / session_log.md / 維護期 hand-off 段範例）見 [`<repo>/spec-workflow-refs/p3/progress-and-session-log.md`](../../spec-workflow-refs/p3/progress-and-session-log.md)。
 
-```markdown
-# {程式編號} — P3 Progress
-
-> 最後更新：2026-04-25 14:30
-> 當前分支：feature/ar004
-> HEAD：a1b2c3d
-
-## Task 清單來源
-- backend: Docs/spec/{程式編號}/plan/{程式編號}_backend_tasks.md
-- frontend: Docs/spec/{程式編號}/plan/{程式編號}_frontend_tasks.md
-
-## 進度（只列已接觸 task）
-
-| Task ID | 類型 | 狀態 | Commit | 備註 |
-|---------|------|:----:|--------|------|
-| B01 | [entity] | done | a1b2c3d | |
-| B40 | [validator] | done | e4f5g6h | SG2 增加空值邊界測試 |
-| B20 | [processor] | wip | — | Red 階段，測試已寫完 |
-
-## 下一 Task 候選
-- B21（processor，選填欄位：customerCode, riskLevel）
-- B30（sql）
-```
-
----
-
-## Session Log 格式
-
-`Docs/spec/{程式編號}/log/{程式編號}_session_log.md`（與 p3-frontend 共用，每 session append）
-
-```markdown
-## Session #1 — 2026-04-20 後端（B01–B40）
-
-### 關鍵決策
-- Entity 風格採 record class（專案慣例）
-
-### 問題與教訓
-- B40 格式化邏輯在規格中有歧義，跟 SA 確認後採 FIFO
-
-### 下 session 注意
-- B20 Processor 實作前，確認 CustomerQuery 的 SQL provider SPI 已就緒
-```
+- `Docs/spec/{程式編號}/log/{程式編號}_progress.md` — 與 p3-frontend 共用，task prefix `B*` / `F*` 區分
+- `Docs/spec/{程式編號}/log/{程式編號}_session_log.md` — 與 p3-frontend / p3-data 共用，每 session append
 
 ---
 
@@ -145,10 +112,13 @@
 ```
 spec-p3-backend/
 ├── README.md      ← 本文件
-└── SKILL.md       ← Claude Code Skill 定義
+├── SKILL.md       ← Claude Code Skill 定義
+└── templates/
+    └── hooks/
+        └── typecheck-test-on-commit.ps1  ← commit-time hook 腳本（Maven）
 ```
 
-本 SKILL 無 templates/，所有內容直接在 SKILL.md 內。
+共用規約（Scope Statement / commit rules / hand-off / progress 格式 / 歸檔 / hook 設計脈絡）抽到 `<repo>/spec-workflow-refs/p3/`，與 `spec-p3-frontend` / `spec-p3-data` 共用。
 
 ---
 
