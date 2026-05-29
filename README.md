@@ -25,14 +25,6 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 | [spec-p3-frontend](skills/spec-p3-frontend/) | v1.0.0 | `/impl-fe` | P3-frontend — 前端實作：`[service]`/`[store-map]` 走 SG2 對照 api_contract A##（無 mock-based 測試），其他類（UI/types/i18n）無測試由 PG 完工後整體手測 |
 | [spec-p3-data](skills/spec-p3-data/) | v1.0.0 | `/data` | P3-data — 權限 SQL + 測試資料 SQL 產出與執行，PG 授權後跑 |
 
-### 暫停的特化 SKILL
-
-| Skill | 版本 | 說明 |
-|-------|------|------|
-| [eap-agentic-coding](skills/eap-agentic-coding/) | v1.7.0 | eap 專案規格驅動開發（Quarkus + Vue 3 + MSSQL），已被通用型路線取代 |
-| [eap-agentic-coding-lite](skills/eap-agentic-coding-lite/) | v2.0.0 | eap 規格驅動開發 Demo 版，已被通用型路線取代 |
-| [serp-agentic-coding](skills/serp-agentic-coding/) | v1.2.0 | serp 專案規格驅動開發，已被通用型路線取代 |
-
 ### 工具型 SKILL
 
 | Skill | 版本 | 觸發 | 說明 |
