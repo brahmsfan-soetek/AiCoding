@@ -71,12 +71,12 @@
 > 由 SKILL 完工時 AI 從 progress.md 備註欄、本檔「下 session 注意」、SG2 對照表偏離項主動歸納初稿，PG 過目修改。SKILL 結束後新發現的 bug / 微調走 ad hoc 派修，**不再回寫本檔**。
 
 ### 上線前必補（blocker）
-> 留空殼 / 暫用 stub / 未實作的必要功能。例如：「B52 JasperReports 模板僅留空殼，待設計師補正版」。**無項目時填「（無）」，不省略段落**。
+> 留空殼 / 暫用 stub / 未實作的必要功能。例如：「B52 JasperReports 模板僅留空殼，待設計師補正版」。無項目時可省略或填「（無）」。
 
 - [ ] {來源 task id 或 session 章節}：{描述}
 
 ### 技術債（non-blocker）
-> 暫用 workaround / 元件限制 / 未來 refactor 候選。例如：「F05 SLov emit 限制，需 wrap 自訂事件」「B20 CustomerQuery 改走 NativeSqlService，待未來 SPI 補齊後可退回」。**無項目時填「（無）」，不省略段落**。
+> 暫用 workaround / 元件限制 / 未來 refactor 候選。例如：「F05 SLov emit 限制，需 wrap 自訂事件」「B20 CustomerQuery 改走 NativeSqlService，待未來 SPI 補齊後可退回」。無項目時可省略或填「（無）」。
 
 - [ ] {來源 task id 或 session 章節}：{描述}
 ```

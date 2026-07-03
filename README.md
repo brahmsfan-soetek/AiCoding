@@ -1,7 +1,7 @@
 # soetek-agentic-coding-skills
 
 以 LLM 行為特性實證研究為基礎的 Claude Code Skills 集合。
-結構性防禦優於指令性約束 — 每條規則都有量化研究支撐。
+結構性防禦優於指令性約束 — 規則由實戰 feedback 驅動，並以 LLM 行為研究交叉佐證。
 
 ## 安裝
 
@@ -20,10 +20,10 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 | Skill | 版本 | 觸發 | 說明 |
 |-------|------|------|------|
 | [spec-p1-digest-flow](skills/spec-p1-digest-flow/) | v1.2.0 | `/spec` | P1 — SA 規格書消化 S0–S4：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合 |
-| [spec-p2-tasking](skills/spec-p2-tasking/) | v3.0.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引，產前後端任務清單（含類型 tag）+ 手測 checklist |
-| [spec-p3-backend](skills/spec-p3-backend/) | v1.0.0 | `/impl-be` | P3-backend — 後端實作：`[validator]` 完整 TDD；`[processor]` 走 SG2 雙對照表（api_contract A## + current_schema，無 mock-based 測試）；`[sql]`/`[entity]`/`[spi]` 對照 current_schema 後寫實作無測試 |
-| [spec-p3-frontend](skills/spec-p3-frontend/) | v1.0.0 | `/impl-fe` | P3-frontend — 前端實作：`[service]`/`[store-map]` 走 SG2 對照 api_contract A##（無 mock-based 測試），其他類（UI/types/i18n）無測試由 PG 完工後整體手測 |
-| [spec-p3-data](skills/spec-p3-data/) | v1.0.0 | `/data` | P3-data — 權限 SQL + 測試資料 SQL 產出與執行，PG 授權後跑 |
+| [spec-p2-tasking](skills/spec-p2-tasking/) | v3.1.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引，產前後端任務清單（含類型 tag）+ 手測 checklist |
+| [spec-p3-backend](skills/spec-p3-backend/) | v1.1.0 | `/impl-be` | P3-backend — 後端實作：`[validator]` 完整 TDD；`[processor]` 走 SG2 雙對照表（api_contract A## + current_schema，無 mock-based 測試）；`[sql]`/`[entity]`/`[spi]` 對照 current_schema 後寫實作無測試 |
+| [spec-p3-frontend](skills/spec-p3-frontend/) | v1.1.0 | `/impl-fe` | P3-frontend — 前端實作：`[service]`/`[store-map]` 走 SG2 對照 api_contract A##（無 mock-based 測試），其他類（UI/types/i18n）無測試由 PG 完工後整體手測 |
+| [spec-p3-data](skills/spec-p3-data/) | v1.0.1 | `/data` | P3-data — 權限 SQL + 測試資料 SQL 產出與執行，PG 授權後跑 |
 
 ### 工具型 SKILL
 
@@ -111,7 +111,7 @@ graph TD
 
 ## 研究基礎
 
-這些 skills 的設計規則追溯至以下實證研究，非經驗談：
+這些 skills 的設計規則由實戰 feedback（AR003 / SO0062 / AR002）驅動，並對照以下 LLM 行為研究交叉佐證：
 
 | 文件 | 內容 |
 |------|------|
@@ -127,7 +127,7 @@ graph TD
 - **AI 做執行，人做判斷** — 每個 Phase 有明確的人類決策點（STOP Gate）
 - **信噪比 > 總量** — conventions 和 templates 按需載入，不一次全灌
 - **回饋迴路決定自主上限** — 測試、lint、型別檢查提供 pass/fail 信號
-- **研究 → Skill 直接推導** — 不設中間抽象層，減少語義漂移
-- **讀規範、不掃 code** — 專案 context 來自 CLAUDE.md 索引指向的規範文件（deterministic），不掃 code 歸納 pattern（AI 行為會漂移）
+- **實戰 feedback → Skill，研究交叉佐證** — 不設中間抽象層，減少語義漂移
+- **規範來自 CLAUDE.md 索引** — 規範權威＝索引指向的規範文件；容許 grep/glob 查證既有 code 的落地細節，禁止的是把歷史 anti-pattern 當權威規範盲目複製
 - **類型 tag 驅動測試策略** — P2 在 task 標 tag，P3 依 tag 分流（邏輯 heavy 走 TDD，UI heavy 走手測）
 - **手測優先於自動化 E2E** — UI/UX/文字/樣式問題人眼 1 秒看出，寫 E2E 投入產出比低

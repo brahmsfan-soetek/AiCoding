@@ -69,6 +69,8 @@ Reason 明示「**⚠️ Do NOT auto-fix in-place**」，要求 AI 收到 block 
 
 不希望 AI 收到 block 後原地反覆「再修 → 再 commit → 再 block」死循環。這個約束是 hook 設計的一部分（reason 文案）+ 仰賴 AI 遵守。若 AI 自行重試的情況太頻繁 → 後續加 `.claude/hooks/state.json` 紀錄 N 次失敗後升級警告。
 
+> **定位的誠實標註（G2-08）：** 本 hook 的**攔截是結構性的**（commit 被確定性 block，不靠自律），但 **block 之後的善後仍依賴 AI 自律**（「不自動修、通知 PG」是指令性約束，待 state.json 結構化）。這是已知破口，不宣稱為全鏈路結構防禦。退場指標見 05 D6。
+
 ## 安裝（SKILL 自動執行，亦可手動）
 
 1. 複製 `<skill-dir>/templates/hooks/typecheck-test-on-commit.ps1` 到 target project 的 `.claude/hooks/typecheck-test-on-commit.ps1`

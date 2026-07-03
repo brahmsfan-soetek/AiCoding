@@ -96,6 +96,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 9. **PG 是品質守門人** — AI 產出後需 PG 審閱再進入實作。
 10. **Artifact 即 commit、commit 標題乾淨** — 四份產出 + current_schema 一次 commit 完成；commit 標題用語意動詞（如 `docs(ar003): add P2 tasks + API contract + test checklist`），禁止含內部 task id（`B01` / `F02` / `A01` 等）。
 11. **Scope-lock 動手前必跑** — 步驟 5 末尾 Scope Statement（Deliverable / 預期動到 / out-of-scope）為 stop gate；產出過程發現需超出 scope → STOP 回報 PG，不自行擴張。
+12. **模型選擇（G2-12）** — P2 需一次載入 CLAUDE.md 索引 + 規範文件 + 規格統計 + DB schema（長 context）並做任務分解與 tag 標註（高判斷密度），建議用**最強可用模型**執行本 SKILL（§3：模型等級差異 > prompt 技巧，是最重要的單一決策）。
 
 ## Output Templates
 

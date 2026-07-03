@@ -1,6 +1,7 @@
 # SKILL 完工三條件 + 維護期 hand-off + SKILL 邊界
 
 > **適用：** P3-be / P3-fe / P3-data
+> **覆蓋區間聲明：** SKILL 覆蓋的是**主輪實作**；整合手測、手測發現的 bug 修復、UI 微調（往往是實際工時的大頭）在 SKILL 邊界外走 ad hoc——這是有意的邊界設計，不是已被 SKILL 涵蓋。
 
 ## 完工三條件（全部成立才算 SKILL 結束）
 
@@ -36,7 +37,7 @@
 ### 規約
 
 - 每項註明來源：`{task id 或 session 章節}：{描述}`
-- **若無項目可歸納 → 兩類都列「（無）」，不可省略段落**
+- 無項目可歸納時，該類可省略（或列「（無）」皆可）
 
 ## 收尾報告（純 console，不另開 commit）
 
@@ -55,7 +56,8 @@
 
 - 整合手測（PG 開瀏覽器照 `test_cases.md` 跑）
 - 整合手測發現的 bug 修復 → **ad hoc 派 AI 修，不寫入 `progress.md` / `session_log.md`**
+  - 邏輯類 bug（validator / processor / mapping）的 ad hoc 修，建議搭配 [`lightweight-review-prompt.md`](lightweight-review-prompt.md) 另開 session 獨立 review（原 session 自己修自己的 code 踩 §8 盲區；實驗中機制，見 05 D9）
 - UI 微調、上線部署、維運監控
 - P3-data 特有：seed 資料殘留 cleanup（特徵碼提供，cleanup 由 PG 或 ad hoc 自行執行）；生產 DB 權限佈署
 
-理由：避免文件膨脹失焦；ad hoc 修走 git log + commit message 自身紀錄。AR002 主輪後 ad hoc 沒紀錄是健康狀態而非缺失：SKILL 該結束就結束，後面是維護期。
+理由：避免文件膨脹失焦；ad hoc 修走 git log + commit message 自身紀錄。**本 SKILL 覆蓋主輪實作；整合手測收尾與 bug 修復（往往是最大工時段）在 SKILL 外走 ad hoc——這是有意的邊界設計，而非已被涵蓋**。SKILL 該結束就結束，後面是維護期。

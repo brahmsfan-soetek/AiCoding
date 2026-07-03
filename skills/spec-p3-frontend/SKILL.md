@@ -13,11 +13,12 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
 
 - [`scope-statement.md`](../../spec-workflow-refs/p3/scope-statement.md) — SG1 動手前 scope-lock（切入點 7）
 - [`commit-rules.md`](../../spec-workflow-refs/p3/commit-rules.md) — artifact 合一 commit + 標題禁 task id
-- [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md) — Subagent 不產 git 檔 + 讀規範不掃 code
+- [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md) — Subagent 不產 git 檔 + 規範權威與 grep 查證邊界
 - [`completion-and-handoff.md`](../../spec-workflow-refs/p3/completion-and-handoff.md) — 完工三條件 + 維護期 hand-off + SKILL 邊界
 - [`progress-and-session-log.md`](../../spec-workflow-refs/p3/progress-and-session-log.md) — progress.md / session_log.md 格式（含維護期 hand-off 範例）
 - [`session-archive.md`](../../spec-workflow-refs/p3/session-archive.md) — Session 歸檔流程
 - [`commit-hook/README.md`](../../spec-workflow-refs/p3/commit-hook/README.md) — commit-time hook 設計脈絡（切入點 8）
+- [`hooks/README.md`](../../spec-workflow-refs/p3/hooks/README.md) — 成功靜默 hook 範本等（可選,抽救自 eap）
 
 ## 定位
 
@@ -58,7 +59,8 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
 
 1. **半自動** — `[service]` / `[store-map]` task 走 SG2 對照確認 + SG3 純審閱；其他類純走 SG3。
 2. **完工後整體手測** — 全部前端 task 做完後,PG 開瀏覽器一次照 `test_cases.md` 測完,發現 bug ad hoc 派工（不走本 SKILL 流程）。
-3. **其他共用規約** — Subagent 邊界、artifact 合一 commit、commit 標題禁 task id、讀規範不掃 code,詳見上方「共用規約」連結。
+3. **Session 長度軟提示（G2-11）** — 「一氣呵成」指不逐批 demo 打斷,不是不換 session：每完成數個 task 或 session 明顯變長（回應變慢、出錯率升）時,建議 PG `/clear` 後依 progress.md + api_contract（SSOT）resume；不設硬性 N、不是 stop gate。
+4. **其他共用規約** — Subagent 邊界、artifact 合一 commit、commit 標題禁 task id、規範權威與 grep 查證,詳見上方「共用規約」連結。
 
 ## Execution Flow
 
@@ -127,7 +129,8 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
 4. **檢查 checkpoint：**
    - 檢查 `Docs/spec/{程式編號}/log/{程式編號}_progress.md`（格式見 [`progress-and-session-log.md`](../../spec-workflow-refs/p3/progress-and-session-log.md)）
    - 若存在 → 讀取進度,報告前端（`F*`）task 狀態
-   - 若不存在 → 建立空檔
+     - **Resume 錨定 SSOT（G2-10）**：resume 的依據除 progress.md / session_log.md 外,必須重讀 `api_contract.md` 中與待續 task 相關的 A## 小節作錨定——不可只基於上次 AI 的產出接著做
+   - 若不存在 → 依 [`progress-and-session-log.md`](../../spec-workflow-refs/p3/progress-and-session-log.md) 的格式建立骨架檔（含表頭與欄位,非空白檔）
 5. **[STOP] SG1 — Scope Statement + 確認載入 + hook 安裝：**
    - **Scope Statement（首要子段,動手前必跑）**：依 [`scope-statement.md`](../../spec-workflow-refs/p3/scope-statement.md) 報告 Deliverable / 預期動到 / out-of-scope,PG 確認後才繼續
    - 報告載入清單（含 frontend_tasks.md + api_contract.md 的 {N} 支 API）、規範文件、測試 / lint / typecheck 指令
@@ -138,7 +141,7 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
        - **可 grep 驗證類**（規約寫法明確、可 regex 對應）— 每條附對應 grep pattern,作為 SG3 自動驗證依據。例：禁 inline style → `style="`；禁 `<style>` 自訂 CSS → `<style`；組件命名前綴 → `^export\s+const\s+[特定前綴]`
        - **意圖類**（不可機械驗證,屬 PG 手測階段審）— 例：組件式拆分、樣式參考某 GL 元件、i18n namespace 規範
      - 報告：兩類各列條目,每條註明來源（target `CLAUDE.md` 段落 / PG memory 名稱）
-     - **若 target `CLAUDE.md` 無前端硬守則段、PG memory 也無相關條目** → 報告「無前端硬守則,本 session 跳過守則對齊」；SG3 自動 grep 步驟亦跳過
+     - **若 target `CLAUDE.md` 無前端硬守則段、PG memory 也無相關條目** → **明確警告 PG（不可靜默跳過,G2-09）**：「⚠️ 此專案 target CLAUDE.md 缺前端硬守則段、PG memory 亦無相關條目,本 session 將**無前端守則防護**（SG3 grep 驗證跳過）。建議補 target CLAUDE.md 前端規約後重跑,或明示確認接受無守則防護再繼續」；PG 確認後 SG3 自動 grep 步驟才跳過
      - **不可預設 / 不可硬編** 任何具體規約（如「零自訂 CSS」）；SKILL 只負責**機制**（讀 + 列 + 驗證）,規約**內容**由 target project 提供（對齊切入點 9 撤回啟示：target project CLAUDE.md 才是規約權威）
      - PG 過了清單（或補上漏掉的、移除不適用的、調整 grep pattern 的）才繼續
    - **檢查 commit-time hook**：依 [`commit-hook/README.md`](../../spec-workflow-refs/p3/commit-hook/README.md) 偵測 target project `.claude/settings.local.json` / `.claude/settings.json`
@@ -155,6 +158,7 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
    - 詢問 PG：起始 task
 6. **Task Loop（每個 task）：**
    a. 讀取 task + 類型 tag
+      - **Tag 防呆**：task 無 tag、或 tag 不在集合（service / store-map / store-action / types / page / dialog / i18n / router）→ **STOP 回報 PG**（由 PG 現場補 tag 或回 `/tasking` 修清單）；**不可自行推斷該走哪個分支**
    b. 分支：
 
       **`[service]` / `[store-map]` → 契約對照流程（無 mock-based test）：**
@@ -173,6 +177,7 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
       - 自檢：mapping 出的前端欄位名 / 型別是否與既有 store / page 元件用到的一致；實作是否與 api_contract A## 完全對齊；若實作必須偏離 api_contract → **不可自行改契約**,停下來告知 PG
 
       **`[types]` / `[store-action]` / `[page]` / `[dialog]` / `[i18n]` / `[router]` → 純實作：**
+      - **`[i18n]` 額外規約**：產出 / 修改語系檔前,**必須先 grep 已實作頁面與元件中實際使用的 key**（`$t(` / `t(` / `i18nPrefix +` 等呼叫）,據此建立 JSON key 結構；**不可獨立推測 key 命名**（頁面與 i18n 分開推測 key 會不一致,畫面顯示 raw key）。若 `[i18n]` task 排序在對應頁面之前 → 建議 PG 調整順序或同 task 內一起產出
       - 寫實作（無測試）
       - lint + typecheck
 
@@ -219,9 +224,10 @@ description: 依 frontend_tasks.md 類型 tag 分流前端實作：service/store
 1. **契約層走靜態對照、UI 層走手測** — `[service]` / `[store-map]` 走 SG2 對照 api_contract（無 mock-based test）；UI / UX / 樣式 / 文字由 PG 手測比寫測試快 10 倍。
 2. **契約來源 = api_contract.md** — `[service]` / `[store-map]` 對照表與 mapper 實作均對齊 `api_contract.md` 的 A## 小節；不從 sibling code 推、不從 BE Java/Processor 直接讀；偏離 → 停手由 PG 決策。
 3. **Subagent 不產出進 git 的檔案** — 詳見 [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md)。
-4. **讀規範、不掃 code** — 詳見 [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md)。
+4. **規範權威＝CLAUDE.md 索引；容許 grep 查證落地細節** — 禁止盲目複製歷史 anti-pattern；契約 SSOT 不可從 code 推。詳見 [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md)。
 5. **前後端分 session** — 共用 progress.md / session_log.md / api_contract.md,但實作不互相影響。
 6. **SKILL 結束 = 完工三條件** — 詳見 [`completion-and-handoff.md`](../../spec-workflow-refs/p3/completion-and-handoff.md);SKILL 結束後仍有 `/data` + PG 整體手測兩步才算真正可上線。
+7. **模型選擇（G2-12）** — 契約層 task（`[service]` / `[store-map]`）與長 context 階段（SG1 大量載入、resume）建議用**最強可用模型**執行本 SKILL（§3：模型等級差異 > prompt 技巧,是最重要的單一決策）。
 
 ## SKILL 本身改進建議
 

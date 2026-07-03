@@ -13,7 +13,7 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 
 - [`scope-statement.md`](../../spec-workflow-refs/p3/scope-statement.md) — SG1 動手前 scope-lock（切入點 7）
 - [`commit-rules.md`](../../spec-workflow-refs/p3/commit-rules.md) — artifact 合一 commit + 標題禁 task id
-- [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md) — Subagent 不產 git 檔 + 讀規範不掃 code
+- [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md) — Subagent 不產 git 檔 + 規範權威與 grep 查證邊界
 - [`completion-and-handoff.md`](../../spec-workflow-refs/p3/completion-and-handoff.md) — 完工三條件 + 維護期 hand-off + SKILL 邊界
 - [`progress-and-session-log.md`](../../spec-workflow-refs/p3/progress-and-session-log.md) — session_log.md 格式（含維護期 hand-off 範例；P3-data 不寫 progress.md）
 - [`session-archive.md`](../../spec-workflow-refs/p3/session-archive.md) — Session 歸檔流程
@@ -179,6 +179,7 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 4. **執行需授權** — SG2 明示授權後才跑 SQL。
 5. **MCP 唯讀,寫入走 mysql CLI** — `DESCRIBE` 補驗與 `SELECT COUNT(*)` 對帳走 MCP read-only；PERMISSION / SEED 的 INSERT 走 mysql CLI（PG 授權後）；production DB 絕對不掛 MCP。
 6. **Schema 來源唯一化** — `current_schema_{程式編號}.md` 為 schema 對齊權威來源（spec-p2 / spec-p3-backend / spec-p3-data 三 SKILL 共用）；不讀 `Docs/DDL/*.sql`、不推 sibling code。
+7. **模型選擇（G2-12）** — seed 依賴推導與跨表外鍵順序屬邏輯密集階段,建議用**最強可用模型**執行本 SKILL（§3：模型等級差異 > prompt 技巧）。
 
 ## SKILL 本身改進建議
 

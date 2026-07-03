@@ -26,4 +26,6 @@
 
 實作中若發現需超出 scope（如要改契約 / schema / 順手重構 / 順手 cleanup / 順手調 dialog 風格 / 改全域 i18n 等），**STOP 回報 PG**，PG 決定擴張或縮回；AI 不自行擴張。
 
+**Trivial 豁免（G2-06）：** trivial 單 task 改動（單一 DTO 欄位、i18n key、單欄位修正）PG 可明示略過 Scope Statement，不必每次必跑。是否 trivial 由 PG 判斷，AI 不自行豁免。
+
 對齊 Insight 報告 35 wrong_approach + 12 excessive_changes 觀察、AR002Q 加 export feature、AR002 / AR003 順手重構相鄰程式碼、AR002 dialog width 過度修改、AR003 F20-F27 連跑 8 元件後一次驗收偏移等事件。
