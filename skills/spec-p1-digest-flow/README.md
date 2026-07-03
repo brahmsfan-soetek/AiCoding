@@ -12,12 +12,18 @@ PG 接到 SA 規格書後，透過 AI 輔助完成從規格解析到最終版規
    PNG / HTML 僅參考排版佈局，欄位與邏輯以規格統計為準。
 
 2. **直接讀檔、直接做**
-   輸入檔案就在工作目錄，AI 直接讀取，不需反覆詢問路徑。各步驟可在同一 Session 內連續執行。
+   輸入檔案就在工作目錄，AI 直接讀取，不需反覆詢問路徑。
 
-3. **PG 是品質守門人**
+3. **步驟以檔案為介面、context 換手即丟**
+   每步輸入輸出都是檔案，不依賴對話記憶；Step 1 規格書全文只進子 agent context；S2 / S4 前建議 `/clear`（長規格尤其必要——實測單 session 連跑峰值 context 286K，每輪重吃）。
+
+4. **輸出紀律**
+   產出寫檔，console 只留 ≤10 行摘要；PG 審檔案不審 console。
+
+5. **PG 是品質守門人**
    AI 產出的每份文件都需 PG 審閱。釐清清單由 PG 主動篩選——能自己回答的自己答，只把真正不確定的問 SA。
 
-4. **YAGNI**
+6. **YAGNI**
    不設計用不到的欄位，不增加無價值的步驟。
 
 ---
@@ -80,12 +86,13 @@ Step 4  [AI]  釐清整合 + 二次審查          ← 接續執行
 │  於專案 repo 目錄執行 /tasking                          │
 │  輸入：最終版規格統計 + UI 截圖（複製進專案）           │
 │  先讀：CLAUDE.md 索引 → 規範文件                        │
-│  輸出：前端/後端清單（含類型 tag）+ 手測 checklist      │
+│  輸出：前端/後端清單（含類型 tag + 規則原文）           │
+│        + api_contract + 手測 checklist                  │
 │  存放：建議 Docs/spec/{程式編號}/plan/                  │
 │  歸檔：SA 原始材料 → SA document/（留在原 SA 資料夾）   │
 │                                                         │
 │  → P3-backend spec-p3-backend（/impl-be，tag 分流：    │
-│    validator TDD / processor 雙對照表）                │
+│    validator TDD / processor 雙對照表＋規則複述）      │
 │  → P3-frontend spec-p3-frontend（/impl-fe，service/   │
 │    store-map SG2 對照 api_contract，無 mock test）     │
 │  → P3-data spec-p3-data（/data，權限 + 測資 SQL）      │
@@ -205,8 +212,8 @@ python docx2md.py SA_IM009_XXXX.docx -o .
 
 1. 將 `{編號}_規格統計_最終版.md` 與 UI 截圖複製到專案 repo
 2. 切換工作目錄至專案 repo 後，依序執行：
-   - **P2** `/tasking` — 讀 CLAUDE.md 索引 → 產出前後端清單（含類型 tag）+ 手測 checklist
-   - **P3-backend** `/impl-be` — 另起 session，tag 分流（validator 完整 TDD；processor 走 api_contract + current_schema 雙對照表，無 mock test；sql/entity/spi 對照 current_schema 後實作無測試）
+   - **P2** `/tasking` — 讀 CLAUDE.md 索引 → 產出前後端清單（含類型 tag + 規則原文）+ api_contract + 手測 checklist
+   - **P3-backend** `/impl-be` — 另起 session，tag 分流（validator 完整 TDD；processor 走 api_contract + current_schema 雙對照表＋規則複述，無 mock test；sql/entity/spi 對照 current_schema 後實作無測試）
    - **P3-frontend** `/impl-fe` — 另起 session，service/store-map 走 SG2 對照 api_contract A##（無 mock-based test），UI 類 task 無測試
    - **P3-data** `/data` — 產 permission + seed SQL，PG 授權後執行
    - **PG 手測** — 開瀏覽器照 `test_cases.md` 逐條勾選，發現 bug ad hoc 派 AI 修

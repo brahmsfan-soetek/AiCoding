@@ -11,12 +11,13 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 
 本 SKILL 與 `spec-p3-backend` / `spec-p3-frontend` 共用以下規約,引用自 `<repo>/spec-workflow-refs/p3/`：
 
-- [`scope-statement.md`](../../spec-workflow-refs/p3/scope-statement.md) — SG1 動手前 scope-lock（切入點 7）
+- [`scope-statement.md`](../../spec-workflow-refs/p3/scope-statement.md) — SG1 動手前 scope-lock
 - [`commit-rules.md`](../../spec-workflow-refs/p3/commit-rules.md) — artifact 合一 commit + 標題禁 task id
 - [`subagent-boundary.md`](../../spec-workflow-refs/p3/subagent-boundary.md) — Subagent 不產 git 檔 + 規範權威與 grep 查證邊界
 - [`completion-and-handoff.md`](../../spec-workflow-refs/p3/completion-and-handoff.md) — 完工三條件 + 維護期 hand-off + SKILL 邊界
 - [`progress-and-session-log.md`](../../spec-workflow-refs/p3/progress-and-session-log.md) — session_log.md 格式（含維護期 hand-off 範例；P3-data 不寫 progress.md）
-- [`session-archive.md`](../../spec-workflow-refs/p3/session-archive.md) — Session 歸檔流程
+
+各規則的歷史教訓與案例對應集中於 [`rationale.md`](../../spec-workflow-refs/rationale.md)——執行 session 不需讀,維護者查閱用。
 
 （**P3-data 無 commit-time hook**：純 SQL 一次性產出,無 Maven / npm 編譯流程）
 
@@ -67,7 +68,7 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
       - schema 來源 = spec-p2 MCP DESCRIBE 產出的 dump（不再讀 Docs/DDL/*.sql）
       - 確認每張表的必填欄位、外鍵依賴
       - 缺檔 → STOP 回報 PG,回 P2 補 current_schema（不可自行 fallback 讀 DDL 或從 sibling code 推）
-      - 發現 schema 與規格不一致時 STOP 回報（如 AR003 踩過的 AR_RECORDS 只有 15 欄但 Entity 假設 17 欄）
+      - 發現 schema 與規格不一致時 STOP 回報
          ↓
 [STOP] Scope Statement（見 scope-statement.md）
       - Deliverable / 預期動到 / out-of-scope
@@ -98,7 +99,6 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 [AI]  commit: SQL 檔 + session_log.md（不 commit 執行結果）
          ↓
 [AI]  完工報告（純 console,不寫檔,見 completion-and-handoff.md）
-[AI]  Session 歸檔（見 session-archive.md）
 ```
 
 ### 詳細步驟
@@ -150,7 +150,6 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 11. **完工報告（SKILL 完工判定）：** 依 [`completion-and-handoff.md`](../../spec-workflow-refs/p3/completion-and-handoff.md)
     - 確認完工三條件全成立（SQL 產出 + 對帳通過 + hand-off append）
     - 產收尾報告（純 console,不另開 commit）：權限筆數、seed 覆蓋的 test_cases 數、COUNT 對帳結果（每張表筆數 vs 預期）、hand-off 初稿摘要、建議 PG 開瀏覽器照 `{程式編號}_test_cases.md` 逐條手測
-12. **Session 歸檔**（見 [`session-archive.md`](../../spec-workflow-refs/p3/session-archive.md),檔名 `{程式編號}-P3-data_{yyyyMMdd}_{HHmm}`）
 
 ## Stop Gate 設計
 
@@ -162,7 +161,7 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 
 ## 關鍵防護機制
 
-1. **schema 不一致不自主補** — 若 DB schema 與規格不符,STOP 回報 PG,不自行 ALTER TABLE（對齊 AR003 教訓：Entity 假設 17 欄但 DDL 只有 15 欄的事件,必須 PG 決定是改 Entity 還是補 schema）。
+1. **schema 不一致不自主補** — 若 DB schema 與規格不符,STOP 回報 PG,不自行 ALTER TABLE（改 Entity 還是補 schema 由 PG 決定）。
 2. **執行需 SG2 授權** — DB 寫入不可回復,AI 不自主執行。
 3. **特徵碼分離** — seed 資料必須帶特徵碼（如 `creator='e2e_seed'` 或 `createdBy='AI_SEED_{程式編號}'`）,與 spec 寫入資料分離,便於日後清理。
 4. **執行錯誤不自主修** — DB 錯誤（外鍵失敗、權限不足、欄位類型不符）通常牽涉環境 / schema 設計,STOP 報告由 PG 決定。
@@ -179,8 +178,8 @@ description: 讀規格統計 + test_cases.md + DB schema，產 permission SQL + 
 4. **執行需授權** — SG2 明示授權後才跑 SQL。
 5. **MCP 唯讀,寫入走 mysql CLI** — `DESCRIBE` 補驗與 `SELECT COUNT(*)` 對帳走 MCP read-only；PERMISSION / SEED 的 INSERT 走 mysql CLI（PG 授權後）；production DB 絕對不掛 MCP。
 6. **Schema 來源唯一化** — `current_schema_{程式編號}.md` 為 schema 對齊權威來源（spec-p2 / spec-p3-backend / spec-p3-data 三 SKILL 共用）；不讀 `Docs/DDL/*.sql`、不推 sibling code。
-7. **模型選擇（G2-12）** — seed 依賴推導與跨表外鍵順序屬邏輯密集階段,建議用**最強可用模型**執行本 SKILL（§3：模型等級差異 > prompt 技巧）。
+7. **模型分層** — 預設 **Sonnet 級模型即可執行**（SG1 審 SQL + SG2 授權執行兩道 gate 已擋）；跨表外鍵依賴複雜時 PG 可升最強可用模型。
 
-## SKILL 本身改進建議
+## SKILL 回饋
 
-詳見 [`session-archive.md`](../../spec-workflow-refs/p3/session-archive.md) 「SKILL 本身改進建議」段。對應 feedback 檔：`~/.soetek-ai-coding/skill-feedback/spec-p3-data.md`。
+使用中發現的流程問題,記錄到 target repo `.user/SPEC_WORKFLOW_IMPROVEMENTS.md`（格式：問題 → 證據 → 建議 → 目標 skill）,累積後統一 review 落地,不即時改 SKILL。

@@ -20,8 +20,8 @@ Plugin URL: https://github.com/soetek/soetek-agentic-coding-skills
 | Skill | 版本 | 觸發 | 說明 |
 |-------|------|------|------|
 | [spec-p1-digest-flow](skills/spec-p1-digest-flow/) | v1.2.0 | `/spec` | P1 — SA 規格書消化 S0–S4：DOCX 轉 MD → 規格統計 → 釐清清單 → SA 回覆整合 |
-| [spec-p2-tasking](skills/spec-p2-tasking/) | v3.1.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引，產前後端任務清單（含類型 tag）+ 手測 checklist |
-| [spec-p3-backend](skills/spec-p3-backend/) | v1.1.0 | `/impl-be` | P3-backend — 後端實作：`[validator]` 完整 TDD；`[processor]` 走 SG2 雙對照表（api_contract A## + current_schema，無 mock-based 測試）；`[sql]`/`[entity]`/`[spi]` 對照 current_schema 後寫實作無測試 |
+| [spec-p2-tasking](skills/spec-p2-tasking/) | v3.1.0 | `/tasking` | P2 — 於專案 repo 內讀 CLAUDE.md 索引，產前後端任務清單（含類型 tag + 規則原文區塊）+ api_contract + 手測 checklist |
+| [spec-p3-backend](skills/spec-p3-backend/) | v1.2.0 | `/impl-be` | P3-backend — 後端實作：`[validator]` 完整 TDD；`[processor]` 走 SG2 雙對照表＋規則複述（api_contract A## + current_schema，無 mock-based 測試）；`[sql]`/`[entity]`/`[spi]` 對照 current_schema 後寫實作無測試 |
 | [spec-p3-frontend](skills/spec-p3-frontend/) | v1.1.0 | `/impl-fe` | P3-frontend — 前端實作：`[service]`/`[store-map]` 走 SG2 對照 api_contract A##（無 mock-based 測試），其他類（UI/types/i18n）無測試由 PG 完工後整體手測 |
 | [spec-p3-data](skills/spec-p3-data/) | v1.0.1 | `/data` | P3-data — 權限 SQL + 測試資料 SQL 產出與執行，PG 授權後跑 |
 
@@ -64,7 +64,7 @@ graph TD
     subgraph P3BE["P3 spec-p3-backend — /impl-be"]
         direction LR
         BE1["SG1 確認"]
-        BE2["tag 分流：<br/>validator TDD；processor 雙對照表<br/>sql/entity/spi 對照 current_schema 無測試"]
+        BE2["tag 分流：<br/>validator TDD；processor 雙對照表＋規則複述<br/>sql/entity/spi 對照 current_schema 無測試"]
         BE1 --> BE2
     end
 

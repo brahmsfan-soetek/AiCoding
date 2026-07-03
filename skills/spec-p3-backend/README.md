@@ -1,4 +1,4 @@
-# AI Coding Workflow — spec-p3-backend (v1.0.0)
+# AI Coding Workflow — spec-p3-backend (v1.2.0)
 
 後端 TDD 驅動實作 SKILL。讀 P2 產的 `{程式編號}_backend_tasks.md` + 專案 `CLAUDE.md`，依 task 類型 tag 分流測試策略，逐 task 實作。
 
@@ -10,13 +10,13 @@
 
 | Tag | 測試策略 | 備註 |
 |---|---|---|
-| `[validator]` | **完整 TDD**（JUnit 純或 Mockito，Red-Green 迴圈） | 純函式 / 演算法 / 狀態機 |
-| `[processor]` | **無 mock-based 單元測試**；SG2 走 api_contract A## + current_schema 雙對照（靜態檢查） | Processor mock test 是「mock 設成預期再驗自己」的套套邏輯；整合驗證由 PG 手測涵蓋 |
+| `[validator]` | **完整 TDD**（JUnit 純或 Mockito，Red-Green 迴圈）；task 帶規則原文時測試 case 逐條對應 | 純函式 / 演算法 / 狀態機 |
+| `[processor]` | **無 mock-based 單元測試**；SG2 走 api_contract A## + current_schema 雙對照 + 規則複述（靜態檢查） | Processor mock test 是「mock 設成預期再驗自己」的套套邏輯；整合驗證由 PG 手測涵蓋 |
 | `[sql]` | **無 P3 測試**；SG2 對照 current_schema 欄位 / 型別 | SQL 行為由 PG 手測涵蓋 |
 | `[entity]` | **無測試**；SG2 對照 current_schema 欄位 / 型別 / nullable | 純 POJO，無邏輯 |
 | `[spi]` | **無測試** | 抽象介面，無邏輯 |
 
-**SG2 `[processor]` 雙對照表的由來：** AR003 BUG-P4b-R4-CONTRACT（4 支 View2 API 欄位與前端不一致 → store 永遠讀 undefined）+ AR003 BUG-A1（規格寫 17 欄、DDL 15 欄、真 DB 也缺 2 欄）。寫實作前先列 (1) `api_contract A## Response 欄位` ↔ `預計實作 response shape` 與 (2) `current_schema 表欄位` ↔ `SQL / Entity 引用欄位` 兩張對照表給 PG 審，比寫 mock-based 單元測試更能擋跨層漂移。
+**SG2 `[processor]` 對照表 + 規則複述：** 寫實作前先列 (1) `api_contract A## Response 欄位` ↔ `預計實作 response shape`、(2) `current_schema 表欄位` ↔ `SQL / Entity 引用欄位` 兩張對照表，加 (3) 規則複述（task 規則原文 → 預計實作一句話）給 PG 審。shape 對照擋跨層漂移，規則複述擋語意偏差（`(計算)` 欄位 shape 全對仍可能算錯）。案例史見 [`rationale.md`](../../spec-workflow-refs/rationale.md)。
 
 ---
 
@@ -50,7 +50,7 @@
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|:-:|
 | SG1 | session 啟動後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope）+ 確認載入、類型分佈、commit-time hook 安裝、起始 task | 不建議 |
-| SG2 | `[validator]` 寫測試前 / `[processor]` 寫實作前 | `[validator]` 走測試清單審；`[processor]` 走 api_contract A## + current_schema 雙對照表審 | **不可省略** |
+| SG2 | `[validator]` 寫測試前 / `[processor]` 寫實作前 | `[validator]` 走測試清單審（含規則原文 ↔ case 對應）；`[processor]` 走雙對照表 + 規則複述審 | **不可省略** |
 | SG3 | task 結束（commit 後） | 審閱繼續/回修 | 可降密度（每 N task 一次）|
 
 **`[sql]` / `[entity]` / `[spi]` task** 走簡化版 SG2（對照 current_schema 欄位 / 型別 / nullable），無測試清單。
@@ -79,8 +79,8 @@
 │  [processor]:                           │
 │    列雙對照表（api_contract A## ↔       │
 │    response shape / current_schema ↔    │
-│    SQL/Entity 欄位）                    │
-│    [STOP] SG2 雙對照表審                 │
+│    SQL/Entity 欄位）+ 規則複述          │
+│    [STOP] SG2 對照表 + 規則複述審        │
 │    寫實作（無 mock test）→ lint + tc    │
 │                                          │
 │  [sql]/[entity]/[spi]:                  │
@@ -93,7 +93,6 @@
          ↓
 [AI]  全部 task 完成 → 更新 session_log.md
 [AI]  建議：另起 session 執行 /impl-fe
-[AI]  Session 歸檔 → ~/.soetek-ai-coding/
 ```
 
 ---
@@ -118,7 +117,7 @@ spec-p3-backend/
         └── typecheck-test-on-commit.ps1  ← commit-time hook 腳本（Maven）
 ```
 
-共用規約（Scope Statement / commit rules / hand-off / progress 格式 / 歸檔 / hook 設計脈絡）抽到 `<repo>/spec-workflow-refs/p3/`，與 `spec-p3-frontend` / `spec-p3-data` 共用。
+共用規約（Scope Statement / commit rules / hand-off / progress 格式 / hook 設計脈絡）抽到 `<repo>/spec-workflow-refs/p3/`，與 `spec-p3-frontend` / `spec-p3-data` 共用；歷史教訓集中於 `<repo>/spec-workflow-refs/rationale.md`。
 
 ---
 
@@ -129,6 +128,7 @@ spec-p3-backend/
 - `Docs/spec/{程式編號}/plan/{程式編號}_backend_tasks.md` 存在
 - 每個 task 有類型 tag
 - `[processor]` 類有「選填欄位」欄
+- 帶計算 / 比較規則的 task 有「規則原文」區塊
 
 ### 2. 於專案 repo 目錄執行
 
@@ -148,7 +148,7 @@ spec-p3-backend/
 2. 檢查 progress.md（resume 偵測）
 3. SG1 報告類型分佈，PG 確認起始點
 4. Task loop（依 tag 分流）
-5. 完工後更新 session_log.md、歸檔
+5. 完工後更新 session_log.md（含維護期 hand-off）
 
 ### 4. 後續流程
 

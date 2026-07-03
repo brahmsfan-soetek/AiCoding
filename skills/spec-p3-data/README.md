@@ -24,7 +24,7 @@
 
 1. **權限 + 測資是為手測服務** — 目的是讓 PG 能照 test_cases.md 跑完整流程。
 2. **DB infra 由 PG 維護** — dev server / DB / MCP server 啟動維護 AI 不負責。
-3. **schema 漂移 STOP 報告** — 不自行修改 DDL（對齊 AR003 教訓：Entity 假設 17 欄但 DDL 只有 15 欄的事件，必須 PG 決定是改 Entity 還是補 schema）。
+3. **schema 漂移 STOP 報告** — 不自行修改 DDL（改 Entity 還是補 schema 由 PG 決定；案例史見 `spec-workflow-refs/rationale.md`）。
 4. **執行需授權** — SG2 明示授權後才跑 SQL（DB 寫入不可回復）。
 5. **特徵碼分離** — seed 資料必須帶特徵碼（如 `creator='e2e_seed'`），與真實資料分離便於日後清理。
 6. **MCP 唯讀，寫入走 mysql CLI** — `DESCRIBE` 與 `SELECT COUNT(*)` 對帳走 MCP read-only；PERMISSION / SEED 的 INSERT 走 mysql CLI；production DB 絕對不掛 MCP。
@@ -54,7 +54,7 @@
 
 | # | 位置 | 作用 | 可否省略 |
 |---|------|------|:-:|
-| SG0 | 讀完 schema 後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope，切入點 7）| **不可省略** |
+| SG0 | 讀完 schema 後 | **Scope Statement**（Deliverable / 預期動到 / out-of-scope）| **不可省略** |
 | SG1 | SQL 產出後 | PG 審權限表設計、seed 覆蓋度、特徵碼設計 | **不可省略** |
 | SG2 | 執行 SQL 前 | PG 授權 AI 執行 | **不可省略**（DB 寫入不可回復）|
 
@@ -79,7 +79,7 @@
       - 缺檔 → STOP 回 P2 補
       - schema 與規格不一致 → STOP 回報
          ↓
-[STOP] Scope Statement（切入點 7）
+[STOP] Scope Statement
       - Deliverable / 預期動到 / out-of-scope
       - PG 確認後才進產 SQL
          ↓
@@ -96,7 +96,6 @@
          ↓
 [AI]  Commit SQL 檔
 [AI]  完工報告 → 建議 PG 開瀏覽器手測
-[AI]  Session 歸檔
 ```
 
 ---
@@ -181,7 +180,7 @@ spec-p3-data/
 
 ## 關鍵防護機制
 
-1. **schema 不一致不自主補** — STOP 回報 PG（AR003 教訓）
+1. **schema 不一致不自主補** — STOP 回報 PG
 2. **執行需 SG2 授權** — DB 寫入不可回復
 3. **特徵碼分離** — 便於日後清理
 4. **執行錯誤不自主修** — DB 錯誤（外鍵 / 權限 / 欄位類型）通常涉及環境，STOP 報告由 PG 決定

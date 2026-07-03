@@ -45,7 +45,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
      - **預期動到的範圍**：列實際清單（如 `Docs/spec/{程式編號}/plan/*.md` 五份檔；MCP `DESCRIBE` 涉及的表名清單）
      - **明示 out-of-scope**：列「本次不會動」的範圍（如「不改 sibling 程式的 task / spec」「不動 `Docs/DDL`」「不寫實作 code」「不改規範文件」「不重構既有專案結構」）
      - PG 確認 scope 後才進入步驟 6 DB schema 建立
-     - **規約**：產出過程若發現需超出 scope（如需動到非本程式的檔案 / 改規範 / 順手重構）→ STOP 回報 PG，PG 決定擴張或縮回；AI 不自行擴張（對齊 Insight 報告 35 wrong_approach + 12 excessive_changes 觀察）
+     - **規約**：產出過程若發現需超出 scope（如需動到非本程式的檔案 / 改規範 / 順手重構）→ STOP 回報 PG，PG 決定擴張或縮回；AI 不自行擴張
 6. **DB schema 建立**（透過 MCP MySQL 唯讀連線；不可省略，schema 是 API 契約的型別來源）：
    - 從規格統計與 UI 截圖中辨識此程式涉及的表清單（含主表、關聯表、LOV 表）
    - 向 PG 報告候選表清單，**[STOP] 等 PG 確認**（PG 可增減）
@@ -56,7 +56,7 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 7. 讀取 `<skill-dir>/templates/prompts/任務清單_prompt.md` 與 `<skill-dir>/templates/outputs/` 下四份輸出模板。
 8. 執行 prompt，產出**四份**檔案至使用者指定位置：
    - `{程式編號}_frontend_tasks.md`（含前端類型 tag：service / store-map / store-action / types / page / dialog / i18n / router）
-   - `{程式編號}_backend_tasks.md`（含後端類型 tag：validator / processor / sql / entity / spi；`[processor]` 類額外填「選填欄位」）
+   - `{程式編號}_backend_tasks.md`（含後端類型 tag：validator / processor / sql / entity / spi；`[processor]` 類額外填「選填欄位」；帶計算 / 比較 / 彙總規則的 task 附「規則原文」區塊——逐字抄錄 + 出處）
    - `{程式編號}_api_contract.md`（FE / BE 共讀契約；每支 API 一張，含 Request shape / Response shape / i18n key，型別取自 `current_schema_{程式編號}.md`）
    - `{程式編號}_test_cases.md`（手測 checklist，含「狀態」欄供 PG 勾選）
 9. **產出後立即 commit**（artifact 即 commit 原則）：
@@ -75,13 +75,15 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 | Tag | 下游 SKILL | 測試 / 對照策略 |
 |---|---|---|
 | `[validator]` | spec-p3-backend | 完整 TDD（JUnit / Mockito）Red-Green 迴圈 |
-| `[processor]` | spec-p3-backend | **無 mock-based 單元測試**；SG2 走 api_contract A## + current_schema 雙對照表（靜態檢查）|
+| `[processor]` | spec-p3-backend | **無 mock-based 單元測試**；SG2 走 api_contract A## + current_schema 雙對照表 + 規則複述（帶規則原文的 task）|
 | `[sql]` / `[entity]` | spec-p3-backend | 無 P3 測試；SG2 對照 current_schema 欄位 / 型別 / nullable |
 | `[spi]` | spec-p3-backend | 無測試 |
 | `[service]` / `[store-map]` | spec-p3-frontend | **無 mock-based 測試**；SG2 對照 api_contract A## 對照表（path / method / payload / response shape）|
 | `[store-action]` / `[types]` / `[page]` / `[dialog]` / `[i18n]` / `[router]` | spec-p3-frontend | 無測試（UI 由 PG 手測） |
 
 **`[processor]` 額外要求：** task 必須列出「選填欄位」清單 + 對應的 `api_contract.md` A## 小節，供 P3-backend SG2 雙對照表審。對應的 SQL pattern `:param IS NULL OR ... = :param` 在選填欄位傳 `""` 時的行為由 PG 手測涵蓋（不再由 P3 mock test 擋）。
+
+**「規則原文」額外要求（歧義分流）：** 帶計算 / 比較 / 彙總規則的 task（常見於 `[processor]` / `[validator]`）必須附「規則原文」區塊——**逐字**抄錄規格統計 / api_contract 業務說明的規則 + 出處；純 CRUD 不附。有此區塊 = 高歧義 task，P3 SG2 必走「規則複述」段；只給 A## / 頁碼指針不抄原文 = 不合格（shape 對照對計算欄位是空檢查，語意規則必須跟著 task 走）。
 
 ## 核心原則
 
@@ -92,11 +94,12 @@ S1–S4（規格統計、釐清、整合）是純文件作業，在隔離的 SA 
 5. **讀規範、不掃 code** — 專案 context 來自 `CLAUDE.md` 索引指向的規範文件，不掃 code 歸納 pattern（AI 行為會漂移）。
 6. **輸出位置由使用者決定** — 建議預設 `plan/` 子目錄，但每次執行都詢問。
 7. **類型 tag 必填** — 每個 task 必須標註類型 tag，這是 P3 分流測試策略的依據。
+7-1. **規則原文逐字入 task** — 帶計算 / 比較 / 彙總規則的 task 必附「規則原文」區塊（逐字 + 出處）；此欄有無即歧義分流依據，指針不能代替原文。
 8. **test_cases.md = 手測 checklist** — 不是自動化 spec，而是 PG 開瀏覽器照著對的清單。
 9. **PG 是品質守門人** — AI 產出後需 PG 審閱再進入實作。
 10. **Artifact 即 commit、commit 標題乾淨** — 四份產出 + current_schema 一次 commit 完成；commit 標題用語意動詞（如 `docs(ar003): add P2 tasks + API contract + test checklist`），禁止含內部 task id（`B01` / `F02` / `A01` 等）。
 11. **Scope-lock 動手前必跑** — 步驟 5 末尾 Scope Statement（Deliverable / 預期動到 / out-of-scope）為 stop gate；產出過程發現需超出 scope → STOP 回報 PG，不自行擴張。
-12. **模型選擇（G2-12）** — P2 需一次載入 CLAUDE.md 索引 + 規範文件 + 規格統計 + DB schema（長 context）並做任務分解與 tag 標註（高判斷密度），建議用**最強可用模型**執行本 SKILL（§3：模型等級差異 > prompt 技巧，是最重要的單一決策）。
+12. **模型選擇** — P2 需一次載入 CLAUDE.md 索引 + 規範文件 + 規格統計 + DB schema（長 context）並做任務分解、tag 標註、規則原文摘錄（高判斷密度），用**最強可用模型**執行本 SKILL。P2 把判斷寫進清單，P3 才能用便宜模型照做——這是整條流程「Opus 定怎麼做、Sonnet 照著做」分工的支點。
 
 ## Output Templates
 

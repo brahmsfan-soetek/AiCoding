@@ -17,7 +17,7 @@
 | `[page]` / `[dialog]` | **無測試** | UI/UX 由 PG 完工後手測 |
 | `[i18n]` / `[router]` | **無測試** | 靜態資料 |
 
-**為什麼改為「只做契約對照」而非「契約測試」：** AR003 BUG-P4b-R4-CONTRACT 教訓（後端 `creditAmt` vs 前端 `creditLimit`）+ SO0062 mapper camelCase 教訓（28 個 contract test fixture 都對，但實際後端已 camelCase 不一致）證明 **mock-based contract test 抓 typo OK，但跨層欄位漂移完全擋不下**。改走 SG2 對照 api_contract A##（共讀契約）這層靜態檢查 — 省 token、無 fixture 與真實 BE 漂移風險、PG 在 SG2 就能一眼看出對齊問題。UI / UX / 樣式 / 文字類 bug 人眼 1 秒看出，寫測試 ROI 極低。
+**為什麼是「契約對照」不是「契約測試」：** mock fixture 與真實 BE 會漂移——contract test 抓得到 typo，抓不到跨層欄位 rename / camelCase 落差。SG2 靜態對照共讀契約省 token、無 fixture 漂移風險，PG 一眼可審。UI / UX / 樣式 / 文字類 bug 人眼 1 秒看出，寫測試 ROI 極低。案例史見 [`rationale.md`](../../spec-workflow-refs/rationale.md)。
 
 ---
 
@@ -93,7 +93,6 @@
       1. /data 產權限 + 測資
       2. PG 照 test_cases.md 整體手測
       3. bug ad hoc 派修
-[AI]  Session 歸檔
 ```
 
 ---
